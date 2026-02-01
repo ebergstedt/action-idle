@@ -8,6 +8,7 @@
 export { renderBattle } from './BattleRenderer';
 export type { DustParticle, RenderContext } from './BattleRenderer';
 
+export { drawParchmentBackground, drawVignette, drawParchmentNoise } from './drawBackground';
 export { drawUnitShadow, drawUnitBody, drawHealthBar, drawDebuffIndicator } from './drawUnit';
 export { drawProjectile } from './drawProjectile';
 export { drawCastle, drawCastleHealthBar } from './drawCastle';

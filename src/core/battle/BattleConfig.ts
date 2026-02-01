@@ -72,6 +72,40 @@ export const ZONE_HEIGHT_PERCENT = 0.375;
 export const MAX_FRAME_DELTA = 0.1;
 
 // =============================================================================
+// VISUAL EFFECTS - PARCHMENT THEME
+// =============================================================================
+
+/**
+ * Vignette intensity at the edges (0-1).
+ * Higher = darker corners.
+ */
+export const VIGNETTE_INTENSITY = 0.35;
+
+/**
+ * Vignette radius as fraction of arena diagonal.
+ * Lower = vignette starts closer to center.
+ */
+export const VIGNETTE_RADIUS = 0.7;
+
+/**
+ * Parchment noise density (dots per 10000 pixels).
+ * Higher = more visible texture.
+ */
+export const PARCHMENT_NOISE_DENSITY = 15;
+
+/**
+ * Parchment noise opacity (0-1).
+ * Subtle is better - this just adds texture.
+ */
+export const PARCHMENT_NOISE_OPACITY = 0.08;
+
+/**
+ * Parchment noise dot size range [min, max] in pixels.
+ */
+export const PARCHMENT_NOISE_SIZE_MIN = 1;
+export const PARCHMENT_NOISE_SIZE_MAX = 2.5;
+
+// =============================================================================
 // PROJECTILE CONFIGURATION
 // =============================================================================
 
