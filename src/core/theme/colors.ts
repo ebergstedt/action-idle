@@ -131,6 +131,7 @@ export const ARENA_COLORS = {
   healingNumber: '#44FF44', // Green for healing (placeholder)
   damageNumberOutline: '#000000', // Black outline for readability
   unitShadow: '#4A4A4A', // Dark gray shadow under units
+  dustParticle: '#8B7355', // Brown dust color matching parchment theme
 } as const;
 
 // =============================================================================

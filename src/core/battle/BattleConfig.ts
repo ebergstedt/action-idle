@@ -500,14 +500,30 @@ export const UNIT_SHADOW_OPACITY = 0.35;
 
 /**
  * Selection ring pulse speed (cycles per second).
+ * 0.333 = one full cycle every 3 seconds.
  */
-export const SELECTION_PULSE_SPEED = 2;
+export const SELECTION_PULSE_SPEED = 1 / 3;
 
 /**
  * Selection ring pulse intensity (how much the ring grows/shrinks).
- * 0.15 = +/- 15% size variation.
+ * 0.08 = +/- 8% size variation.
  */
-export const SELECTION_PULSE_INTENSITY = 0.15;
+export const SELECTION_PULSE_INTENSITY = 0.08;
+
+/**
+ * Dust particle lifetime in seconds.
+ */
+export const DUST_PARTICLE_LIFETIME = 0.4;
+
+/**
+ * Dust particle spawn interval in seconds (how often moving units spawn dust).
+ */
+export const DUST_SPAWN_INTERVAL = 0.15;
+
+/**
+ * Base dust particle size in pixels.
+ */
+export const DUST_PARTICLE_SIZE = 4;
 
 /**
  * Multiplier for ally avoidance distance check during movement.
