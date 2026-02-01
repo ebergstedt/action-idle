@@ -22,8 +22,6 @@ import { drawShockwave, drawDamageNumber } from './drawEffects';
 import { drawSelectionBox } from './drawSelection';
 import { drawParchmentBackground, drawVignette } from './drawBackground';
 import { drawInkSplatters } from './drawInkSplatter';
-import { drawCompassRose } from './drawCompass';
-import { COMPASS_ROSE_SIZE, COMPASS_ROSE_MARGIN } from '../../../core/battle/BattleConfig';
 import type { InkSplatter } from '../hooks/useInkSplatter';
 
 /**
@@ -129,32 +127,32 @@ export function renderBattle(context: RenderContext): void {
     drawShockwave(ctx, shockwave, width, height);
   }
 
-  // 4. Castles (draw before units so units appear on top)
+  // 5. Castles (draw before units so units appear on top)
   for (const castle of state.castles) {
     drawCastle(ctx, castle);
   }
 
-  // 5. Projectiles
+  // 6. Projectiles
   for (const proj of state.projectiles) {
     drawProjectile(ctx, proj, height);
   }
 
-  // 6. Unit shadows (drawn first so they're behind all units)
+  // 7. Unit shadows (drawn first so they're behind all units)
   for (const unit of state.units) {
     drawUnitShadow(ctx, unit);
   }
 
-  // 7. Unit bodies
+  // 8. Unit bodies
   for (const unit of state.units) {
     const isSelected = selectedUnitIds.includes(unit.id);
     const isBeingDragged = isDragging && draggedUnitIds.includes(unit.id);
     drawUnitBody(ctx, unit, isSelected, isBeingDragged);
   }
 
-  // 8. Dust particles (after units so they're visible)
+  // 9. Dust particles (after units so they're visible)
   drawDustParticles(ctx, dustParticles);
 
-  // 9. Health bars for units (skip dying units)
+  // 10. Health bars for units (skip dying units)
   for (const unit of state.units) {
     if (unit.deathFadeTimer < 0) {
       const ghostHealth = ghostHealthMap.get(unit.id) ?? unit.health;
@@ -162,31 +160,25 @@ export function renderBattle(context: RenderContext): void {
     }
   }
 
-  // 10. Debuff indicators (above health bars, skip dying units)
+  // 11. Debuff indicators (above health bars, skip dying units)
   for (const unit of state.units) {
     if (unit.deathFadeTimer < 0) {
       drawDebuffIndicator(ctx, unit);
     }
   }
 
-  // 11. Health bars for castles
+  // 12. Health bars for castles
   for (const castle of state.castles) {
     drawCastleHealthBar(ctx, castle);
   }
 
-  // 12. Damage numbers (above most elements)
+  // 13. Damage numbers (above most elements)
   for (const damageNumber of state.damageNumbers) {
     drawDamageNumber(ctx, damageNumber, height);
   }
 
-  // 13. Vignette effect (darkens edges, drawn over everything)
+  // 14. Vignette effect (darkens edges, drawn over everything)
   drawVignette(ctx, width, height);
-
-  // 14. Compass rose (bottom-right corner decoration)
-  const compassSize = height * COMPASS_ROSE_SIZE;
-  const compassX = width - compassSize - COMPASS_ROSE_MARGIN;
-  const compassY = height - compassSize - COMPASS_ROSE_MARGIN;
-  drawCompassRose(ctx, compassX, compassY, compassSize);
 
   // 15. Box selection rectangle (drawn last, above vignette)
   if (boxSelectSession && isBoxSelectActive(boxSelectSession)) {
