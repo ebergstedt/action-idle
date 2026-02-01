@@ -8,6 +8,7 @@
  */
 
 import { Vector2 } from '../physics/Vector2';
+import { MIN_BOX_SELECT_SIZE } from './BattleConfig';
 
 export interface BoxSelectSession {
   /** Position where box selection started */
@@ -93,7 +94,10 @@ export function getUnitsInBox<
  * Checks if the box is large enough to be considered a real selection
  * (vs just a click).
  */
-export function isBoxSelectActive(session: BoxSelectSession, minSize: number = 10): boolean {
+export function isBoxSelectActive(
+  session: BoxSelectSession,
+  minSize: number = MIN_BOX_SELECT_SIZE
+): boolean {
   const width = Math.abs(session.currentPos.x - session.startPos.x);
   const height = Math.abs(session.currentPos.y - session.startPos.y);
   return width >= minSize || height >= minSize;

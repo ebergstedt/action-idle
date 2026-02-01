@@ -45,19 +45,19 @@ export function BattleView() {
   const hasSpawnedRef = useRef(false);
   const sizeStableTimeoutRef = useRef<number | null>(null);
 
-  // Calculate arena size based on container - optimized for 16:9 displays
+  // Calculate arena size based on container - optimized for wide screens
   useEffect(() => {
     const updateSize = () => {
       if (containerRef.current) {
         const container = containerRef.current;
         const rect = container.getBoundingClientRect();
-        const availableHeight = rect.height - 40; // Leave space for unit count
+        const availableHeight = rect.height - 10; // Small margin
         const availableWidth = rect.width - 20;
 
-        // Use available space, maintaining reasonable proportions
-        // For PC gaming: wider arenas work well
-        const width = Math.max(600, Math.min(availableWidth, availableHeight * 1.4));
-        const height = Math.max(500, Math.min(availableHeight, width * 0.75));
+        // Use most of available width, cap height to maintain playable aspect ratio
+        // Wider arenas work great for tactical gameplay on PC
+        const width = Math.max(600, availableWidth);
+        const height = Math.max(400, Math.min(availableHeight, width * 0.65));
 
         setArenaSize({ width, height });
 
@@ -96,9 +96,6 @@ export function BattleView() {
     }
   }, [isArenaSizeStable, arenaSize, state.units.length, spawnWave]);
 
-  const playerCount = state.units.filter((u) => u.team === 'player').length;
-  const enemyCount = state.units.filter((u) => u.team === 'enemy').length;
-
   // Only show unit info panel if exactly one unit is selected
   const selectedUnit =
     selectedUnitIds.length === 1 ? state.units.find((u) => u.id === selectedUnitIds[0]) : null;
@@ -130,11 +127,6 @@ export function BattleView() {
           onSelectUnit={selectUnit}
           onSelectUnits={selectUnits}
         />
-        <div className="flex gap-4 text-sm flex-shrink-0" style={styles.text}>
-          <span style={{ color: ARENA_COLORS.healthHigh }}>Allies: {playerCount}</span>
-          <span style={styles.textFaded}>|</span>
-          <span style={{ color: ARENA_COLORS.healthLow }}>Enemies: {enemyCount}</span>
-        </div>
       </div>
 
       {/* Right side - Info Panel */}

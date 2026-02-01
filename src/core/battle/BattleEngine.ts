@@ -8,11 +8,27 @@
  */
 
 import { Vector2 } from '../physics/Vector2';
-import { getUnitColor } from '../theme/colors';
-import { DEFAULT_ARENA_MARGIN, UNIT_SPACING } from './BattleConfig';
+import { getCastleColor, getUnitColor } from '../theme/colors';
+import {
+  CASTLE_HORIZONTAL_MARGIN,
+  CASTLE_MAX_HEALTH,
+  CASTLE_SIZE,
+  DEFAULT_ARENA_MARGIN,
+  DRAG_OVERLAP_ITERATIONS,
+  DRAG_POSITION_MAX_ITERATIONS,
+  MAX_UNIT_SCALE,
+  MIN_SEPARATION_DISTANCE,
+  MIN_UNIT_SCALE,
+  OVERLAP_BASE_PUSH,
+  OVERLAP_PUSH_FACTOR,
+  REFERENCE_ARENA_HEIGHT,
+  UNIT_SPACING,
+  ZONE_CLAMP_MARGIN,
+  ZONE_HEIGHT_PERCENT,
+} from './BattleConfig';
 import { EntityBounds } from './BoundsEnforcer';
-import { BattleWorld, UnitEntity, UnitData } from './entities';
-import { BattleState, getScaledUnitSize, Unit } from './types';
+import { BattleWorld, UnitEntity, UnitData, CastleEntity, CastleData } from './entities';
+import { BattleState, BattleOutcome, getScaledUnitSize, Unit } from './types';
 import { UnitDefinition, UnitTeam } from './units/types';
 import { UnitRegistry } from './units';
 
@@ -24,10 +40,12 @@ export class BattleEngine {
   private world: BattleWorld;
   private registry: UnitRegistry;
   private nextUnitId = 1;
+  private nextCastleId = 1;
   private isRunning = false;
   private hasStarted = false;
   private waveNumber = 1;
   private arenaBounds: EntityBounds | null = null;
+  private battleOutcome: BattleOutcome = 'pending';
 
   constructor(registry: UnitRegistry) {
     this.registry = registry;
@@ -49,9 +67,11 @@ export class BattleEngine {
     return {
       units: this.world.getUnits().map((u) => u.toLegacyUnit()),
       projectiles: this.world.getProjectiles().map((p) => p.toLegacyProjectile()),
+      castles: this.world.getCastles().map((c) => c.toLegacyCastle()),
       isRunning: this.isRunning,
       hasStarted: this.hasStarted,
       waveNumber: this.waveNumber,
+      outcome: this.battleOutcome,
     };
   }
 
@@ -76,6 +96,8 @@ export class BattleEngine {
     this.world.clear();
     this.hasStarted = false;
     this.nextUnitId = 1;
+    this.nextCastleId = 1;
+    this.battleOutcome = 'pending';
   }
 
   /**
@@ -102,7 +124,7 @@ export class BattleEngine {
     definitionId: string,
     team: UnitTeam,
     position: Vector2,
-    arenaHeight: number = 600
+    arenaHeight: number = REFERENCE_ARENA_HEIGHT
   ): Unit {
     const definition = this.registry.get(definitionId);
     return this.spawnUnitFromDefinition(definition, team, position, arenaHeight);
@@ -115,7 +137,7 @@ export class BattleEngine {
     definition: UnitDefinition,
     team: UnitTeam,
     position: Vector2,
-    arenaHeight: number = 600
+    arenaHeight: number = REFERENCE_ARENA_HEIGHT
   ): Unit {
     const { baseStats, visuals } = definition;
 
@@ -141,9 +163,11 @@ export class BattleEngine {
       shape: visuals.shape,
       size,
       target: null,
+      castleTarget: null,
       attackCooldown: 0,
       shuffleDirection: null,
       shuffleTimer: 0,
+      seekMode: false,
     };
 
     const entity = new UnitEntity(id, position.clone(), data);
@@ -153,11 +177,69 @@ export class BattleEngine {
   }
 
   /**
+   * Spawn a castle for a team.
+   * @param team - Which team the castle belongs to
+   * @param position - Spawn position
+   * @param arenaHeight - Arena height for size scaling
+   * @returns The spawned castle entity
+   */
+  spawnCastle(
+    team: UnitTeam,
+    position: Vector2,
+    arenaHeight: number = REFERENCE_ARENA_HEIGHT
+  ): CastleEntity {
+    const scale = Math.max(
+      MIN_UNIT_SCALE,
+      Math.min(MAX_UNIT_SCALE, arenaHeight / REFERENCE_ARENA_HEIGHT)
+    );
+    const size = Math.round(CASTLE_SIZE * scale);
+
+    const id = `castle_${this.nextCastleId++}`;
+    const data: CastleData = {
+      team,
+      maxHealth: CASTLE_MAX_HEALTH,
+      health: CASTLE_MAX_HEALTH,
+      size,
+      color: getCastleColor(team),
+    };
+
+    const entity = new CastleEntity(id, position.clone(), data);
+    this.world.addCastle(entity);
+
+    return entity;
+  }
+
+  /**
+   * Spawn castles for both teams at their deployment zones.
+   * Places 2 castles per team (left and right flanks), vertically centered in each zone.
+   */
+  spawnCastles(): void {
+    if (!this.arenaBounds) return;
+
+    const { width, height } = this.arenaBounds;
+    const zoneHeight = height * ZONE_HEIGHT_PERCENT;
+
+    // Castle X positions (horizontal flanks)
+    const leftX = CASTLE_HORIZONTAL_MARGIN;
+    const rightX = width - CASTLE_HORIZONTAL_MARGIN;
+
+    // Player castles (bottom zone) - vertically centered in zone
+    const playerY = height - zoneHeight / 2;
+    this.spawnCastle('player', new Vector2(leftX, playerY), height);
+    this.spawnCastle('player', new Vector2(rightX, playerY), height);
+
+    // Enemy castles (top zone) - vertically centered in zone
+    const enemyY = zoneHeight / 2;
+    this.spawnCastle('enemy', new Vector2(leftX, enemyY), height);
+    this.spawnCastle('enemy', new Vector2(rightX, enemyY), height);
+  }
+
+  /**
    * Resolve overlapping units immediately.
    * Call after spawning all units.
    */
   resolveOverlaps(
-    iterations: number = 20,
+    iterations: number = DRAG_OVERLAP_ITERATIONS,
     bounds?: { arenaWidth: number; arenaHeight: number; zoneHeightPercent: number }
   ): void {
     const units = this.world.getUnits();
@@ -179,10 +261,10 @@ export class BattleEngine {
             hasOverlap = true;
             const overlap = minDist - dist;
             const pushDir =
-              dist > 0.1
+              dist > MIN_SEPARATION_DISTANCE
                 ? diff.normalize()
                 : new Vector2(Math.random() - 0.5, Math.random() - 0.5).normalize();
-            const pushAmount = overlap * 0.5 + 1;
+            const pushAmount = overlap * OVERLAP_PUSH_FACTOR + OVERLAP_BASE_PUSH;
 
             unitA.position = unitA.position.add(pushDir.multiply(pushAmount));
             unitB.position = unitB.position.subtract(pushDir.multiply(pushAmount));
@@ -203,7 +285,7 @@ export class BattleEngine {
    */
   clampUnitsToZones(arenaWidth: number, arenaHeight: number, zoneHeightPercent: number): void {
     const zoneHeight = arenaHeight * zoneHeightPercent;
-    const margin = 20;
+    const margin = ZONE_CLAMP_MARGIN;
 
     for (const unit of this.world.getUnits()) {
       // Clamp X to arena bounds
@@ -235,7 +317,21 @@ export class BattleEngine {
    */
   tick(delta: number): void {
     if (!this.isRunning) return;
+
     this.world.update(delta);
+
+    // Check for battle end
+    const result = this.world.isBattleOver();
+    if (result.over) {
+      this.isRunning = false;
+      if (result.winner === 'player') {
+        this.battleOutcome = 'player_victory';
+      } else if (result.winner === 'enemy') {
+        this.battleOutcome = 'enemy_victory';
+      } else {
+        this.battleOutcome = 'draw';
+      }
+    }
   }
 
   /**
@@ -284,7 +380,7 @@ export class BattleEngine {
     const allies = this.world.getAlliesOf(unit);
 
     let pos = desiredPos.clone();
-    const maxIterations = 10;
+    const maxIterations = DRAG_POSITION_MAX_ITERATIONS;
 
     for (let i = 0; i < maxIterations; i++) {
       let hasOverlap = false;

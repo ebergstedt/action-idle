@@ -8,6 +8,14 @@
  */
 
 import { Vector2 } from '../physics/Vector2';
+import {
+  FORMATION_SPAWN_MARGIN,
+  FORMATION_WIDTH_SCALE,
+  FORMATION_HEIGHT_SCALE,
+  FORMATION_CENTER_OFFSET,
+  ENEMY_SPAWN_MAX_COLS,
+  ENEMY_SPAWN_JITTER,
+} from './BattleConfig';
 
 export type UnitType = 'warrior' | 'archer' | 'knight';
 
@@ -65,14 +73,16 @@ export function calculateAlliedSpawnPositions(
 ): SpawnPosition[] {
   const zoneHeight = bounds.height * bounds.zoneHeightPercent;
   const allyZoneTop = bounds.height - zoneHeight;
-  const margin = 30;
 
   const centerX = bounds.width / 2;
-  const centerY = allyZoneTop + margin + (zoneHeight - margin * 2) * 0.3; // Front of ally zone
+  const centerY =
+    allyZoneTop +
+    FORMATION_SPAWN_MARGIN +
+    (zoneHeight - FORMATION_SPAWN_MARGIN * 2) * FORMATION_CENTER_OFFSET;
 
   // Scale factor based on arena size
-  const scaleX = (bounds.width - margin * 2) * 0.4;
-  const scaleY = (zoneHeight - margin * 2) * 0.6;
+  const scaleX = (bounds.width - FORMATION_SPAWN_MARGIN * 2) * FORMATION_WIDTH_SCALE;
+  const scaleY = (zoneHeight - FORMATION_SPAWN_MARGIN * 2) * FORMATION_HEIGHT_SCALE;
 
   return formation.placements.map((placement) => ({
     type: placement.type,
@@ -91,16 +101,15 @@ export function calculateEnemySpawnPositions(
   bounds: ArenaBounds
 ): SpawnPosition[] {
   const zoneHeight = bounds.height * bounds.zoneHeightPercent;
-  const margin = 30;
 
-  const enemyZoneTop = margin;
-  const enemyZoneBottom = zoneHeight - margin;
+  const enemyZoneTop = FORMATION_SPAWN_MARGIN;
+  const enemyZoneBottom = zoneHeight - FORMATION_SPAWN_MARGIN;
 
-  const availableWidth = bounds.width - margin * 2;
+  const availableWidth = bounds.width - FORMATION_SPAWN_MARGIN * 2;
   const availableHeight = enemyZoneBottom - enemyZoneTop;
 
   // Grid layout
-  const cols = Math.min(4, composition.length);
+  const cols = Math.min(ENEMY_SPAWN_MAX_COLS, composition.length);
   const rows = Math.ceil(composition.length / cols);
   const cellWidth = availableWidth / cols;
   const cellHeight = availableHeight / Math.max(rows, 1);
@@ -113,12 +122,12 @@ export function calculateEnemySpawnPositions(
     const row = Math.floor(index / cols);
 
     // Base position in grid cell center
-    const baseX = margin + col * cellWidth + cellWidth / 2;
+    const baseX = FORMATION_SPAWN_MARGIN + col * cellWidth + cellWidth / 2;
     const baseY = enemyZoneTop + row * cellHeight + cellHeight / 2;
 
-    // Add jitter (30% of cell size)
-    const jitterX = (Math.random() - 0.5) * cellWidth * 0.6;
-    const jitterY = (Math.random() - 0.5) * cellHeight * 0.6;
+    // Add jitter
+    const jitterX = (Math.random() - 0.5) * cellWidth * ENEMY_SPAWN_JITTER;
+    const jitterY = (Math.random() - 0.5) * cellHeight * ENEMY_SPAWN_JITTER;
 
     return {
       type,

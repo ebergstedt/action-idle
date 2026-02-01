@@ -9,6 +9,7 @@
  */
 
 import { Vector2 } from '../physics/Vector2';
+import { HITBOX_PADDING } from './BattleConfig';
 
 /**
  * Input events that the battle system can receive.
@@ -57,7 +58,7 @@ export interface IBattleInputAdapter {
 export function findUnitAtPosition<T extends { position: Vector2; size: number; id: string }>(
   position: Vector2,
   units: T[],
-  hitboxPadding: number = 12
+  hitboxPadding: number = HITBOX_PADDING
 ): T | null {
   // Check in reverse order (top-most first)
   for (let i = units.length - 1; i >= 0; i--) {

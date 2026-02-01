@@ -11,13 +11,14 @@
  */
 
 // Core entity types and interfaces
-export { EventEmitter } from './EventEmitter';
+export { EventEmitter, WorldEventEmitter } from './EventEmitter';
 export { BaseEntity, type IEntityWorld } from './BaseEntity';
 export { type IBattleWorld } from './IBattleWorld';
 
 // Entity implementations
 export { UnitEntity, type UnitData } from './UnitEntity';
 export { ProjectileEntity, type ProjectileData, createProjectile } from './ProjectileEntity';
+export { CastleEntity, type CastleData } from './CastleEntity';
 
 // Entity manager
 export { BattleWorld } from './BattleWorld';

@@ -8,7 +8,13 @@
  */
 
 import { Vector2 } from '../physics/Vector2';
-import { DRAG_OVERLAP_ITERATIONS, UNIT_SPACING } from './BattleConfig';
+import {
+  DRAG_OVERLAP_ITERATIONS,
+  UNIT_SPACING,
+  MIN_SEPARATION_DISTANCE,
+  OVERLAP_BASE_PUSH,
+  OVERLAP_PUSH_FACTOR,
+} from './BattleConfig';
 import { Unit } from './types';
 
 export interface DragSession {
@@ -186,15 +192,15 @@ function resolveOverlaps(
       const dist = diff.magnitude();
       const minDist = (size + other.size) * UNIT_SPACING;
 
-      if (dist < minDist && dist > 0.1) {
+      if (dist < minDist && dist > MIN_SEPARATION_DISTANCE) {
         hasOverlap = true;
         const overlap = minDist - dist;
-        pushDir = pushDir.add(diff.normalize().multiply(overlap + 1));
+        pushDir = pushDir.add(diff.normalize().multiply(overlap + OVERLAP_BASE_PUSH));
       }
     }
 
     if (!hasOverlap) break;
-    result = result.add(pushDir.multiply(0.5));
+    result = result.add(pushDir.multiply(OVERLAP_PUSH_FACTOR));
   }
 
   return result;

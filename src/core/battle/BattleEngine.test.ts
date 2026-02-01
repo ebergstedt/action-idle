@@ -48,12 +48,13 @@ describe('BattleEngine tick', () => {
     expect(enemyUnit!.position.y).toBeGreaterThan(initialEnemyY);
   });
 
-  it('should acquire targets', () => {
+  it('should acquire targets when within aggro radius', () => {
     const engine = createTestEngine();
     engine.setArenaBounds(800, 600);
 
-    engine.spawnUnit('warrior', 'player', new Vector2(400, 500), 600);
-    engine.spawnUnit('warrior', 'enemy', new Vector2(400, 100), 600);
+    // Place units within aggro radius (150) of each other
+    engine.spawnUnit('warrior', 'player', new Vector2(400, 350), 600);
+    engine.spawnUnit('warrior', 'enemy', new Vector2(400, 250), 600);
 
     const world = engine.getWorld();
     const playerUnit = world.getUnits().find((u) => u.team === 'player');
@@ -65,8 +66,32 @@ describe('BattleEngine tick', () => {
     engine.start();
     engine.tick(0.016); // Single frame
 
-    // After tick, should have targets
+    // After tick, should have targets (within aggro radius)
     expect(playerUnit!.target).toBe(enemyUnit);
     expect(enemyUnit!.target).toBe(playerUnit);
+  });
+
+  it('should march forward when enemies are outside aggro radius', () => {
+    const engine = createTestEngine();
+    engine.setArenaBounds(800, 600);
+
+    // Place units far apart (outside aggro radius)
+    engine.spawnUnit('warrior', 'player', new Vector2(400, 500), 600);
+    engine.spawnUnit('warrior', 'enemy', new Vector2(400, 100), 600);
+
+    const world = engine.getWorld();
+    const playerUnit = world.getUnits().find((u) => u.team === 'player');
+    const enemyUnit = world.getUnits().find((u) => u.team === 'enemy');
+
+    const initialPlayerY = playerUnit!.position.y;
+    const initialEnemyY = enemyUnit!.position.y;
+
+    engine.start();
+    engine.tick(0.1); // Tick once
+
+    // Units should march forward (no target yet - outside aggro radius)
+    // Player marches up (Y decreasing), enemy marches down (Y increasing)
+    expect(playerUnit!.position.y).toBeLessThan(initialPlayerY);
+    expect(enemyUnit!.position.y).toBeGreaterThan(initialEnemyY);
   });
 });

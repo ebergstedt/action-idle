@@ -176,6 +176,22 @@ export const PROJECTILE_COLORS = {
 } as const;
 
 // =============================================================================
+// CASTLE COLORS
+// =============================================================================
+
+export const CASTLE_COLORS = {
+  player: '#808080', // Grey for both teams
+  enemy: '#808080',
+} as const;
+
+/**
+ * Get castle color based on team
+ */
+export function getCastleColor(_team: Team): string {
+  return '#808080'; // Grey for all castles
+}
+
+// =============================================================================
 // DARK THEME UI COLORS - For React Components
 // =============================================================================
 

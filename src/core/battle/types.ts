@@ -12,6 +12,7 @@
  */
 
 import { Vector2 } from '../physics/Vector2';
+import { MAX_UNIT_SCALE, MIN_UNIT_SCALE, REFERENCE_ARENA_HEIGHT } from './BattleConfig';
 import type { UnitTeam as UnitTeamType } from './units/types';
 
 // =============================================================================
@@ -106,6 +107,24 @@ export interface Projectile {
 }
 
 /**
+ * Legacy castle interface for React rendering.
+ */
+export interface Castle {
+  id: string;
+  team: UnitTeam;
+  position: Vector2;
+  health: number;
+  maxHealth: number;
+  size: number;
+  color: string;
+}
+
+/**
+ * Battle outcome after battle ends.
+ */
+export type BattleOutcome = 'pending' | 'player_victory' | 'enemy_victory' | 'draw';
+
+/**
  * Legacy battle state for React rendering.
  * Contains snapshots of all units and projectiles.
  *
@@ -114,9 +133,11 @@ export interface Projectile {
 export interface BattleState {
   units: Unit[];
   projectiles: Projectile[];
+  castles: Castle[];
   isRunning: boolean;
   hasStarted: boolean;
   waveNumber: number;
+  outcome: BattleOutcome;
 }
 
 // =============================================================================
@@ -128,6 +149,9 @@ export interface BattleState {
  * Used by both entity system and React rendering.
  */
 export function getScaledUnitSize(baseSize: number, arenaHeight: number): number {
-  const scale = Math.max(0.8, Math.min(2, arenaHeight / 600));
+  const scale = Math.max(
+    MIN_UNIT_SCALE,
+    Math.min(MAX_UNIT_SCALE, arenaHeight / REFERENCE_ARENA_HEIGHT)
+  );
   return Math.round(baseSize * scale);
 }

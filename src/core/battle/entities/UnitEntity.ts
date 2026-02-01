@@ -13,18 +13,23 @@
 import { Vector2 } from '../../physics/Vector2';
 import { getProjectileColor } from '../../theme/colors';
 import {
+  AGGRO_RADIUS,
+  ALLY_AVOIDANCE_DISTANCE_MULTIPLIER,
   ALLY_AVOIDANCE_FORCE,
-  BLOCKED_TARGET_PENALTY,
-  FOCUS_FIRE_BONUS,
-  MAX_FOCUS_FIRE_ALLIES,
+  DIRECTION_CHECK_MULTIPLIER,
   MELEE_ATTACK_RANGE_THRESHOLD,
   MELEE_RANGE_BUFFER,
+  MELEE_SIZE_MULTIPLIER,
+  MIN_MOVE_DISTANCE,
+  PATH_DOT_THRESHOLD,
   UNIT_SPACING,
+  ZONE_HEIGHT_PERCENT,
 } from '../BattleConfig';
 import { clampToArenaInPlace } from '../BoundsEnforcer';
 import { applyShuffle } from '../shuffle';
 import { AttackMode, Unit, UnitStats, UnitTeam, UnitType } from '../types';
 import { BaseEntity } from './BaseEntity';
+import { CastleEntity } from './CastleEntity';
 import { IBattleWorld } from './IBattleWorld';
 
 /**
@@ -41,9 +46,12 @@ export interface UnitData {
   size: number;
   // Combat state
   target: UnitEntity | null;
+  castleTarget: CastleEntity | null;
   attackCooldown: number;
   shuffleDirection: Vector2 | null;
   shuffleTimer: number;
+  // Once true, unit permanently seeks targets instead of marching
+  seekMode: boolean;
 }
 
 /**
@@ -88,6 +96,12 @@ export class UnitEntity extends BaseEntity {
   set target(value: UnitEntity | null) {
     this.data.target = value;
   }
+  get castleTarget(): CastleEntity | null {
+    return this.data.castleTarget;
+  }
+  set castleTarget(value: CastleEntity | null) {
+    this.data.castleTarget = value;
+  }
   get attackCooldown(): number {
     return this.data.attackCooldown;
   }
@@ -108,6 +122,12 @@ export class UnitEntity extends BaseEntity {
   set shuffleTimer(value: number) {
     this.data.shuffleTimer = value;
   }
+  get seekMode(): boolean {
+    return this.data.seekMode;
+  }
+  set seekMode(value: boolean) {
+    this.data.seekMode = value;
+  }
 
   /**
    * Get the world as IBattleWorld for battle-specific queries.
@@ -119,11 +139,13 @@ export class UnitEntity extends BaseEntity {
   /**
    * Main update loop - called every frame.
    * Godot: _process(delta)
+   *
+   * Note: Death is handled by takeDamage() which emits the 'killed' event.
+   * We only check if already destroyed to skip processing dead units.
    */
   override update(delta: number): void {
-    if (this.health <= 0) {
-      this.markDestroyed();
-      this.emit({ type: 'killed', entity: this });
+    // Skip if already destroyed (death is handled by takeDamage)
+    if (this._destroyed || this.health <= 0) {
       return;
     }
 
@@ -195,10 +217,186 @@ export class UnitEntity extends BaseEntity {
     const world = this.getBattleWorld();
     if (!world) return;
 
-    // Find new target if none or target is dead
-    if (!this.target || this.target.isDestroyed() || this.target.health <= 0) {
-      this.target = this.findBestTarget();
+    // Clear dead/destroyed targets
+    if (this.target && (this.target.isDestroyed() || this.target.health <= 0)) {
+      this.target = null;
     }
+    if (this.castleTarget && (this.castleTarget.isDestroyed() || this.castleTarget.health <= 0)) {
+      this.castleTarget = null;
+    }
+
+    // If already have a valid unit target, keep it (prioritize units over castles)
+    if (this.target) {
+      this.castleTarget = null;
+      return;
+    }
+
+    // Check if unit should permanently enter seek mode
+    if (!this.seekMode && this.isDeepInEnemyZone()) {
+      this.seekMode = true;
+    }
+
+    // Phase 1: Check for targets within aggro radius (always active)
+    const nearestUnitInRange = this.findTargetInAggroRadius();
+    const nearestCastleInRange = this.findCastleInAggroRadius();
+
+    if (nearestUnitInRange || nearestCastleInRange) {
+      // Something in aggro range - target the closest one
+      this.setClosestTarget(nearestUnitInRange, nearestCastleInRange);
+      return;
+    }
+
+    // Phase 2: In seek mode - hunt down nearest target anywhere
+    if (this.seekMode) {
+      const nearestUnit = this.findNearestUnit();
+      const nearestCastle = this.findNearestCastle();
+
+      if (nearestUnit || nearestCastle) {
+        this.setClosestTarget(nearestUnit, nearestCastle);
+        return;
+      }
+    }
+
+    // Not in seek mode and nothing in aggro range - will march forward
+    this.castleTarget = null;
+  }
+
+  /**
+   * Check if unit is deep into the enemy's deployment zone (past midway).
+   * Player units: past midway of top zone (Y < zoneHeight / 2)
+   * Enemy units: past midway of bottom zone (Y > height - zoneHeight / 2)
+   */
+  private isDeepInEnemyZone(): boolean {
+    const world = this.getBattleWorld();
+    if (!world) return false;
+
+    const bounds = world.getArenaBounds();
+    if (!bounds) return false;
+
+    const zoneHeight = bounds.height * ZONE_HEIGHT_PERCENT;
+
+    if (this.team === 'player') {
+      // Player advances upward - deep when past midway of enemy zone
+      return this.position.y < zoneHeight / 2;
+    } else {
+      // Enemy advances downward - deep when past midway of player zone
+      return this.position.y > bounds.height - zoneHeight / 2;
+    }
+  }
+
+  /**
+   * Set the closest target from a unit and/or castle option.
+   */
+  private setClosestTarget(unit: UnitEntity | null, castle: CastleEntity | null): void {
+    if (unit && castle) {
+      const unitDist = this.position.distanceTo(unit.position);
+      const castleDist = this.position.distanceTo(castle.position);
+      if (unitDist <= castleDist) {
+        this.target = unit;
+        this.castleTarget = null;
+      } else {
+        this.target = null;
+        this.castleTarget = castle;
+      }
+    } else if (unit) {
+      this.target = unit;
+      this.castleTarget = null;
+    } else if (castle) {
+      this.target = null;
+      this.castleTarget = castle;
+    }
+  }
+
+  /**
+   * Find any enemy unit within aggro radius.
+   */
+  private findTargetInAggroRadius(): UnitEntity | null {
+    const world = this.getBattleWorld();
+    if (!world) return null;
+
+    const enemies = world.getEnemiesOf(this);
+    let nearest: UnitEntity | null = null;
+    let nearestDist = AGGRO_RADIUS;
+
+    for (const enemy of enemies) {
+      if (enemy.health <= 0) continue;
+      const dist = this.position.distanceTo(enemy.position);
+      if (dist < nearestDist) {
+        nearestDist = dist;
+        nearest = enemy;
+      }
+    }
+
+    return nearest;
+  }
+
+  /**
+   * Find any enemy castle within aggro radius.
+   */
+  private findCastleInAggroRadius(): CastleEntity | null {
+    const world = this.getBattleWorld();
+    if (!world) return null;
+
+    const castles = world.getEnemyCastlesOf(this);
+    let nearest: CastleEntity | null = null;
+    let nearestDist = AGGRO_RADIUS;
+
+    for (const castle of castles) {
+      if (castle.health <= 0) continue;
+      const dist = this.position.distanceTo(castle.position);
+      if (dist < nearestDist) {
+        nearestDist = dist;
+        nearest = castle;
+      }
+    }
+
+    return nearest;
+  }
+
+  /**
+   * Find the nearest enemy unit (no distance limit).
+   */
+  private findNearestUnit(): UnitEntity | null {
+    const world = this.getBattleWorld();
+    if (!world) return null;
+
+    const enemies = world.getEnemiesOf(this);
+    let nearest: UnitEntity | null = null;
+    let nearestDist = Infinity;
+
+    for (const enemy of enemies) {
+      if (enemy.health <= 0) continue;
+      const dist = this.position.distanceTo(enemy.position);
+      if (dist < nearestDist) {
+        nearestDist = dist;
+        nearest = enemy;
+      }
+    }
+
+    return nearest;
+  }
+
+  /**
+   * Find the nearest enemy castle (no distance limit).
+   */
+  private findNearestCastle(): CastleEntity | null {
+    const world = this.getBattleWorld();
+    if (!world) return null;
+
+    const castles = world.getEnemyCastlesOf(this);
+    let nearest: CastleEntity | null = null;
+    let nearestDist = Infinity;
+
+    for (const castle of castles) {
+      if (castle.health <= 0) continue;
+      const dist = this.position.distanceTo(castle.position);
+      if (dist < nearestDist) {
+        nearestDist = dist;
+        nearest = castle;
+      }
+    }
+
+    return nearest;
   }
 
   private updateCombat(delta: number): void {
@@ -208,39 +406,133 @@ export class UnitEntity extends BaseEntity {
     }
 
     const world = this.getBattleWorld();
-    if (!this.target || !world) return;
+    if (!world) return;
 
-    const distanceToTarget = this.position.distanceTo(this.target.position);
-    const attackMode = this.getAttackMode(distanceToTarget);
+    // Attack unit if we have a unit target
+    if (this.target) {
+      const distanceToTarget = this.position.distanceTo(this.target.position);
+      const attackMode = this.getAttackMode(distanceToTarget);
 
-    if (attackMode) {
-      const effectiveRange = attackMode.range + this.size + this.target.size;
-      const inRange = distanceToTarget <= effectiveRange;
+      if (attackMode) {
+        const effectiveRange = attackMode.range + this.size + this.target.size;
+        const inRange = distanceToTarget <= effectiveRange;
 
-      if (inRange && this.attackCooldown <= 0) {
-        this.performAttack(this.target, attackMode);
-        this.attackCooldown = 1 / attackMode.attackSpeed;
+        if (inRange && this.attackCooldown <= 0) {
+          this.performAttack(this.target, attackMode);
+          this.attackCooldown = 1 / attackMode.attackSpeed;
+        }
+      }
+      return;
+    }
+
+    // Attack castle if we have a castle target
+    if (this.castleTarget) {
+      const distanceToCastle = this.position.distanceTo(this.castleTarget.position);
+      const attackMode = this.getAttackMode(distanceToCastle);
+
+      if (attackMode) {
+        const effectiveRange = attackMode.range + this.size + this.castleTarget.size;
+        const inRange = distanceToCastle <= effectiveRange;
+
+        if (inRange && this.attackCooldown <= 0) {
+          this.performCastleAttack(this.castleTarget, attackMode);
+          this.attackCooldown = 1 / attackMode.attackSpeed;
+        }
       }
     }
   }
 
   private updateMovement(delta: number): void {
     const world = this.getBattleWorld();
-    if (!this.target || !world) return;
+    if (!world) return;
 
-    const distanceToTarget = this.position.distanceTo(this.target.position);
-    const attackMode = this.getAttackMode(distanceToTarget);
-    const effectiveRange = attackMode
-      ? attackMode.range + this.size + this.target.size
-      : this.getMaxRange() + this.size + this.target.size;
-
-    if (distanceToTarget > effectiveRange) {
-      // Need to move closer
-      this.moveWithFormation(this.target.position, delta);
-    } else if (this.isInMeleeMode(distanceToTarget)) {
-      // In melee range - apply combat shuffle
-      this.applyCombatShuffle(delta);
+    // No target - march straight forward toward enemy zone
+    if (!this.target && !this.castleTarget) {
+      this.marchForward(delta);
+      return;
     }
+
+    // Movement toward unit target
+    if (this.target) {
+      const distanceToTarget = this.position.distanceTo(this.target.position);
+      const attackMode = this.getAttackMode(distanceToTarget);
+      const effectiveRange = attackMode
+        ? attackMode.range + this.size + this.target.size
+        : this.getMaxRange() + this.size + this.target.size;
+
+      if (distanceToTarget > effectiveRange) {
+        // Need to move closer
+        this.moveWithFormation(this.target.position, delta);
+      } else if (this.isInMeleeMode(distanceToTarget)) {
+        // In melee range - apply combat shuffle
+        this.applyCombatShuffle(delta);
+      }
+      return;
+    }
+
+    // Movement toward castle target
+    if (this.castleTarget) {
+      const distanceToCastle = this.position.distanceTo(this.castleTarget.position);
+      const attackMode = this.getAttackMode(distanceToCastle);
+      const effectiveRange = attackMode
+        ? attackMode.range + this.size + this.castleTarget.size
+        : this.getMaxRange() + this.size + this.castleTarget.size;
+
+      if (distanceToCastle > effectiveRange) {
+        // Need to move closer to castle
+        this.moveWithFormation(this.castleTarget.position, delta);
+      }
+      // No shuffle when attacking castles - they don't attack back
+    }
+  }
+
+  /**
+   * March straight forward toward enemy deployment zone.
+   * Player units move up (decreasing Y), enemy units move down (increasing Y).
+   */
+  private marchForward(delta: number): void {
+    const world = this.getBattleWorld();
+    if (!world) return;
+
+    // Determine forward direction based on team
+    const forwardY = this.team === 'player' ? -1 : 1;
+    const forwardDir = new Vector2(0, forwardY);
+
+    // Apply ally avoidance while marching
+    const allies = world.getAlliesOf(this);
+    let avoidance = Vector2.zero();
+
+    for (const ally of allies) {
+      if (ally.id === this.id || ally.health <= 0) continue;
+
+      const toAlly = this.position.subtract(ally.position);
+      const dist = toAlly.magnitude();
+      const minDist = (this.size + ally.size) * UNIT_SPACING;
+
+      if (dist < minDist * 2 && dist > 0) {
+        // Push away from nearby allies
+        const pushStrength = (minDist * 2 - dist) / (minDist * 2);
+        avoidance = avoidance.add(toAlly.normalize().multiply(pushStrength * ALLY_AVOIDANCE_FORCE));
+      }
+    }
+
+    // Combine forward movement with avoidance
+    let moveDirection = forwardDir.multiply(this.stats.moveSpeed).add(avoidance);
+    const speed = moveDirection.magnitude();
+    if (speed > this.stats.moveSpeed) {
+      moveDirection = moveDirection.normalize().multiply(this.stats.moveSpeed);
+    }
+
+    const movement = moveDirection.multiply(delta);
+    const previousPosition = this.position.clone();
+    this.position = this.position.add(movement);
+
+    this.emit({
+      type: 'moved',
+      entity: this,
+      delta: movement,
+      previousPosition,
+    });
   }
 
   private enforceBounds(): void {
@@ -250,45 +542,6 @@ export class UnitEntity extends BaseEntity {
     if (bounds) {
       clampToArenaInPlace(this.position, this.size, bounds);
     }
-  }
-
-  private findBestTarget(): UnitEntity | null {
-    const world = this.getBattleWorld();
-    if (!world) return null;
-
-    const enemies = world.getEnemiesOf(this);
-    if (enemies.length === 0) return null;
-
-    let best: UnitEntity | null = null;
-    let bestScore = -Infinity;
-
-    for (const enemy of enemies) {
-      if (enemy.health <= 0) continue;
-
-      const dist = this.position.distanceTo(enemy.position);
-      let score = -dist;
-
-      // Bonus for enemies already engaged (focus fire)
-      const allies = world.getAlliesOf(this);
-      const alliesTargeting = allies.filter((a) => a.target === enemy && a.id !== this.id).length;
-      if (alliesTargeting > 0 && alliesTargeting < MAX_FOCUS_FIRE_ALLIES) {
-        score += FOCUS_FIRE_BONUS;
-      }
-
-      // For ranged units, prefer unblocked targets
-      if (this.stats.ranged) {
-        if (world.isPathBlocked(this.position, enemy.position, this)) {
-          score -= BLOCKED_TARGET_PENALTY;
-        }
-      }
-
-      if (score > bestScore) {
-        bestScore = score;
-        best = enemy;
-      }
-    }
-
-    return best;
   }
 
   private getAttackMode(distanceToTarget: number): AttackMode | null {
@@ -353,6 +606,27 @@ export class UnitEntity extends BaseEntity {
     }
   }
 
+  private performCastleAttack(castle: CastleEntity, attackMode: AttackMode): void {
+    const isMelee = attackMode.range <= MELEE_ATTACK_RANGE_THRESHOLD;
+
+    if (isMelee) {
+      // Direct damage
+      castle.takeDamage(attackMode.damage, this);
+    } else {
+      // Spawn projectile at castle
+      const world = this.getBattleWorld();
+      if (world) {
+        world.spawnProjectile(
+          this.position.clone(),
+          castle.position.clone(),
+          attackMode.damage,
+          this.team,
+          getProjectileColor(this.team)
+        );
+      }
+    }
+  }
+
   private moveWithFormation(targetPos: Vector2, delta: number): void {
     const world = this.getBattleWorld();
     if (!world) return;
@@ -360,7 +634,7 @@ export class UnitEntity extends BaseEntity {
     const previousPosition = this.position.clone();
     const toTarget = targetPos.subtract(this.position);
     const distToTarget = toTarget.magnitude();
-    if (distToTarget < 1) return;
+    if (distToTarget < MIN_MOVE_DISTANCE) return;
 
     let moveDirection = toTarget.normalize();
 
@@ -377,7 +651,7 @@ export class UnitEntity extends BaseEntity {
 
       if (dist < minDist * 2 && dist > 0) {
         const dot = moveDirection.dot(toAlly.normalize().multiply(-1));
-        if (dot > 0.3) {
+        if (dot > PATH_DOT_THRESHOLD) {
           const perpendicular = new Vector2(-moveDirection.y, moveDirection.x);
           const leftClear = this.isDirectionClear(perpendicular, allies);
           const rightClear = this.isDirectionClear(perpendicular.multiply(-1), allies);
@@ -416,7 +690,7 @@ export class UnitEntity extends BaseEntity {
   }
 
   private isDirectionClear(direction: Vector2, allies: UnitEntity[]): boolean {
-    const checkDist = this.size * 3;
+    const checkDist = this.size * DIRECTION_CHECK_MULTIPLIER;
     const checkPos = this.position.add(direction.normalize().multiply(checkDist));
 
     for (const ally of allies) {

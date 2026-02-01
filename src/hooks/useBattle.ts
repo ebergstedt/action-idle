@@ -54,9 +54,11 @@ export function useBattle(): UseBattleReturn {
   const [state, setState] = useState<BattleState>({
     units: [],
     projectiles: [],
+    castles: [],
     isRunning: false,
     hasStarted: false,
     waveNumber: 1,
+    outcome: 'pending',
   });
   const [stats, setStats] = useState<BattleStatistics>(EMPTY_STATS);
   const [selectedUnitIds, setSelectedUnitIds] = useState<string[]>([]);
@@ -160,6 +162,9 @@ export function useBattle(): UseBattleReturn {
     if (statsRef.current) {
       statsRef.current.attach(engine.getWorld());
     }
+
+    // Spawn castles for both teams
+    engine.spawnCastles();
 
     // Spawn allied army using formation
     // Note: BattleStats auto-subscribes to new units via world events

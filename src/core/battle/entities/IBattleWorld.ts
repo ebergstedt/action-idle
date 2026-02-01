@@ -11,6 +11,7 @@ import { Vector2 } from '../../physics/Vector2';
 import { EntityBounds } from '../BoundsEnforcer';
 import { UnitTeam } from '../units/types';
 import { IEntityWorld } from './BaseEntity';
+import { CastleEntity } from './CastleEntity';
 import { UnitEntity } from './UnitEntity';
 
 /**
@@ -24,6 +25,11 @@ export interface IBattleWorld extends IEntityWorld {
   getUnitsByTeam(team: UnitTeam): UnitEntity[];
   getEnemiesOf(unit: UnitEntity): UnitEntity[];
   getAlliesOf(unit: UnitEntity): UnitEntity[];
+
+  // Castle queries
+  getCastles(): readonly CastleEntity[];
+  getCastlesByTeam(team: UnitTeam): CastleEntity[];
+  getEnemyCastlesOf(unit: UnitEntity): CastleEntity[];
 
   // Combat helpers
   isPathBlocked(from: Vector2, to: Vector2, excludeUnit: UnitEntity): boolean;

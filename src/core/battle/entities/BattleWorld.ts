@@ -10,7 +10,13 @@
  */
 
 import { Vector2 } from '../../physics/Vector2';
-import { SEPARATION_FORCE, UNIT_SPACING } from '../BattleConfig';
+import {
+  ALLY_PUSH_MULTIPLIER,
+  ENEMY_PUSH_MULTIPLIER,
+  PATH_BLOCK_RADIUS_MULTIPLIER,
+  SEPARATION_FORCE,
+  UNIT_SPACING,
+} from '../BattleConfig';
 import { EntityBounds } from '../BoundsEnforcer';
 import { UnitTeam } from '../units/types';
 import {
@@ -24,6 +30,7 @@ import { IEntityWorld } from './BaseEntity';
 import { IBattleWorld } from './IBattleWorld';
 import { UnitEntity } from './UnitEntity';
 import { ProjectileEntity, createProjectile } from './ProjectileEntity';
+import { CastleEntity } from './CastleEntity';
 import { WorldEventEmitter } from './EventEmitter';
 
 /**
@@ -33,6 +40,7 @@ import { WorldEventEmitter } from './EventEmitter';
 export class BattleWorld implements IEntityWorld, IBattleWorld, IWorldEventEmitter {
   private units: UnitEntity[] = [];
   private projectiles: ProjectileEntity[] = [];
+  private castles: CastleEntity[] = [];
   private nextProjectileId = 1;
   private arenaBounds: EntityBounds | null = null;
   private worldEvents = new WorldEventEmitter();
@@ -59,6 +67,17 @@ export class BattleWorld implements IEntityWorld, IBattleWorld, IWorldEventEmitt
     projectile.init();
     this.projectiles.push(projectile);
     this.worldEvents.emitWorld({ type: 'entity_added', entity: projectile });
+  }
+
+  /**
+   * Add a castle to the world.
+   * Emits 'entity_added' world event.
+   */
+  addCastle(castle: CastleEntity): void {
+    castle.setWorld(this);
+    castle.init();
+    this.castles.push(castle);
+    this.worldEvents.emitWorld({ type: 'entity_added', entity: castle });
   }
 
   /**
@@ -90,8 +109,14 @@ export class BattleWorld implements IEntityWorld, IBattleWorld, IWorldEventEmitt
       proj.destroy();
       proj.setWorld(null);
     }
+    for (const castle of this.castles) {
+      this.worldEvents.emitWorld({ type: 'entity_removed', entity: castle });
+      castle.destroy();
+      castle.setWorld(null);
+    }
     this.units = [];
     this.projectiles = [];
+    this.castles = [];
     this.nextProjectileId = 1;
   }
 
@@ -115,7 +140,12 @@ export class BattleWorld implements IEntityWorld, IBattleWorld, IWorldEventEmitt
       proj.update(delta);
     }
 
-    // Phase 4: Remove destroyed entities
+    // Phase 4: Update castles (just checks for death)
+    for (const castle of this.castles) {
+      castle.update(delta);
+    }
+
+    // Phase 5: Remove destroyed entities
     this.removeDestroyedEntities();
   }
 
@@ -138,7 +168,8 @@ export class BattleWorld implements IEntityWorld, IBattleWorld, IWorldEventEmitt
           const pushAmount = overlap * SEPARATION_FORCE * delta;
 
           // Push both units, but less if they're enemies
-          const pushMultiplier = unitA.team === unitB.team ? 0.5 : 0.3;
+          const pushMultiplier =
+            unitA.team === unitB.team ? ALLY_PUSH_MULTIPLIER : ENEMY_PUSH_MULTIPLIER;
 
           unitA.position = unitA.position.add(pushDir.multiply(pushAmount * pushMultiplier));
           unitB.position = unitB.position.subtract(pushDir.multiply(pushAmount * pushMultiplier));
@@ -151,7 +182,10 @@ export class BattleWorld implements IEntityWorld, IBattleWorld, IWorldEventEmitt
     // Remove destroyed units
     this.units = this.units.filter((unit) => {
       if (unit.isDestroyed()) {
+        // Emit world event first so subscribers can react before entity cleanup
         this.worldEvents.emitWorld({ type: 'entity_removed', entity: unit });
+        // destroy() emits 'destroyed' event and clears entity's listeners
+        unit.destroy();
         unit.setWorld(null);
         return false;
       }
@@ -162,7 +196,19 @@ export class BattleWorld implements IEntityWorld, IBattleWorld, IWorldEventEmitt
     this.projectiles = this.projectiles.filter((proj) => {
       if (proj.isDestroyed()) {
         this.worldEvents.emitWorld({ type: 'entity_removed', entity: proj });
+        proj.destroy();
         proj.setWorld(null);
+        return false;
+      }
+      return true;
+    });
+
+    // Remove destroyed castles
+    this.castles = this.castles.filter((castle) => {
+      if (castle.isDestroyed()) {
+        this.worldEvents.emitWorld({ type: 'entity_removed', entity: castle });
+        castle.destroy();
+        castle.setWorld(null);
         return false;
       }
       return true;
@@ -172,7 +218,7 @@ export class BattleWorld implements IEntityWorld, IBattleWorld, IWorldEventEmitt
   // === IEntityWorld Implementation ===
 
   getEntities(): readonly IEntity[] {
-    return [...this.units, ...this.projectiles];
+    return [...this.units, ...this.projectiles, ...this.castles];
   }
 
   query<T extends IEntity>(predicate: (entity: IEntity) => entity is T): T[] {
@@ -209,12 +255,26 @@ export class BattleWorld implements IEntityWorld, IBattleWorld, IWorldEventEmitt
     );
   }
 
+  // === Castle Queries ===
+
+  getCastles(): readonly CastleEntity[] {
+    return this.castles;
+  }
+
+  getCastlesByTeam(team: UnitTeam): CastleEntity[] {
+    return this.castles.filter((c) => c.team === team && !c.isDestroyed());
+  }
+
+  getEnemyCastlesOf(unit: UnitEntity): CastleEntity[] {
+    return this.castles.filter((c) => c.team !== unit.team && !c.isDestroyed() && c.health > 0);
+  }
+
   isPathBlocked(from: Vector2, to: Vector2, excludeUnit: UnitEntity): boolean {
     const allies = this.getAlliesOf(excludeUnit);
 
     for (const ally of allies) {
       const dist = this.pointToLineDistance(ally.position, from, to);
-      if (dist < ally.size * 1.5) {
+      if (dist < ally.size * PATH_BLOCK_RADIUS_MULTIPLIER) {
         const toTarget = to.subtract(from);
         const toAlly = ally.position.subtract(from);
         const dot = toTarget.dot(toAlly);
@@ -284,20 +344,28 @@ export class BattleWorld implements IEntityWorld, IBattleWorld, IWorldEventEmitt
 
   /**
    * Check if battle is over.
+   * Win condition: A side loses when ALL their units AND castles are destroyed.
    */
   isBattleOver(): { over: boolean; winner: UnitTeam | null } {
-    const playerAlive = this.getPlayerUnits().length > 0;
-    const enemyAlive = this.getEnemyUnits().length > 0;
+    const playerCastlesAlive = this.getCastlesByTeam('player').length > 0;
+    const enemyCastlesAlive = this.getCastlesByTeam('enemy').length > 0;
+    const playerUnitsAlive = this.getPlayerUnits().length > 0;
+    const enemyUnitsAlive = this.getEnemyUnits().length > 0;
 
-    if (!playerAlive && !enemyAlive) {
+    // A side loses when they have no units AND no castles remaining
+    const playerLost = !playerUnitsAlive && !playerCastlesAlive;
+    const enemyLost = !enemyUnitsAlive && !enemyCastlesAlive;
+
+    if (playerLost && enemyLost) {
       return { over: true, winner: null }; // Draw
     }
-    if (!playerAlive) {
+    if (playerLost) {
       return { over: true, winner: 'enemy' };
     }
-    if (!enemyAlive) {
+    if (enemyLost) {
       return { over: true, winner: 'player' };
     }
+
     return { over: false, winner: null };
   }
 

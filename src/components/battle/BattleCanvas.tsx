@@ -8,7 +8,7 @@
  */
 
 import { useEffect, useRef, useCallback, useState } from 'react';
-import { BattleState, Unit, Projectile, ZONE_HEIGHT_PERCENT } from '../../core/battle';
+import { BattleState, Unit, Projectile, Castle, ZONE_HEIGHT_PERCENT } from '../../core/battle';
 import { Vector2 } from '../../core/physics/Vector2';
 import { ARENA_COLORS } from '../../core/theme/colors';
 import {
@@ -68,7 +68,8 @@ export function BattleCanvas({
     };
   }, [width, height]);
 
-  const getMousePos = useCallback((e: React.MouseEvent<HTMLCanvasElement>): Vector2 => {
+  // Get mouse position relative to canvas - works with any MouseEvent
+  const getMousePos = useCallback((e: MouseEvent | React.MouseEvent): Vector2 => {
     const canvas = canvasRef.current;
     if (!canvas) return new Vector2(0, 0);
     const rect = canvas.getBoundingClientRect();
@@ -177,14 +178,74 @@ export function BattleCanvas({
     dragSessionRef.current = null;
   }, [boxSelectSession, state.units, onSelectUnit, onSelectUnits]);
 
-  const handleMouseLeave = useCallback(() => {
-    // Cancel box selection on leave
-    setBoxSelectSession(null);
+  // Document-level event handlers for capturing mouse events outside canvas
+  // This ensures drag/box-select works even when mouse leaves the canvas
+  useEffect(() => {
+    if (!isDragging && !boxSelectSession) return;
 
-    // End unit drag
-    setIsDragging(false);
-    dragSessionRef.current = null;
-  }, []);
+    const handleDocumentMouseMove = (e: MouseEvent) => {
+      const pos = getMousePos(e);
+
+      // Handle box selection
+      if (boxSelectSession) {
+        setBoxSelectSession(updateBoxSelect(boxSelectSession, pos));
+        return;
+      }
+
+      // Handle unit dragging
+      if (!isDragging || !dragSessionRef.current) return;
+
+      const session = dragSessionRef.current;
+      const bounds = getDragBounds();
+
+      if (isMultiDrag(session) && onUnitsMove) {
+        const result = calculateDragPositions(session, pos, bounds, state.units);
+        onUnitsMove(result.moves);
+      } else if (onUnitMove) {
+        const newPos = calculateSingleDragPosition(session, pos, bounds);
+        if (newPos) {
+          onUnitMove(session.anchorUnitId, newPos);
+        }
+      }
+    };
+
+    const handleDocumentMouseUp = () => {
+      // Finalize box selection
+      if (boxSelectSession) {
+        if (isBoxSelectActive(boxSelectSession)) {
+          const box = getSelectionBox(boxSelectSession);
+          const selectedIds = getUnitsInBox(box, state.units);
+          onSelectUnits?.(selectedIds);
+        } else {
+          onSelectUnit?.(null);
+        }
+        setBoxSelectSession(null);
+      }
+
+      // End unit drag
+      setIsDragging(false);
+      dragSessionRef.current = null;
+    };
+
+    // Add document-level listeners
+    document.addEventListener('mousemove', handleDocumentMouseMove);
+    document.addEventListener('mouseup', handleDocumentMouseUp);
+
+    return () => {
+      document.removeEventListener('mousemove', handleDocumentMouseMove);
+      document.removeEventListener('mouseup', handleDocumentMouseUp);
+    };
+  }, [
+    isDragging,
+    boxSelectSession,
+    getMousePos,
+    getDragBounds,
+    state.units,
+    onUnitMove,
+    onUnitsMove,
+    onSelectUnit,
+    onSelectUnits,
+  ]);
 
   // Rendering
   useEffect(() => {
@@ -231,6 +292,11 @@ export function BattleCanvas({
     ctx.lineTo(width, height - zoneHeight);
     ctx.stroke();
 
+    // Castles (draw before units so units appear on top)
+    for (const castle of state.castles) {
+      drawCastle(ctx, castle);
+    }
+
     // Projectiles
     for (const proj of state.projectiles) {
       drawProjectile(ctx, proj);
@@ -244,9 +310,14 @@ export function BattleCanvas({
       drawUnitBody(ctx, unit, isSelected, isBeingDragged);
     }
 
-    // Health bars (separate pass)
+    // Health bars (separate pass - units)
     for (const unit of state.units) {
       drawHealthBar(ctx, unit);
+    }
+
+    // Health bars for castles (separate pass)
+    for (const castle of state.castles) {
+      drawCastleHealthBar(ctx, castle);
     }
 
     // Draw box selection rectangle
@@ -261,12 +332,14 @@ export function BattleCanvas({
       ref={canvasRef}
       width={width}
       height={height}
-      className="border border-gray-700 rounded-lg cursor-pointer"
+      tabIndex={0}
+      className="border border-gray-700 rounded-lg cursor-pointer outline-none"
+      style={{ touchAction: 'none' }}
       onMouseDown={handleMouseDown}
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
-      onMouseLeave={handleMouseLeave}
       onDoubleClick={handleDoubleClick}
+      onDragStart={(e) => e.preventDefault()}
     />
   );
 }
@@ -397,6 +470,75 @@ function drawSelectionBox(
   ctx.lineWidth = 2;
   ctx.setLineDash([5, 5]);
   ctx.strokeRect(box.minX, box.minY, width, height);
+
+  ctx.restore();
+}
+
+function drawCastle(ctx: CanvasRenderingContext2D, castle: Castle): void {
+  const { position, color, size } = castle;
+
+  ctx.save();
+  ctx.translate(position.x, position.y);
+
+  // Castle base - larger filled rectangle
+  ctx.fillStyle = color;
+  ctx.strokeStyle = '#000000';
+  ctx.lineWidth = 3;
+
+  // Draw castle as a fortified structure (pentagon shape for tower look)
+  const halfSize = size;
+  ctx.beginPath();
+  // Bottom left
+  ctx.moveTo(-halfSize, halfSize);
+  // Bottom right
+  ctx.lineTo(halfSize, halfSize);
+  // Right wall
+  ctx.lineTo(halfSize, -halfSize * 0.3);
+  // Right battlement
+  ctx.lineTo(halfSize * 0.6, -halfSize);
+  // Top
+  ctx.lineTo(0, -halfSize * 0.6);
+  // Left battlement
+  ctx.lineTo(-halfSize * 0.6, -halfSize);
+  // Left wall
+  ctx.lineTo(-halfSize, -halfSize * 0.3);
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+
+  // Castle door/gate
+  ctx.fillStyle = '#4A3520';
+  const doorWidth = size * 0.4;
+  const doorHeight = size * 0.6;
+  ctx.fillRect(-doorWidth / 2, halfSize - doorHeight, doorWidth, doorHeight);
+  ctx.strokeRect(-doorWidth / 2, halfSize - doorHeight, doorWidth, doorHeight);
+
+  ctx.restore();
+}
+
+function drawCastleHealthBar(ctx: CanvasRenderingContext2D, castle: Castle): void {
+  const { position, size, health, maxHealth } = castle;
+
+  ctx.save();
+  ctx.translate(position.x, position.y);
+
+  const barWidth = size * 3;
+  const barHeight = 8;
+  const barY = -size - 25;
+
+  // Background
+  ctx.fillStyle = ARENA_COLORS.healthBarBg;
+  ctx.fillRect(-barWidth / 2 - 1, barY - 1, barWidth + 2, barHeight + 2);
+
+  // Fill
+  const healthPercent = health / maxHealth;
+  ctx.fillStyle =
+    healthPercent > 0.5
+      ? ARENA_COLORS.healthHigh
+      : healthPercent > 0.25
+        ? ARENA_COLORS.healthMedium
+        : ARENA_COLORS.healthLow;
+  ctx.fillRect(-barWidth / 2, barY, barWidth * healthPercent, barHeight);
 
   ctx.restore();
 }
