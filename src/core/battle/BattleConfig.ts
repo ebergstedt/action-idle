@@ -129,7 +129,7 @@ export const INK_SPLATTER_LIFETIME = 3.0;
 /**
  * Ink splatter maximum opacity (death splatters).
  */
-export const INK_SPLATTER_OPACITY = 0.8;
+export const INK_SPLATTER_OPACITY = 1.0;
 
 /**
  * Number of ink splatter particles spawned on hit.
