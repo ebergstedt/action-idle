@@ -1,18 +1,31 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { BattleEngine, BattleState, UnitType } from '../core/battle';
+import {
+  BattleEngine,
+  BattleState,
+  CLASSIC_FORMATION,
+  calculateAlliedSpawnPositions,
+  calculateEnemySpawnPositions,
+  getEnemyCompositionForWave,
+} from '../core/battle';
 import { Vector2 } from '../core/physics/Vector2';
 
 const ZONE_HEIGHT_PERCENT = 0.25; // Must match BattleCanvas
 
+export type BattleSpeed = 0.5 | 1 | 5;
+
 export interface UseBattleReturn {
   state: BattleState;
-  selectedUnitId: string | null;
+  selectedUnitIds: string[];
+  battleSpeed: BattleSpeed;
   start: () => void;
   stop: () => void;
   reset: () => void;
   spawnWave: (arenaWidth: number, arenaHeight: number) => void;
   moveUnit: (unitId: string, position: Vector2) => void;
+  moveUnits: (moves: Array<{ unitId: string; position: Vector2 }>) => void;
   selectUnit: (unitId: string | null) => void;
+  selectUnits: (unitIds: string[]) => void;
+  setBattleSpeed: (speed: BattleSpeed) => void;
 }
 
 export function useBattle(): UseBattleReturn {
@@ -24,7 +37,14 @@ export function useBattle(): UseBattleReturn {
     hasStarted: false,
     waveNumber: 1,
   });
-  const [selectedUnitId, setSelectedUnitId] = useState<string | null>(null);
+  const [selectedUnitIds, setSelectedUnitIds] = useState<string[]>([]);
+  const [battleSpeed, setBattleSpeed] = useState<BattleSpeed>(1);
+  const battleSpeedRef = useRef<BattleSpeed>(1);
+
+  // Keep ref in sync for use in game loop
+  useEffect(() => {
+    battleSpeedRef.current = battleSpeed;
+  }, [battleSpeed]);
 
   // Initialize engine
   useEffect(() => {
@@ -46,7 +66,9 @@ export function useBattle(): UseBattleReturn {
       lastTime = currentTime;
 
       if (engineRef.current) {
-        engineRef.current.tick(delta);
+        // Apply battle speed multiplier
+        const scaledDelta = delta * battleSpeedRef.current;
+        engineRef.current.tick(scaledDelta);
         setState({ ...engineRef.current.getState() });
       }
 
@@ -86,101 +108,27 @@ export function useBattle(): UseBattleReturn {
     if (!engineRef.current) return;
 
     const engine = engineRef.current;
-    const zoneHeight = arenaHeight * ZONE_HEIGHT_PERCENT;
+    const bounds = {
+      width: arenaWidth,
+      height: arenaHeight,
+      zoneHeightPercent: ZONE_HEIGHT_PERCENT,
+    };
 
-    // Unit spacing based on arena size
-    const unitSpacing = Math.max(35, arenaWidth / 30);
-
-    // === ALLIED ARMY - Classic battle formation (10 units max) ===
-    // Front (toward enemy): Warriors (melee infantry)
-    // Back (toward our side): Archers (ranged)
-    // Flanks: Knights (cavalry)
-
-    const allyZoneTop = arenaHeight - zoneHeight + 30;
-    const centerX = arenaWidth / 2;
-
-    // Front line - 4 Warriors closest to enemy (lower Y = closer to top/enemy)
-    const frontLineY = allyZoneTop + unitSpacing * 0.5;
-    const warriorCount = 4;
-    const warriorStartX = centerX - ((warriorCount - 1) * unitSpacing) / 2;
-
-    for (let i = 0; i < warriorCount; i++) {
-      const x = warriorStartX + i * unitSpacing;
-      engine.spawnUnit('warrior', 'player', new Vector2(x, frontLineY), arenaHeight);
+    // Spawn allied army using formation
+    const alliedPositions = calculateAlliedSpawnPositions(CLASSIC_FORMATION, bounds);
+    for (const spawn of alliedPositions) {
+      engine.spawnUnit(spawn.type, 'player', spawn.position, arenaHeight);
     }
 
-    // Back line - 4 Archers behind warriors (higher Y = further from enemy)
-    const backLineY = frontLineY + unitSpacing;
-    const archerCount = 4;
-    const archerStartX = centerX - ((archerCount - 1) * unitSpacing) / 2;
-
-    for (let i = 0; i < archerCount; i++) {
-      const x = archerStartX + i * unitSpacing;
-      engine.spawnUnit('archer', 'player', new Vector2(x, backLineY), arenaHeight);
+    // Spawn enemy army
+    const waveNumber = engine.getState().waveNumber;
+    const enemyComposition = getEnemyCompositionForWave(waveNumber);
+    const enemyPositions = calculateEnemySpawnPositions(enemyComposition, bounds);
+    for (const spawn of enemyPositions) {
+      engine.spawnUnit(spawn.type, 'enemy', spawn.position, arenaHeight);
     }
 
-    // Flanks - Knights (cavalry) on left and right sides
-    const flankY = (frontLineY + backLineY) / 2; // Between front and back
-    const flankOffset = unitSpacing * 3; // Distance from center to flanks
-
-    // Left flank - 1 Knight
-    engine.spawnUnit('knight', 'player', new Vector2(centerX - flankOffset, flankY), arenaHeight);
-
-    // Right flank - 1 Knight
-    engine.spawnUnit('knight', 'player', new Vector2(centerX + flankOffset, flankY), arenaHeight);
-
-    // === ENEMY ARMY - Randomized positions (10 units max) ===
-
-    const enemyZoneTop = 30;
-    const enemyZoneBottom = zoneHeight - 30;
-
-    // Enemy composition: 4 warriors, 3 archers, 3 knights = 10 total
-    const enemyComposition: UnitType[] = [
-      'warrior',
-      'warrior',
-      'warrior',
-      'warrior',
-      'archer',
-      'archer',
-      'archer',
-      'knight',
-      'knight',
-      'knight',
-    ];
-
-    // Shuffle enemy composition for variety
-    const shuffled = [...enemyComposition].sort(() => Math.random() - 0.5);
-
-    // Spawn enemies in a loose grid with randomization
-    const margin = 80;
-    const availableWidth = arenaWidth - margin * 2;
-    const availableHeight = enemyZoneBottom - enemyZoneTop;
-
-    // Create a grid-based spawn with jitter for natural look
-    const cols = 4;
-    const rows = 3;
-    const cellWidth = availableWidth / cols;
-    const cellHeight = availableHeight / rows;
-
-    shuffled.forEach((type, index) => {
-      const col = index % cols;
-      const row = Math.floor(index / cols);
-
-      // Base position in grid cell center
-      const baseX = margin + col * cellWidth + cellWidth / 2;
-      const baseY = enemyZoneTop + row * cellHeight + cellHeight / 2;
-
-      // Add randomization within cell (30% of cell size)
-      const jitterX = (Math.random() - 0.5) * cellWidth * 0.6;
-      const jitterY = (Math.random() - 0.5) * cellHeight * 0.6;
-
-      const x = baseX + jitterX;
-      const y = baseY + jitterY;
-
-      engine.spawnUnit(type, 'enemy', new Vector2(x, y), arenaHeight);
-    });
-
-    // Resolve any overlapping units after spawning (with zone clamping)
+    // Resolve any overlapping units after spawning
     engine.resolveOverlaps(30, {
       arenaWidth,
       arenaHeight,
@@ -197,18 +145,35 @@ export function useBattle(): UseBattleReturn {
     }
   }, []);
 
+  const moveUnits = useCallback((moves: Array<{ unitId: string; position: Vector2 }>) => {
+    if (engineRef.current) {
+      for (const { unitId, position } of moves) {
+        engineRef.current.moveUnit(unitId, position);
+      }
+      setState({ ...engineRef.current.getState() });
+    }
+  }, []);
+
   const selectUnit = useCallback((unitId: string | null) => {
-    setSelectedUnitId(unitId);
+    setSelectedUnitIds(unitId ? [unitId] : []);
+  }, []);
+
+  const selectUnits = useCallback((unitIds: string[]) => {
+    setSelectedUnitIds(unitIds);
   }, []);
 
   return {
     state,
-    selectedUnitId,
+    selectedUnitIds,
+    battleSpeed,
     start,
     stop,
     reset,
     spawnWave,
     moveUnit,
+    moveUnits,
     selectUnit,
+    selectUnits,
+    setBattleSpeed,
   };
 }

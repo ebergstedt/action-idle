@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { useBattle } from '../../hooks/useBattle';
+import { useBattle, BattleSpeed } from '../../hooks/useBattle';
 import { BattleCanvas } from './BattleCanvas';
 import { Unit } from '../../core/battle';
 import { UNIT_TYPE_COLORS, UI_COLORS, ARENA_COLORS } from '../../core/theme/colors';
@@ -23,8 +23,20 @@ const styles = {
 };
 
 export function BattleView() {
-  const { state, selectedUnitId, start, stop, reset, spawnWave, moveUnit, selectUnit } =
-    useBattle();
+  const {
+    state,
+    selectedUnitIds,
+    battleSpeed,
+    start,
+    stop,
+    reset,
+    spawnWave,
+    moveUnit,
+    moveUnits,
+    selectUnit,
+    selectUnits,
+    setBattleSpeed,
+  } = useBattle();
 
   const containerRef = useRef<HTMLDivElement>(null);
   const [arenaSize, setArenaSize] = useState({ width: 600, height: 600 });
@@ -86,7 +98,10 @@ export function BattleView() {
 
   const playerCount = state.units.filter((u) => u.team === 'player').length;
   const enemyCount = state.units.filter((u) => u.team === 'enemy').length;
-  const selectedUnit = state.units.find((u) => u.id === selectedUnitId);
+
+  // Only show unit info panel if exactly one unit is selected
+  const selectedUnit =
+    selectedUnitIds.length === 1 ? state.units.find((u) => u.id === selectedUnitIds[0]) : null;
 
   const handleStartBattle = () => {
     start();
@@ -110,8 +125,10 @@ export function BattleView() {
           width={arenaSize.width}
           height={arenaSize.height}
           onUnitMove={moveUnit}
-          selectedUnitId={selectedUnitId}
+          onUnitsMove={moveUnits}
+          selectedUnitIds={selectedUnitIds}
           onSelectUnit={selectUnit}
+          onSelectUnits={selectUnits}
         />
         <div className="flex gap-4 text-sm flex-shrink-0" style={styles.text}>
           <span style={{ color: ARENA_COLORS.healthHigh }}>Allies: {playerCount}</span>
@@ -123,14 +140,16 @@ export function BattleView() {
       {/* Right side - Info Panel */}
       <div className="w-80 flex-shrink-0 rounded-lg p-5 overflow-y-auto" style={styles.panelBg}>
         {selectedUnit ? (
-          <UnitInfoPanel unit={selectedUnit} onDeselect={() => selectUnit(null)} />
+          <UnitInfoPanel unit={selectedUnit} onDeselect={() => selectUnits([])} />
         ) : (
           <ControlsPanel
             isRunning={state.isRunning}
             hasStarted={state.hasStarted}
+            battleSpeed={battleSpeed}
             onStart={handleStartBattle}
             onStop={stop}
             onReset={handleReset}
+            onSpeedChange={setBattleSpeed}
           />
         )}
       </div>
@@ -215,7 +234,7 @@ function UnitInfoPanel({ unit, onDeselect }: UnitInfoPanelProps) {
             </div>
             <div className="flex justify-between">
               <span style={styles.textFaded}>DPS</span>
-              <span style={{ color: UI_COLORS.goldDark, fontWeight: 'bold' }}>
+              <span style={{ color: UI_COLORS.black, fontWeight: 'bold' }}>
                 {(unit.stats.melee.damage * unit.stats.melee.attackSpeed).toFixed(1)}
               </span>
             </div>
@@ -245,7 +264,7 @@ function UnitInfoPanel({ unit, onDeselect }: UnitInfoPanelProps) {
             </div>
             <div className="flex justify-between">
               <span style={styles.textFaded}>DPS</span>
-              <span style={{ color: UI_COLORS.goldDark, fontWeight: 'bold' }}>
+              <span style={{ color: UI_COLORS.black, fontWeight: 'bold' }}>
                 {(unit.stats.ranged.damage * unit.stats.ranged.attackSpeed).toFixed(1)}
               </span>
             </div>
@@ -272,12 +291,24 @@ function UnitInfoPanel({ unit, onDeselect }: UnitInfoPanelProps) {
 interface ControlsPanelProps {
   isRunning: boolean;
   hasStarted: boolean;
+  battleSpeed: BattleSpeed;
   onStart: () => void;
   onStop: () => void;
   onReset: () => void;
+  onSpeedChange: (speed: BattleSpeed) => void;
 }
 
-function ControlsPanel({ isRunning, hasStarted, onStart, onStop, onReset }: ControlsPanelProps) {
+function ControlsPanel({
+  isRunning,
+  hasStarted,
+  battleSpeed,
+  onStart,
+  onStop,
+  onReset,
+  onSpeedChange,
+}: ControlsPanelProps) {
+  const speeds: BattleSpeed[] = [0.5, 1, 5];
+
   return (
     <div className="flex flex-col gap-4" style={styles.text}>
       <h3 className="text-lg font-bold" style={styles.textDark}>
@@ -316,6 +347,33 @@ function ControlsPanel({ isRunning, hasStarted, onStart, onStop, onReset }: Cont
         >
           Reset
         </button>
+      </div>
+
+      {/* Battle Speed Control */}
+      <div className="pt-4" style={{ borderTop: `1px solid ${UI_COLORS.parchmentDark}` }}>
+        <h4 className="text-sm font-semibold mb-2" style={styles.textFaded}>
+          Battle Speed
+        </h4>
+        <div className="flex gap-2">
+          {speeds.map((speed) => (
+            <button
+              key={speed}
+              onClick={() => onSpeedChange(speed)}
+              className="flex-1 px-3 py-1.5 rounded font-semibold text-sm transition-all"
+              style={{
+                backgroundColor:
+                  battleSpeed === speed ? UI_COLORS.goldPrimary : UI_COLORS.parchmentDark,
+                color: UI_COLORS.black,
+                border:
+                  battleSpeed === speed
+                    ? `2px solid ${UI_COLORS.goldDark}`
+                    : '2px solid transparent',
+              }}
+            >
+              {speed}x
+            </button>
+          ))}
+        </div>
       </div>
 
       <div className="pt-4" style={{ borderTop: `1px solid ${UI_COLORS.parchmentDark}` }}>

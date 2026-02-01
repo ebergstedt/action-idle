@@ -47,19 +47,125 @@ Current focus: **Battle System** - unit spawning, formations, combat mechanics.
 
 🟢 = Active development | 🟡 = Dormant (future use)
 
+## Module Design Principles
+
+All code in `/src/core/` must be clean, testable, and directly portable to Godot.
+
+### 1. Single Responsibility
+
+Each module handles ONE concern. Never create god-classes that mix multiple responsibilities:
+
+```typescript
+// ✅ Good - focused modules
+SelectionManager.ts   // Only selection state
+DragController.ts     // Only drag logic
+FormationManager.ts   // Only spawn positioning
+
+// ❌ Bad - god-class
+BattleCanvas.ts       // Selection + dragging + rendering + input + spawning
+```
+
+### 2. Pure Functions Over Stateful Classes
+
+Prefer pure functions that take state and return new state. This maps directly to Godot's functional patterns:
+
+```typescript
+// ✅ Good - pure function, easy to port
+function selectUnit(state: SelectionState, unitId: string): SelectionState {
+  return { selectedIds: [unitId] };
+}
+
+// ❌ Avoid - hidden state makes porting harder
+class SelectionManager {
+  private selectedIds: string[] = [];
+  selectUnit(unitId: string) { this.selectedIds = [unitId]; }
+}
+```
+
+### 3. Thin Presentation Layer
+
+React components must be thin wrappers. All logic lives in `/src/core/`:
+
+```typescript
+// ✅ Component just bridges input to core
+const handleMouseDown = (e: MouseEvent) => {
+  const pos = getMousePos(e);                    // Platform-specific (React)
+  const unit = findUnitAtPosition(pos, units);   // Core module (portable)
+  onSelectUnit(selectUnit(state, unit?.id));     // Core module (portable)
+};
+
+// ❌ Logic embedded in component - not portable
+const handleMouseDown = (e: MouseEvent) => {
+  for (const unit of units) {
+    if (Math.hypot(pos.x - unit.x, pos.y - unit.y) < unit.size) {
+      setSelectedIds([unit.id]);  // React-specific, can't port
+    }
+  }
+};
+```
+
+### 4. Platform-Agnostic Interfaces
+
+Core modules accept simple types (Vector2, arrays), not platform-specific events:
+
+```typescript
+// Core module - works anywhere
+function findUnitAtPosition(pos: Vector2, units: Unit[]): Unit | null
+
+// React converts MouseEvent → Vector2
+// Godot converts InputEventMouse → Vector2
+```
+
+### 5. Design for Godot Translation
+
+Write core code imagining how it translates to GDScript:
+
+| TypeScript | GDScript Equivalent |
+|------------|---------------------|
+| `function foo(state, input): NewState` | `static func foo(state, input) -> NewState` |
+| `interface State { ... }` | `class_name State extends Resource` |
+| `class Registry { static get() }` | `Autoload singleton` |
+| `tick(delta: number)` | `_process(delta: float)` |
+| `new Vector2(x, y)` | `Vector2(x, y)` |
+| `callback: (event) => void` | `signal event_occurred` |
+
+### 6. Data-Driven Content
+
+Game content lives in JSON, loaded by registries:
+- `/src/data/units/*.json` - Unit definitions
+- `/src/data/abilities/*.json` - Ability definitions
+- `/src/data/battle-upgrades/*.json` - Upgrade definitions
+
+This maps to Godot's Resource system - JSON becomes `.tres` files.
+
 ## Key Files
 
 ### Battle System (Active)
 
+**Core Modules (Godot-portable):**
+
 | File | Purpose |
 |------|---------|
 | `src/core/battle/BattleEngine.ts` | Combat simulation - targeting, movement, attacks |
+| `src/core/battle/SelectionManager.ts` | Pure selection state - select, toggle, selectAllOfType |
+| `src/core/battle/DragController.ts` | Multi-unit drag with relative positioning, edge clamping |
+| `src/core/battle/FormationManager.ts` | Formation templates and spawn positioning |
+| `src/core/battle/InputAdapter.ts` | Platform-agnostic input - hit detection |
 | `src/core/battle/types.ts` | Unit stats, visual definitions |
+| `src/core/battle/units/` | Unit definitions, instances, registry, factory |
+| `src/core/battle/modifiers/` | Stat modification system with stacking rules |
+| `src/core/battle/abilities/` | Trigger-based abilities (on_kill, on_hit, etc.) |
+| `src/core/battle/upgrades/` | Battle upgrades with cost scaling |
 | `src/core/theme/colors.ts` | Centralized color palette (Medieval II factions) |
 | `src/core/physics/Vector2.ts` | 2D math utilities for positioning |
-| `src/hooks/useBattle.ts` | React bridge - spawning, game loop, state |
+
+**React Layer (Thin wrappers):**
+
+| File | Purpose |
+|------|---------|
+| `src/hooks/useBattle.ts` | React bridge - calls core modules, manages state |
 | `src/components/battle/BattleView.tsx` | Main battle UI - controls, unit info panel |
-| `src/components/battle/BattleCanvas.tsx` | Canvas rendering - units, zones, projectiles |
+| `src/components/battle/BattleCanvas.tsx` | Canvas rendering - draws units, routes input to core |
 
 ### Economy System (Dormant)
 
@@ -162,6 +268,7 @@ describe('MyFunction', () => {
 5. **Interface-Based Persistence** - `SaveManager` depends on `IPersistenceAdapter`
 6. **Minimum Font Size** - Never use `text-xs` in Tailwind. Minimum is `text-sm` for readability
 7. **Use Theme Colors** - Never use hardcoded hex colors. Always reference `UI_COLORS` or other theme constants from `src/core/theme/colors.ts`
+8. **No Gold/Yellow Text** - Never use gold or yellow colors (`UI_COLORS.goldPrimary`, `UI_COLORS.goldDark`, etc.) for text. They are hard to read on parchment backgrounds. Use `UI_COLORS.black` for text instead
 
 ## Linting & Formatting
 

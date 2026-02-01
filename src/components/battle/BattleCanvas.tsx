@@ -1,18 +1,46 @@
+/**
+ * Battle Canvas
+ *
+ * Thin rendering layer for the battle arena.
+ * All game logic is in /src/core/battle/ - this just renders and bridges input.
+ *
+ * Godot equivalent: A CanvasLayer or Node2D with _draw() override.
+ */
+
 import { useEffect, useRef, useCallback, useState } from 'react';
 import { BattleState, Unit, Projectile } from '../../core/battle';
 import { Vector2 } from '../../core/physics/Vector2';
 import { ARENA_COLORS } from '../../core/theme/colors';
+import {
+  startDrag,
+  calculateDragPositions,
+  calculateSingleDragPosition,
+  isMultiDrag,
+  DragSession,
+  DragBounds,
+} from '../../core/battle/DragController';
+import { findUnitAtPosition } from '../../core/battle/InputAdapter';
+import { selectAllOfType } from '../../core/battle/SelectionManager';
+import {
+  startBoxSelect,
+  updateBoxSelect,
+  getSelectionBox,
+  getUnitsInBox,
+  isBoxSelectActive,
+  BoxSelectSession,
+} from '../../core/battle/BoxSelectController';
 
-// Zone heights as percentage of arena height
-const ZONE_HEIGHT_PERCENT = 0.25; // 25% of arena height
+const ZONE_HEIGHT_PERCENT = 0.25;
 
 interface BattleCanvasProps {
   state: BattleState;
   width: number;
   height: number;
   onUnitMove?: (unitId: string, position: Vector2) => void;
-  selectedUnitId?: string | null;
+  onUnitsMove?: (moves: Array<{ unitId: string; position: Vector2 }>) => void;
+  selectedUnitIds?: string[];
   onSelectUnit?: (unitId: string | null) => void;
+  onSelectUnits?: (unitIds: string[]) => void;
 }
 
 export function BattleCanvas({
@@ -20,12 +48,27 @@ export function BattleCanvas({
   width,
   height,
   onUnitMove,
-  selectedUnitId,
+  onUnitsMove,
+  selectedUnitIds = [],
   onSelectUnit,
+  onSelectUnits,
 }: BattleCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isDragging, setIsDragging] = useState(false);
-  const [draggedUnitId, setDraggedUnitId] = useState<string | null>(null);
+  const [boxSelectSession, setBoxSelectSession] = useState<BoxSelectSession | null>(null);
+  const dragSessionRef = useRef<DragSession | null>(null);
+
+  // Calculate bounds for allied deployment zone
+  const getDragBounds = useCallback((): DragBounds => {
+    const zoneHeight = height * ZONE_HEIGHT_PERCENT;
+    const margin = 20;
+    return {
+      minX: margin,
+      maxX: width - margin,
+      minY: height - zoneHeight + margin,
+      maxY: height - margin,
+    };
+  }, [width, height]);
 
   const getMousePos = useCallback((e: React.MouseEvent<HTMLCanvasElement>): Vector2 => {
     const canvas = canvasRef.current;
@@ -34,74 +77,118 @@ export function BattleCanvas({
     return new Vector2(e.clientX - rect.left, e.clientY - rect.top);
   }, []);
 
-  const findUnitAtPosition = useCallback(
-    (pos: Vector2, playerOnly: boolean = false): Unit | null => {
-      // Check units in reverse order (top-most first)
-      for (let i = state.units.length - 1; i >= 0; i--) {
-        const unit = state.units[i];
-        if (playerOnly && unit.team !== 'player') continue;
-
-        const dist = pos.distanceTo(unit.position);
-        if (dist <= unit.size + 12) {
-          // Larger hitbox for easier clicking
-          return unit;
-        }
-      }
-      return null;
-    },
-    [state.units]
-  );
-
+  // Input: Mouse down - start selection, drag, or box select
   const handleMouseDown = useCallback(
     (e: React.MouseEvent<HTMLCanvasElement>) => {
       const pos = getMousePos(e);
-      // Check for any unit (for selection/viewing stats)
-      const anyUnit = findUnitAtPosition(pos, false);
+      const clickedUnit = findUnitAtPosition(pos, state.units);
 
-      if (anyUnit) {
-        onSelectUnit?.(anyUnit.id);
-        // Only allow dragging player units
-        if (anyUnit.team === 'player') {
+      if (clickedUnit) {
+        const isAlreadySelected = selectedUnitIds.includes(clickedUnit.id);
+
+        if (!isAlreadySelected) {
+          // Clicking unselected unit - select just that unit
+          onSelectUnit?.(clickedUnit.id);
+        }
+
+        // Start drag for player units
+        if (clickedUnit.team === 'player') {
+          const unitsToMove = isAlreadySelected
+            ? selectedUnitIds.filter((id) => {
+                const unit = state.units.find((u) => u.id === id);
+                return unit?.team === 'player';
+              })
+            : [clickedUnit.id];
+
+          const session = startDrag(clickedUnit.id, pos, unitsToMove, state.units);
+          dragSessionRef.current = session;
           setIsDragging(true);
-          setDraggedUnitId(anyUnit.id);
         }
       } else {
-        onSelectUnit?.(null);
+        // Clicked empty space - start box selection
+        setBoxSelectSession(startBoxSelect(pos));
       }
     },
-    [getMousePos, findUnitAtPosition, onSelectUnit]
+    [getMousePos, state.units, selectedUnitIds, onSelectUnit]
   );
 
+  // Input: Double click - select all of type
+  const handleDoubleClick = useCallback(
+    (e: React.MouseEvent<HTMLCanvasElement>) => {
+      const pos = getMousePos(e);
+      const clickedUnit = findUnitAtPosition(pos, state.units);
+
+      if (clickedUnit && onSelectUnits) {
+        const newSelection = selectAllOfType(state.units, clickedUnit);
+        onSelectUnits(newSelection.selectedIds);
+      }
+    },
+    [getMousePos, state.units, onSelectUnits]
+  );
+
+  // Input: Mouse move - handle dragging or box selection
   const handleMouseMove = useCallback(
     (e: React.MouseEvent<HTMLCanvasElement>) => {
-      if (!isDragging || !draggedUnitId) return;
-
       const pos = getMousePos(e);
-      const zoneHeight = height * ZONE_HEIGHT_PERCENT;
-      const allyZoneTop = height - zoneHeight;
 
-      // Clamp to allied deployment zone only
-      const clampedPos = new Vector2(
-        Math.max(20, Math.min(width - 20, pos.x)),
-        Math.max(allyZoneTop + 20, Math.min(height - 20, pos.y))
-      );
+      // Handle box selection
+      if (boxSelectSession) {
+        setBoxSelectSession(updateBoxSelect(boxSelectSession, pos));
+        return;
+      }
 
-      onUnitMove?.(draggedUnitId, clampedPos);
+      // Handle unit dragging
+      if (!isDragging || !dragSessionRef.current) return;
+
+      const session = dragSessionRef.current;
+      const bounds = getDragBounds();
+
+      if (isMultiDrag(session) && onUnitsMove) {
+        const result = calculateDragPositions(session, pos, bounds, state.units);
+        onUnitsMove(result.moves);
+      } else if (onUnitMove) {
+        const newPos = calculateSingleDragPosition(session, pos, bounds);
+        if (newPos) {
+          onUnitMove(session.anchorUnitId, newPos);
+        }
+      }
     },
-    [isDragging, draggedUnitId, getMousePos, width, height, onUnitMove]
+    [isDragging, boxSelectSession, getMousePos, getDragBounds, state.units, onUnitMove, onUnitsMove]
   );
 
+  // Input: Mouse up - end drag or finalize box selection
   const handleMouseUp = useCallback(() => {
+    // Finalize box selection
+    if (boxSelectSession) {
+      if (isBoxSelectActive(boxSelectSession)) {
+        // Box was large enough - select units inside
+        const box = getSelectionBox(boxSelectSession);
+        const selectedIds = getUnitsInBox(box, state.units);
+        onSelectUnits?.(selectedIds);
+      } else {
+        // Box was too small (just a click) - clear selection
+        onSelectUnit?.(null);
+      }
+
+      setBoxSelectSession(null);
+      return;
+    }
+
+    // End unit drag
     setIsDragging(false);
-    setDraggedUnitId(null);
-  }, []);
+    dragSessionRef.current = null;
+  }, [boxSelectSession, state.units, onSelectUnit, onSelectUnits]);
 
   const handleMouseLeave = useCallback(() => {
+    // Cancel box selection on leave
+    setBoxSelectSession(null);
+
+    // End unit drag
     setIsDragging(false);
-    setDraggedUnitId(null);
+    dragSessionRef.current = null;
   }, []);
 
-  // Render
+  // Rendering
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -109,11 +196,11 @@ export function BattleCanvas({
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // Clear canvas
+    // Clear and draw background
     ctx.fillStyle = ARENA_COLORS.background;
     ctx.fillRect(0, 0, width, height);
 
-    // Draw grid lines for depth
+    // Grid lines
     ctx.strokeStyle = ARENA_COLORS.gridLine;
     ctx.lineWidth = 1;
     for (let y = 0; y < height; y += 40) {
@@ -123,7 +210,7 @@ export function BattleCanvas({
       ctx.stroke();
     }
 
-    // Draw spawn zones
+    // Spawn zones
     const zoneHeight = height * ZONE_HEIGHT_PERCENT;
 
     // Enemy zone (top)
@@ -146,23 +233,30 @@ export function BattleCanvas({
     ctx.lineTo(width, height - zoneHeight);
     ctx.stroke();
 
-    // Draw projectiles
+    // Projectiles
     for (const proj of state.projectiles) {
       drawProjectile(ctx, proj);
     }
 
-    // Draw units (bodies only first)
+    // Units (bodies)
+    const draggedIds = dragSessionRef.current?.draggedUnitIds ?? [];
     for (const unit of state.units) {
-      const isSelected = unit.id === selectedUnitId;
-      const isBeingDragged = unit.id === draggedUnitId;
+      const isSelected = selectedUnitIds.includes(unit.id);
+      const isBeingDragged = isDragging && draggedIds.includes(unit.id);
       drawUnitBody(ctx, unit, isSelected, isBeingDragged);
     }
 
-    // Draw health bars on top of all units (separate pass so they're never obscured)
+    // Health bars (separate pass)
     for (const unit of state.units) {
       drawHealthBar(ctx, unit);
     }
-  }, [state, width, height, selectedUnitId, draggedUnitId]);
+
+    // Draw box selection rectangle
+    if (boxSelectSession && isBoxSelectActive(boxSelectSession)) {
+      const box = getSelectionBox(boxSelectSession);
+      drawSelectionBox(ctx, box);
+    }
+  }, [state, width, height, selectedUnitIds, isDragging, boxSelectSession]);
 
   return (
     <canvas
@@ -174,9 +268,12 @@ export function BattleCanvas({
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseLeave}
+      onDoubleClick={handleDoubleClick}
     />
   );
 }
+
+// --- Drawing functions (could be extracted to a Renderer class) ---
 
 function drawUnitBody(
   ctx: CanvasRenderingContext2D,
@@ -189,22 +286,20 @@ function drawUnitBody(
   ctx.save();
   ctx.translate(position.x, position.y);
 
-  // Draw selection ring for any selected unit
+  // Selection ring
   if (isSelected || isBeingDragged) {
     ctx.strokeStyle = ARENA_COLORS.selectionRing;
     ctx.lineWidth = 3;
     ctx.beginPath();
     ctx.arc(0, 0, size + 8, 0, Math.PI * 2);
     ctx.stroke();
-
-    // Glow effect
     ctx.shadowColor = ARENA_COLORS.selectionRing;
     ctx.shadowBlur = 15;
     ctx.stroke();
     ctx.shadowBlur = 0;
   }
 
-  // Draw move indicator for player units (subtle ring)
+  // Move indicator for unselected player units
   if (team === 'player' && !isSelected && !isBeingDragged) {
     ctx.strokeStyle = ARENA_COLORS.moveIndicator;
     ctx.lineWidth = 1;
@@ -213,7 +308,7 @@ function drawUnitBody(
     ctx.stroke();
   }
 
-  // Draw shape with optional drag opacity
+  // Unit shape
   ctx.globalAlpha = isBeingDragged ? 0.8 : 1;
   ctx.fillStyle = color;
   ctx.strokeStyle = '#000000';
@@ -226,12 +321,10 @@ function drawUnitBody(
       ctx.fill();
       ctx.stroke();
       break;
-
     case 'square':
       ctx.fillRect(-size, -size, size * 2, size * 2);
       ctx.strokeRect(-size, -size, size * 2, size * 2);
       break;
-
     case 'triangle':
       ctx.beginPath();
       ctx.moveTo(0, -size);
@@ -252,15 +345,15 @@ function drawHealthBar(ctx: CanvasRenderingContext2D, unit: Unit): void {
   ctx.save();
   ctx.translate(position.x, position.y);
 
-  const healthBarWidth = size * 2.5;
-  const healthBarHeight = 6;
-  const healthBarY = -size - 20;
+  const barWidth = size * 2.5;
+  const barHeight = 6;
+  const barY = -size - 20;
 
-  // Black background/outline
+  // Background
   ctx.fillStyle = ARENA_COLORS.healthBarBg;
-  ctx.fillRect(-healthBarWidth / 2 - 1, healthBarY - 1, healthBarWidth + 2, healthBarHeight + 2);
+  ctx.fillRect(-barWidth / 2 - 1, barY - 1, barWidth + 2, barHeight + 2);
 
-  // Health bar fill
+  // Fill
   const healthPercent = health / stats.maxHealth;
   ctx.fillStyle =
     healthPercent > 0.5
@@ -268,7 +361,7 @@ function drawHealthBar(ctx: CanvasRenderingContext2D, unit: Unit): void {
       : healthPercent > 0.25
         ? ARENA_COLORS.healthMedium
         : ARENA_COLORS.healthLow;
-  ctx.fillRect(-healthBarWidth / 2, healthBarY, healthBarWidth * healthPercent, healthBarHeight);
+  ctx.fillRect(-barWidth / 2, barY, barWidth * healthPercent, barHeight);
 
   ctx.restore();
 }
@@ -284,6 +377,28 @@ function drawProjectile(ctx: CanvasRenderingContext2D, proj: Projectile): void {
   ctx.beginPath();
   ctx.arc(0, 0, 5, 0, Math.PI * 2);
   ctx.fill();
+
+  ctx.restore();
+}
+
+function drawSelectionBox(
+  ctx: CanvasRenderingContext2D,
+  box: { minX: number; maxX: number; minY: number; maxY: number }
+): void {
+  const width = box.maxX - box.minX;
+  const height = box.maxY - box.minY;
+
+  ctx.save();
+
+  // Semi-transparent fill
+  ctx.fillStyle = 'rgba(0, 200, 255, 0.15)';
+  ctx.fillRect(box.minX, box.minY, width, height);
+
+  // Border
+  ctx.strokeStyle = ARENA_COLORS.selectionRing;
+  ctx.lineWidth = 2;
+  ctx.setLineDash([5, 5]);
+  ctx.strokeRect(box.minX, box.minY, width, height);
 
   ctx.restore();
 }
