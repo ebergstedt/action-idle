@@ -523,7 +523,7 @@ export const DUST_SPAWN_INTERVAL = 0.15;
 /**
  * Base dust particle size in pixels.
  */
-export const DUST_PARTICLE_SIZE = 4;
+export const DUST_PARTICLE_SIZE = 3;
 
 /**
  * Multiplier for ally avoidance distance check during movement.

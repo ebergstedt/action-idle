@@ -377,50 +377,47 @@ export function BattleCanvas({
       for (const unit of state.units) {
         if (unit.deathFadeTimer >= 0) continue; // Skip dying units
 
+        // Check if unit moved since last frame
         const prevPos = prevPositionsRef.current.get(unit.id);
-        const isMoving =
-          prevPos &&
-          (Math.abs(unit.position.x - prevPos.x) > 0.5 ||
-            Math.abs(unit.position.y - prevPos.y) > 0.5);
+        const dx = prevPos ? Math.abs(unit.position.x - prevPos.x) : 0;
+        const dy = prevPos ? Math.abs(unit.position.y - prevPos.y) : 0;
+        const isMoving = dx > 0.1 || dy > 0.1;
+
+        // Update stored position
+        prevPositionsRef.current.set(unit.id, {
+          x: unit.position.x,
+          y: unit.position.y,
+        });
 
         if (isMoving) {
           const lastSpawn = lastDustSpawnRef.current.get(unit.id) ?? 0;
           if (now - lastSpawn > DUST_SPAWN_INTERVAL * 1000) {
-            // Spawn dust particle at unit's feet
-            dustParticlesRef.current.push({
-              x: unit.position.x + (Math.random() - 0.5) * unit.size,
-              y: unit.position.y + unit.size * 0.5,
-              vx: (Math.random() - 0.5) * 20,
-              vy: -Math.random() * 15 - 5,
-              lifetime: DUST_PARTICLE_LIFETIME,
-              maxLifetime: DUST_PARTICLE_LIFETIME,
-            });
+            // Spawn 2-3 dust particles below and behind the unit
+            const particleCount = 2 + Math.floor(Math.random() * 2);
+            for (let i = 0; i < particleCount; i++) {
+              dustParticlesRef.current.push({
+                x: unit.position.x + (Math.random() - 0.5) * unit.size * 2,
+                y: unit.position.y + unit.size + 5, // Below the unit
+                vx: (Math.random() - 0.5) * 40,
+                vy: -Math.random() * 40 - 20, // Strong upward velocity
+                lifetime: DUST_PARTICLE_LIFETIME,
+                maxLifetime: DUST_PARTICLE_LIFETIME,
+              });
+            }
             lastDustSpawnRef.current.set(unit.id, now);
           }
         }
-        prevPositionsRef.current.set(unit.id, { x: unit.position.x, y: unit.position.y });
       }
 
       // Update existing particles
       dustParticlesRef.current = dustParticlesRef.current.filter((p) => {
-        p.lifetime -= 0.016; // Approximate frame time
+        p.lifetime -= 0.016;
         p.x += p.vx * 0.016;
         p.y += p.vy * 0.016;
-        p.vy += 30 * 0.016; // Gravity
+        p.vy += 50 * 0.016; // Gravity
         return p.lifetime > 0;
       });
     }
-
-    // Draw dust particles
-    for (const particle of dustParticlesRef.current) {
-      const alpha = particle.lifetime / particle.maxLifetime;
-      ctx.fillStyle = ARENA_COLORS.dustParticle;
-      ctx.globalAlpha = alpha * 0.6;
-      ctx.beginPath();
-      ctx.arc(particle.x, particle.y, DUST_PARTICLE_SIZE * alpha, 0, Math.PI * 2);
-      ctx.fill();
-    }
-    ctx.globalAlpha = 1;
 
     // Unit shadows (drawn first so they're behind all units)
     for (const unit of state.units) {
@@ -434,6 +431,17 @@ export function BattleCanvas({
       const isBeingDragged = isDragging && draggedIds.includes(unit.id);
       drawUnitBody(ctx, unit, isSelected, isBeingDragged);
     }
+
+    // Draw dust particles (after units so they're visible)
+    for (const particle of dustParticlesRef.current) {
+      const alpha = particle.lifetime / particle.maxLifetime;
+      ctx.fillStyle = ARENA_COLORS.dustParticle;
+      ctx.globalAlpha = alpha * 0.8;
+      ctx.beginPath();
+      ctx.arc(particle.x, particle.y, DUST_PARTICLE_SIZE, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
 
     // Update and draw health bars with ghost effect (separate pass - units)
     const currentUnitIds = new Set(state.units.map((u) => u.id));
