@@ -97,26 +97,29 @@ export const ENV_COLORS = {
 // =============================================================================
 
 export const ARENA_COLORS = {
-  // Background
-  background: '#1A1A2E',
-  gridLine: '#2A2A4E',
+  // Background - warm parchment/earth tones for medieval feel
+  background: '#2D2A1E', // Dark earth brown
+  gridLine: '#3D3A2E', // Subtle grid
 
-  // Zones
-  enemyZoneFill: 'rgba(200, 0, 0, 0.15)',
-  enemyZoneBorder: 'rgba(200, 0, 0, 0.4)',
-  allyZoneFill: 'rgba(0, 100, 0, 0.15)',
-  allyZoneBorder: 'rgba(0, 100, 0, 0.4)',
+  // Zones - using faction colors with better visibility
+  // Enemy (France blue) - cool tones at top
+  enemyZoneFill: 'rgba(0, 0, 160, 0.20)', // France primary blue
+  enemyZoneBorder: 'rgba(0, 0, 160, 0.6)',
+
+  // Ally (England red) - warm tones at bottom
+  allyZoneFill: 'rgba(200, 0, 0, 0.20)', // England primary red
+  allyZoneBorder: 'rgba(200, 0, 0, 0.6)',
 
   // Selection and indicators
-  selectionRing: '#FFD700',
-  moveIndicator: 'rgba(255, 255, 255, 0.2)',
-  unitOutline: '#FFFFFF',
+  selectionRing: UI_COLORS.goldPrimary,
+  moveIndicator: 'rgba(255, 215, 0, 0.3)', // Gold tint for allied units
+  unitOutline: '#1E1E1E', // Dark outline for better contrast on parchment
 
   // Health bar
-  healthBarBg: '#333333',
-  healthHigh: '#4CAF50',
-  healthMedium: '#FFC107',
-  healthLow: '#F44336',
+  healthBarBg: '#1E1810', // Dark brown
+  healthHigh: '#4A7023', // Forest green (grassland)
+  healthMedium: '#C2A366', // Desert ochre (warning)
+  healthLow: FACTION_COLORS.england.primary, // England red (danger)
 } as const;
 
 // =============================================================================
@@ -144,17 +147,20 @@ export interface UnitTypeColors {
 }
 
 export const UNIT_TYPE_COLORS: Record<UnitType, UnitTypeColors> = {
+  // Warriors - core infantry, use primary team colors
   warrior: {
-    player: FACTION_COLORS.england.primary, // Red
-    enemy: FACTION_COLORS.france.primary, // Blue
+    player: FACTION_COLORS.england.primary, // England Red #C80000
+    enemy: FACTION_COLORS.france.primary, // France Blue #0000A0
   },
+  // Archers - ranged support, use secondary colors for variety
   archer: {
-    player: FACTION_COLORS.milan.primary, // Green
-    enemy: FACTION_COLORS.moors.primary, // Orange
+    player: FACTION_COLORS.milan.primary, // Milan Green #006400
+    enemy: FACTION_COLORS.turks.primary, // Turks Light Green #90EE90
   },
+  // Knights - elite cavalry, use purple/gold tones
   knight: {
-    player: FACTION_COLORS.byzantium.primary, // Purple
-    enemy: FACTION_COLORS.scotland.primary, // Dark Blue
+    player: FACTION_COLORS.byzantium.primary, // Byzantium Purple #4B0082
+    enemy: FACTION_COLORS.mongols.primary, // Mongols Gold #B49632
   },
 } as const;
 
