@@ -71,6 +71,7 @@ export class BattleEngine {
       projectiles: this.world.getProjectiles().map((p) => p.toRenderData()),
       castles: this.world.getCastles().map((c) => c.toRenderData()),
       shockwaves: this.world.getShockwaves().map((s) => s.toRenderData()),
+      damageNumbers: this.world.getDamageNumbers().map((d) => d.toRenderData()),
       isRunning: this.isRunning,
       hasStarted: this.hasStarted,
       waveNumber: this.waveNumber,

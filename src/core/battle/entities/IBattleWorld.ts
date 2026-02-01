@@ -49,6 +49,9 @@ export interface IBattleWorld extends IEntityWorld {
     color: string
   ): void;
 
+  // Damage number spawning
+  spawnDamageNumber(position: Vector2, amount: number, sourceTeam: UnitTeam): void;
+
   // Bounds
   getArenaBounds(): EntityBounds | null;
 }

@@ -14,12 +14,21 @@ import {
   ProjectileRenderData,
   CastleRenderData,
   ShockwaveRenderData,
+  DamageNumberRenderData,
   ZONE_HEIGHT_PERCENT,
 } from '../../core/battle';
 import {
   DRAG_BOUNDS_MARGIN,
   HIT_FLASH_DURATION,
   DEATH_FADE_DURATION,
+  BASE_DAMAGE_NUMBER_FONT_SIZE,
+  BASE_PROJECTILE_TRAIL_LENGTH,
+  PROJECTILE_TRAIL_WIDTH,
+  UNIT_SHADOW_OFFSET,
+  UNIT_SHADOW_OPACITY,
+  SELECTION_PULSE_SPEED,
+  SELECTION_PULSE_INTENSITY,
+  scaleValue,
 } from '../../core/battle/BattleConfig';
 import { Vector2 } from '../../core/physics/Vector2';
 import { ARENA_COLORS, UI_COLORS, CASTLE_COLORS, DEBUFF_COLORS } from '../../core/theme/colors';
@@ -325,7 +334,12 @@ export function BattleCanvas({
 
     // Projectiles
     for (const proj of state.projectiles) {
-      drawProjectile(ctx, proj);
+      drawProjectile(ctx, proj, height);
+    }
+
+    // Unit shadows (drawn first so they're behind all units)
+    for (const unit of state.units) {
+      drawUnitShadow(ctx, unit);
     }
 
     // Units (bodies)
@@ -407,6 +421,11 @@ export function BattleCanvas({
       drawCastleHealthBar(ctx, castle);
     }
 
+    // Damage numbers (above everything else)
+    for (const damageNumber of state.damageNumbers) {
+      drawDamageNumber(ctx, damageNumber, height);
+    }
+
     // Draw box selection rectangle
     if (boxSelectSession && isBoxSelectActive(boxSelectSession)) {
       const box = getSelectionBox(boxSelectSession);
@@ -432,6 +451,51 @@ export function BattleCanvas({
 }
 
 // --- Drawing functions (could be extracted to a Renderer class) ---
+
+function drawUnitShadow(ctx: CanvasRenderingContext2D, unit: UnitRenderData): void {
+  const { position, shape, size, visualOffset, deathFadeTimer } = unit;
+
+  // Calculate death fade effect (shadows also fade with unit)
+  const isDying = deathFadeTimer >= 0;
+  const deathProgress = isDying ? 1 - deathFadeTimer / DEATH_FADE_DURATION : 0;
+  const deathOpacity = isDying ? 1 - deathProgress : 1;
+  const deathScale = isDying ? 1 - deathProgress * 0.3 : 1;
+
+  // Apply visual offset to match unit position
+  const renderX = position.x + (visualOffset?.x ?? 0) + UNIT_SHADOW_OFFSET;
+  const renderY = position.y + (visualOffset?.y ?? 0) + UNIT_SHADOW_OFFSET;
+
+  ctx.save();
+  ctx.translate(renderX, renderY);
+
+  if (isDying) {
+    ctx.scale(deathScale, deathScale);
+  }
+
+  ctx.fillStyle = ARENA_COLORS.unitShadow;
+  ctx.globalAlpha = UNIT_SHADOW_OPACITY * deathOpacity;
+
+  switch (shape) {
+    case 'circle':
+      ctx.beginPath();
+      ctx.arc(0, 0, size, 0, Math.PI * 2);
+      ctx.fill();
+      break;
+    case 'square':
+      ctx.fillRect(-size, -size, size * 2, size * 2);
+      break;
+    case 'triangle':
+      ctx.beginPath();
+      ctx.moveTo(0, -size);
+      ctx.lineTo(-size, size);
+      ctx.lineTo(size, size);
+      ctx.closePath();
+      ctx.fill();
+      break;
+  }
+
+  ctx.restore();
+}
 
 function drawUnitBody(
   ctx: CanvasRenderingContext2D,
@@ -459,12 +523,18 @@ function drawUnitBody(
     ctx.scale(deathScale, deathScale);
   }
 
-  // Selection ring (skip for dying units)
+  // Selection ring with pulse animation (skip for dying units)
   if ((isSelected || isBeingDragged) && !isDying) {
+    // Calculate pulse based on time
+    const pulseTime = performance.now() / 1000; // seconds
+    const pulse = Math.sin(pulseTime * SELECTION_PULSE_SPEED * Math.PI * 2);
+    const pulseScale = 1 + pulse * SELECTION_PULSE_INTENSITY;
+    const ringRadius = (size + 8) * pulseScale;
+
     ctx.strokeStyle = ARENA_COLORS.selectionRing;
     ctx.lineWidth = 3;
     ctx.beginPath();
-    ctx.arc(0, 0, size + 8, 0, Math.PI * 2);
+    ctx.arc(0, 0, ringRadius, 0, Math.PI * 2);
     ctx.stroke();
     ctx.shadowColor = ARENA_COLORS.selectionRing;
     ctx.shadowBlur = 15;
@@ -582,12 +652,46 @@ function drawHealthBar(
   ctx.restore();
 }
 
-function drawProjectile(ctx: CanvasRenderingContext2D, proj: ProjectileRenderData): void {
-  ctx.save();
-  ctx.translate(proj.position.x, proj.position.y);
+function drawProjectile(
+  ctx: CanvasRenderingContext2D,
+  proj: ProjectileRenderData,
+  arenaHeight: number
+): void {
+  const { position, target, color } = proj;
 
-  ctx.fillStyle = proj.color;
-  ctx.shadowColor = proj.color;
+  // Calculate direction toward target
+  const dx = target.x - position.x;
+  const dy = target.y - position.y;
+  const dist = Math.sqrt(dx * dx + dy * dy);
+
+  // Normalize direction (or default to up if at target)
+  const dirX = dist > 0.1 ? dx / dist : 0;
+  const dirY = dist > 0.1 ? dy / dist : -1;
+
+  // Trail extends backward from projectile
+  const trailLength = scaleValue(BASE_PROJECTILE_TRAIL_LENGTH, arenaHeight);
+  const trailEndX = position.x - dirX * trailLength;
+  const trailEndY = position.y - dirY * trailLength;
+
+  ctx.save();
+
+  // Draw trail as gradient line
+  const gradient = ctx.createLinearGradient(trailEndX, trailEndY, position.x, position.y);
+  gradient.addColorStop(0, 'transparent');
+  gradient.addColorStop(1, color);
+
+  ctx.strokeStyle = gradient;
+  ctx.lineWidth = PROJECTILE_TRAIL_WIDTH;
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(trailEndX, trailEndY);
+  ctx.lineTo(position.x, position.y);
+  ctx.stroke();
+
+  // Draw projectile head
+  ctx.translate(position.x, position.y);
+  ctx.fillStyle = color;
+  ctx.shadowColor = color;
   ctx.shadowBlur = 8;
 
   ctx.beginPath();
@@ -775,6 +879,48 @@ function drawDebuffIndicator(ctx: CanvasRenderingContext2D, unit: UnitRenderData
   ctx.moveTo(iconSize * 0.5, iconY - iconSize * 0.5);
   ctx.lineTo(-iconSize * 0.5, iconY + iconSize * 0.5);
   ctx.stroke();
+
+  ctx.restore();
+}
+
+function drawDamageNumber(
+  ctx: CanvasRenderingContext2D,
+  damageNumber: DamageNumberRenderData,
+  arenaHeight: number
+): void {
+  const { position, amount, progress } = damageNumber;
+
+  // Fade out as progress increases (0 = just spawned, 1 = about to disappear)
+  const opacity = 1 - progress;
+  if (opacity <= 0) return;
+
+  // Scale font based on arena size
+  const fontSize = scaleValue(BASE_DAMAGE_NUMBER_FONT_SIZE, arenaHeight);
+
+  ctx.save();
+  ctx.translate(position.x, position.y);
+
+  // Scale up slightly at start, then normal
+  const scaleProgress = Math.min(progress * 4, 1); // Quick scale-in over first 25% of lifetime
+  const scale = 1 + (1 - scaleProgress) * 0.3; // Start at 1.3x, settle to 1x
+  ctx.scale(scale, scale);
+
+  ctx.globalAlpha = opacity;
+  ctx.font = `bold ${Math.round(fontSize)}px Arial, sans-serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+
+  // Draw text with outline for readability
+  const text = String(amount);
+
+  // Outline
+  ctx.strokeStyle = ARENA_COLORS.damageNumberOutline;
+  ctx.lineWidth = 3;
+  ctx.strokeText(text, 0, 0);
+
+  // Fill - red for all damage
+  ctx.fillStyle = ARENA_COLORS.damageNumber;
+  ctx.fillText(text, 0, 0);
 
   ctx.restore();
 }

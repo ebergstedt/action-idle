@@ -35,7 +35,9 @@ import { UnitEntity } from './UnitEntity';
 import { ProjectileEntity, createProjectile } from './ProjectileEntity';
 import { CastleEntity } from './CastleEntity';
 import { ShockwaveEntity, createShockwave } from './ShockwaveEntity';
+import { DamageNumberEntity, DamageNumberData } from './DamageNumberEntity';
 import { WorldEventEmitter } from './EventEmitter';
+import { DAMAGE_NUMBER_DURATION } from '../BattleConfig';
 
 /**
  * Battle world - manages all battle entities.
@@ -46,8 +48,10 @@ export class BattleWorld implements IEntityWorld, IBattleWorld, IWorldEventEmitt
   private projectiles: ProjectileEntity[] = [];
   private castles: CastleEntity[] = [];
   private shockwaves: ShockwaveEntity[] = [];
+  private damageNumbers: DamageNumberEntity[] = [];
   private nextProjectileId = 1;
   private nextShockwaveId = 1;
+  private nextDamageNumberId = 1;
   private arenaBounds: EntityBounds | null = null;
   private worldEvents = new WorldEventEmitter();
 
@@ -131,6 +135,38 @@ export class BattleWorld implements IEntityWorld, IBattleWorld, IWorldEventEmitt
   }
 
   /**
+   * Add a damage number to the world.
+   */
+  addDamageNumber(damageNumber: DamageNumberEntity): void {
+    damageNumber.setWorld(this);
+    damageNumber.init();
+    this.damageNumbers.push(damageNumber);
+  }
+
+  /**
+   * Spawn a floating damage number.
+   * @param position - Position to spawn the number
+   * @param amount - Damage amount to display
+   * @param sourceTeam - Team that dealt the damage (for color)
+   */
+  spawnDamageNumber(position: Vector2, amount: number, sourceTeam: UnitTeam): void {
+    const id = `dmgnum_${this.nextDamageNumberId++}`;
+    const arenaHeight = this.arenaBounds?.height ?? 600;
+
+    const data: DamageNumberData = {
+      amount,
+      sourceTeam,
+      lifetime: DAMAGE_NUMBER_DURATION,
+      maxLifetime: DAMAGE_NUMBER_DURATION,
+      startY: position.y,
+      arenaHeight,
+    };
+
+    const damageNumber = new DamageNumberEntity(id, position.clone(), data);
+    this.addDamageNumber(damageNumber);
+  }
+
+  /**
    * Remove a unit from the world.
    * Emits 'entity_removed' world event.
    */
@@ -169,12 +205,18 @@ export class BattleWorld implements IEntityWorld, IBattleWorld, IWorldEventEmitt
       shockwave.destroy();
       shockwave.setWorld(null);
     }
+    for (const damageNumber of this.damageNumbers) {
+      damageNumber.destroy();
+      damageNumber.setWorld(null);
+    }
     this.units = [];
     this.projectiles = [];
     this.castles = [];
     this.shockwaves = [];
+    this.damageNumbers = [];
     this.nextProjectileId = 1;
     this.nextShockwaveId = 1;
+    this.nextDamageNumberId = 1;
   }
 
   // === Main Update Loop ===
@@ -207,7 +249,12 @@ export class BattleWorld implements IEntityWorld, IBattleWorld, IWorldEventEmitt
       shockwave.update(delta);
     }
 
-    // Phase 6: Remove destroyed entities
+    // Phase 6: Update damage numbers (float and fade)
+    for (const damageNumber of this.damageNumbers) {
+      damageNumber.update(delta);
+    }
+
+    // Phase 7: Remove destroyed entities
     this.removeDestroyedEntities();
   }
 
@@ -285,6 +332,16 @@ export class BattleWorld implements IEntityWorld, IBattleWorld, IWorldEventEmitt
         shockwave.destroy();
         this.worldEvents.emitWorld({ type: 'entity_removed', entity: shockwave });
         shockwave.setWorld(null);
+        return false;
+      }
+      return true;
+    });
+
+    // Remove destroyed damage numbers
+    this.damageNumbers = this.damageNumbers.filter((damageNumber) => {
+      if (damageNumber.isDestroyed()) {
+        damageNumber.destroy();
+        damageNumber.setWorld(null);
         return false;
       }
       return true;
@@ -425,6 +482,10 @@ export class BattleWorld implements IEntityWorld, IBattleWorld, IWorldEventEmitt
 
   getShockwaves(): readonly ShockwaveEntity[] {
     return this.shockwaves;
+  }
+
+  getDamageNumbers(): readonly DamageNumberEntity[] {
+    return this.damageNumbers;
   }
 
   getPlayerUnits(): UnitEntity[] {

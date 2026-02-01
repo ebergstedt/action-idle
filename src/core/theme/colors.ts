@@ -127,6 +127,10 @@ export const ARENA_COLORS = {
   healthLow: '#EF4444', // Bright red (danger)
   healthGhost: '#8B0000', // Dark red ghost damage indicator
   hitFlash: '#FFFFFF', // White flash when unit takes damage
+  damageNumber: '#FF4444', // Red for all damage
+  healingNumber: '#44FF44', // Green for healing (placeholder)
+  damageNumberOutline: '#000000', // Black outline for readability
+  unitShadow: '#4A4A4A', // Dark gray shadow under units
 } as const;
 
 // =============================================================================

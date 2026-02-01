@@ -20,6 +20,11 @@ export { UnitEntity, type UnitData, type TemporaryModifier } from './UnitEntity'
 export { ProjectileEntity, type ProjectileData, createProjectile } from './ProjectileEntity';
 export { CastleEntity, type CastleData } from './CastleEntity';
 export { ShockwaveEntity, type ShockwaveData, createShockwave } from './ShockwaveEntity';
+export {
+  DamageNumberEntity,
+  type DamageNumberData,
+  type DamageNumberRenderData,
+} from './DamageNumberEntity';
 
 // Entity manager
 export { BattleWorld } from './BattleWorld';

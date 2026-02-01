@@ -56,6 +56,7 @@ export function useBattle(): UseBattleReturn {
     projectiles: [],
     castles: [],
     shockwaves: [],
+    damageNumbers: [],
     isRunning: false,
     hasStarted: false,
     waveNumber: 1,

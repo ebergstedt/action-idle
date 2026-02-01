@@ -14,6 +14,10 @@
 import { Vector2 } from '../physics/Vector2';
 import { MAX_UNIT_SCALE, MIN_UNIT_SCALE, REFERENCE_ARENA_HEIGHT } from './BattleConfig';
 import type { UnitTeam as UnitTeamType } from './units/types';
+import type { DamageNumberRenderData } from './entities/DamageNumberEntity';
+
+// Re-export for convenience
+export type { DamageNumberRenderData } from './entities/DamageNumberEntity';
 
 // =============================================================================
 // NEW UNIT SYSTEM TYPES - Use these for all new code
@@ -164,6 +168,7 @@ export interface BattleState {
   projectiles: ProjectileRenderData[];
   castles: CastleRenderData[];
   shockwaves: ShockwaveRenderData[];
+  damageNumbers: DamageNumberRenderData[];
   isRunning: boolean;
   hasStarted: boolean;
   waveNumber: number;

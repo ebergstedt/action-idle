@@ -363,6 +363,14 @@ export class UnitEntity extends BaseEntity {
     // Trigger hit flash effect
     this.hitFlashTimer = HIT_FLASH_DURATION;
 
+    // Spawn floating damage number
+    const world = this.getBattleWorld();
+    if (world && amount > 0) {
+      // Use attacker's team for color, or this unit's opposite team if no attacker
+      const sourceTeam = attacker?.team ?? (this.team === 'player' ? 'enemy' : 'player');
+      world.spawnDamageNumber(this.position.clone(), amount, sourceTeam);
+    }
+
     // Emit damaged event: entity = who was damaged, attacker = who caused it
     this.emit({
       type: 'damaged',

@@ -461,6 +461,55 @@ export const HIT_FLASH_DURATION = 0.15;
 export const DEATH_FADE_DURATION = 0.4;
 
 /**
+ * Duration of floating damage numbers in seconds.
+ */
+export const DAMAGE_NUMBER_DURATION = 0.8;
+
+/**
+ * How far damage numbers float upward (pixels).
+ * Scaled by arena size at runtime.
+ */
+export const BASE_DAMAGE_NUMBER_FLOAT_DISTANCE = 40;
+
+/**
+ * Base font size for damage numbers (pixels).
+ * Scaled by arena size at runtime.
+ */
+export const BASE_DAMAGE_NUMBER_FONT_SIZE = 16;
+
+/**
+ * Base length of projectile trail in pixels.
+ * Scaled by arena size at runtime.
+ */
+export const BASE_PROJECTILE_TRAIL_LENGTH = 25;
+
+/**
+ * Width of projectile trail at its widest point (near projectile).
+ */
+export const PROJECTILE_TRAIL_WIDTH = 4;
+
+/**
+ * Unit shadow offset (pixels down and right from unit center).
+ */
+export const UNIT_SHADOW_OFFSET = 4;
+
+/**
+ * Unit shadow opacity (0-1).
+ */
+export const UNIT_SHADOW_OPACITY = 0.35;
+
+/**
+ * Selection ring pulse speed (cycles per second).
+ */
+export const SELECTION_PULSE_SPEED = 2;
+
+/**
+ * Selection ring pulse intensity (how much the ring grows/shrinks).
+ * 0.15 = +/- 15% size variation.
+ */
+export const SELECTION_PULSE_INTENSITY = 0.15;
+
+/**
  * Multiplier for ally avoidance distance check during movement.
  * Units avoid allies within (minDist * this value).
  */
