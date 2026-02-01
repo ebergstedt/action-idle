@@ -16,8 +16,11 @@ import {
   BASE_AGGRO_RADIUS,
   ALLY_AVOIDANCE_DISTANCE_MULTIPLIER,
   BASE_ALLY_AVOIDANCE_FORCE,
+  BASE_MELEE_KNOCKBACK_DISTANCE,
+  BASE_MELEE_LUNGE_DISTANCE,
   DIRECTION_CHECK_MULTIPLIER,
   MELEE_ATTACK_RANGE_THRESHOLD,
+  MELEE_OFFSET_DECAY_RATE,
   MELEE_RANGE_BUFFER,
   MELEE_SIZE_MULTIPLIER,
   MIN_MOVE_DISTANCE,
@@ -76,6 +79,8 @@ export interface UnitData {
   retargetCooldown: number;
   // Active modifiers (buffs/debuffs)
   activeModifiers: TemporaryModifier[];
+  // Visual offset for melee lunge/knockback effects (decays over time)
+  visualOffset: Vector2;
 }
 
 /**
@@ -154,6 +159,12 @@ export class UnitEntity extends BaseEntity {
   }
   get activeModifiers(): TemporaryModifier[] {
     return this.data.activeModifiers;
+  }
+  get visualOffset(): Vector2 {
+    return this.data.visualOffset;
+  }
+  set visualOffset(value: Vector2) {
+    this.data.visualOffset = value;
   }
 
   /**
@@ -261,6 +272,9 @@ export class UnitEntity extends BaseEntity {
     // Tick active modifiers (buffs/debuffs)
     this.tickModifiers(delta);
 
+    // Decay visual offset (lunge/knockback effect)
+    this.decayVisualOffset(delta);
+
     // Decrement retarget cooldown
     if (this.retargetCooldown > 0) {
       this.retargetCooldown -= delta;
@@ -277,6 +291,29 @@ export class UnitEntity extends BaseEntity {
 
     // Phase 4: Boundary enforcement
     this.enforceBounds();
+  }
+
+  /**
+   * Decay the visual offset back toward zero.
+   * Used for melee lunge and knockback effects.
+   */
+  private decayVisualOffset(delta: number): void {
+    const magnitude = this.visualOffset.magnitude();
+    if (magnitude < 0.1) {
+      this.visualOffset = Vector2.zero();
+      return;
+    }
+    // Exponential decay
+    const decay = Math.exp(-MELEE_OFFSET_DECAY_RATE * delta);
+    this.visualOffset = this.visualOffset.multiply(decay);
+  }
+
+  /**
+   * Apply a knockback offset to this unit (from melee hit).
+   */
+  applyKnockback(direction: Vector2, distance: number): void {
+    const knockback = direction.normalize().multiply(distance);
+    this.visualOffset = this.visualOffset.add(knockback);
   }
 
   /**
@@ -330,6 +367,7 @@ export class UnitEntity extends BaseEntity {
         sourceId: m.sourceId,
         remainingDuration: m.remainingDuration,
       })),
+      visualOffset: this.visualOffset,
     };
   }
 
@@ -625,6 +663,21 @@ export class UnitEntity extends BaseEntity {
     });
 
     if (isMelee) {
+      // Apply visual effects for melee combat
+      const arenaHeight = this.getArenaHeight();
+      const toTarget = target.position.subtract(this.position);
+      const direction = toTarget.magnitude() > 0.1 ? toTarget.normalize() : new Vector2(0, -1);
+
+      // Attacker lunges forward
+      const lungeDistance = scaleValue(BASE_MELEE_LUNGE_DISTANCE, arenaHeight);
+      this.visualOffset = this.visualOffset.add(direction.multiply(lungeDistance));
+
+      // Target gets knocked back (if it's a unit with applyKnockback)
+      if ('applyKnockback' in target && typeof target.applyKnockback === 'function') {
+        const knockbackDistance = scaleValue(BASE_MELEE_KNOCKBACK_DISTANCE, arenaHeight);
+        target.applyKnockback(direction, knockbackDistance);
+      }
+
       // Direct damage
       target.takeDamage(modifiedDamage, this);
     } else {

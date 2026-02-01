@@ -172,6 +172,7 @@ export class BattleEngine {
       seekMode: false,
       retargetCooldown: 0,
       activeModifiers: [],
+      visualOffset: Vector2.zero(),
     };
 
     const entity = new UnitEntity(id, position.clone(), data);

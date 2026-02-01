@@ -431,6 +431,40 @@ export const MIN_DAMAGE_AFTER_ARMOR = 1;
 export const MELEE_SIZE_MULTIPLIER = 2;
 
 /**
+ * Distance the attacker lunges forward on melee hit (pixels).
+ * Scaled by arena size at runtime.
+ */
+export const BASE_MELEE_LUNGE_DISTANCE = 8;
+
+/**
+ * Distance the target is knocked back on melee hit (pixels).
+ * Scaled by arena size at runtime.
+ */
+export const BASE_MELEE_KNOCKBACK_DISTANCE = 6;
+
+/**
+ * How quickly the lunge/knockback offset decays back to zero.
+ * Higher value = faster recovery. Value of 10 means ~0.1s to decay.
+ */
+export const MELEE_OFFSET_DECAY_RATE = 12;
+
+/**
+ * Duration of the melee attack visual effect in seconds.
+ */
+export const MELEE_EFFECT_DURATION = 0.15;
+
+/**
+ * Base length of the melee attack visual effect (spear thrust).
+ * Scaled by arena size at runtime.
+ */
+export const BASE_MELEE_EFFECT_LENGTH = 25;
+
+/**
+ * Width of the melee attack visual effect line.
+ */
+export const MELEE_EFFECT_WIDTH = 3;
+
+/**
  * Multiplier for ally avoidance distance check during movement.
  * Units avoid allies within (minDist * this value).
  */

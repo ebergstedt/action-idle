@@ -49,6 +49,15 @@ interface BattleCanvasProps {
   onSelectUnits?: (unitIds: string[]) => void;
 }
 
+// Ghost health state for damage visualization
+interface GhostHealthState {
+  ghostHealth: number;
+  lastHealth: number;
+}
+
+// Decay rate: how much of the difference to close per frame (0-1)
+const GHOST_HEALTH_DECAY_RATE = 0.08;
+
 export function BattleCanvas({
   state,
   width,
@@ -63,6 +72,7 @@ export function BattleCanvas({
   const [isDragging, setIsDragging] = useState(false);
   const [boxSelectSession, setBoxSelectSession] = useState<BoxSelectSession | null>(null);
   const dragSessionRef = useRef<DragSession | null>(null);
+  const ghostHealthRef = useRef<Map<string, GhostHealthState>>(new Map());
 
   // Calculate bounds for allied deployment zone
   const getDragBounds = useCallback((): DragBounds => {
@@ -322,9 +332,60 @@ export function BattleCanvas({
       drawUnitBody(ctx, unit, isSelected, isBeingDragged);
     }
 
-    // Health bars (separate pass - units)
+    // Update and draw health bars with ghost effect (separate pass - units)
+    const currentUnitIds = new Set(state.units.map((u) => u.id));
+    // Clean up ghost health for removed units
+    for (const id of ghostHealthRef.current.keys()) {
+      if (!currentUnitIds.has(id)) {
+        ghostHealthRef.current.delete(id);
+      }
+    }
+    // Update ghost health and draw health bars
     for (const unit of state.units) {
-      drawHealthBar(ctx, unit);
+      const ghostState = ghostHealthRef.current.get(unit.id);
+      let ghostHealth: number;
+
+      if (!ghostState) {
+        // New unit - initialize ghost health to current health
+        ghostHealth = unit.health;
+        ghostHealthRef.current.set(unit.id, {
+          ghostHealth: unit.health,
+          lastHealth: unit.health,
+        });
+      } else if (unit.health < ghostState.lastHealth) {
+        // Damage taken - ghost stays at previous health, will decay
+        ghostHealth = ghostState.ghostHealth;
+        ghostHealthRef.current.set(unit.id, {
+          ghostHealth: ghostState.ghostHealth,
+          lastHealth: unit.health,
+        });
+      } else if (unit.health > ghostState.lastHealth) {
+        // Healed - snap ghost to current health
+        ghostHealth = unit.health;
+        ghostHealthRef.current.set(unit.id, {
+          ghostHealth: unit.health,
+          lastHealth: unit.health,
+        });
+      } else {
+        // No health change - decay ghost toward current
+        const diff = ghostState.ghostHealth - unit.health;
+        if (diff > 0.1) {
+          ghostHealth = ghostState.ghostHealth - diff * GHOST_HEALTH_DECAY_RATE;
+          ghostHealthRef.current.set(unit.id, {
+            ghostHealth,
+            lastHealth: unit.health,
+          });
+        } else {
+          // Close enough - snap to current
+          ghostHealth = unit.health;
+          ghostHealthRef.current.set(unit.id, {
+            ghostHealth: unit.health,
+            lastHealth: unit.health,
+          });
+        }
+      }
+
+      drawHealthBar(ctx, unit, ghostHealth);
     }
 
     // Debuff indicators (separate pass - above health bars)
@@ -369,10 +430,14 @@ function drawUnitBody(
   isSelected: boolean,
   isBeingDragged: boolean
 ): void {
-  const { position, color, shape, size, team } = unit;
+  const { position, color, shape, size, team, visualOffset } = unit;
+
+  // Apply visual offset (lunge/knockback) to rendered position
+  const renderX = position.x + (visualOffset?.x ?? 0);
+  const renderY = position.y + (visualOffset?.y ?? 0);
 
   ctx.save();
-  ctx.translate(position.x, position.y);
+  ctx.translate(renderX, renderY);
 
   // Selection ring
   if (isSelected || isBeingDragged) {
@@ -427,11 +492,19 @@ function drawUnitBody(
   ctx.restore();
 }
 
-function drawHealthBar(ctx: CanvasRenderingContext2D, unit: UnitRenderData): void {
-  const { position, size, health, stats } = unit;
+function drawHealthBar(
+  ctx: CanvasRenderingContext2D,
+  unit: UnitRenderData,
+  ghostHealth: number
+): void {
+  const { position, size, health, stats, visualOffset } = unit;
+
+  // Apply visual offset to match unit body position
+  const renderX = position.x + (visualOffset?.x ?? 0);
+  const renderY = position.y + (visualOffset?.y ?? 0);
 
   ctx.save();
-  ctx.translate(position.x, position.y);
+  ctx.translate(renderX, renderY);
 
   const barWidth = size * 2.5;
   const barHeight = 6;
@@ -441,7 +514,14 @@ function drawHealthBar(ctx: CanvasRenderingContext2D, unit: UnitRenderData): voi
   ctx.fillStyle = ARENA_COLORS.healthBarBg;
   ctx.fillRect(-barWidth / 2 - 1, barY - 1, barWidth + 2, barHeight + 2);
 
-  // Fill
+  // Ghost health bar (shows damage taken as dark red trailing effect)
+  const ghostPercent = ghostHealth / stats.maxHealth;
+  if (ghostPercent > health / stats.maxHealth) {
+    ctx.fillStyle = ARENA_COLORS.healthGhost;
+    ctx.fillRect(-barWidth / 2, barY, barWidth * ghostPercent, barHeight);
+  }
+
+  // Current health fill
   const healthPercent = health / stats.maxHealth;
   ctx.fillStyle =
     healthPercent > 0.5
@@ -617,10 +697,14 @@ function drawDebuffIndicator(ctx: CanvasRenderingContext2D, unit: UnitRenderData
   );
   if (!hasShockwaveDebuff) return;
 
-  const { position, size } = unit;
+  const { position, size, visualOffset } = unit;
+
+  // Apply visual offset to match unit body position
+  const renderX = position.x + (visualOffset?.x ?? 0);
+  const renderY = position.y + (visualOffset?.y ?? 0);
 
   ctx.save();
-  ctx.translate(position.x, position.y);
+  ctx.translate(renderX, renderY);
 
   // Position above health bar
   const iconY = -size - 32;

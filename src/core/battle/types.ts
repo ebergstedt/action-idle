@@ -100,6 +100,8 @@ export interface UnitRenderData {
   shuffleDirection: Vector2 | null;
   shuffleTimer: number;
   activeModifiers: ModifierRenderData[];
+  /** Visual offset for melee lunge/knockback effects */
+  visualOffset: Vector2;
 }
 
 /**
