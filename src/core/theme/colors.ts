@@ -208,6 +208,31 @@ export const DEBUFF_COLORS = {
   shockwaveGlow: 'rgba(135, 206, 250, 0.4)',
 } as const;
 
+// =============================================================================
+// WAX SEAL COLORS - Victory/Defeat Screen
+// =============================================================================
+
+export const WAX_SEAL_COLORS = {
+  victory: {
+    primary: '#2E7D32', // Forest green
+    secondary: '#1B5E20', // Dark green
+    highlight: '#4CAF50', // Light green highlight
+    text: '#FFFFFF',
+  },
+  defeat: {
+    primary: '#8B0000', // Dark red
+    secondary: '#5C0000', // Darker red
+    highlight: '#C62828', // Light red highlight
+    text: '#FFFFFF',
+  },
+  draw: {
+    primary: '#616161', // Gray
+    secondary: '#424242', // Dark gray
+    highlight: '#9E9E9E', // Light gray highlight
+    text: '#FFFFFF',
+  },
+} as const;
+
 /**
  * Get castle color based on team
  */

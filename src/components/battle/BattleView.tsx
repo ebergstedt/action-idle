@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { useBattle, BattleSpeed } from '../../hooks/useBattle';
 import { BattleCanvas } from './BattleCanvas';
+import { WaxSealOverlay } from './WaxSealOverlay';
+import { MapLegend } from './MapLegend';
 import { UnitRenderData } from '../../core/battle';
 import {
   MIN_ARENA_WIDTH,
@@ -9,13 +11,7 @@ import {
   SHOCKWAVE_DEBUFF_MOVE_SPEED,
   SHOCKWAVE_DEBUFF_DAMAGE,
 } from '../../core/battle/BattleConfig';
-import {
-  UNIT_TYPE_COLORS,
-  UI_COLORS,
-  ARENA_COLORS,
-  DEBUFF_COLORS,
-  hexToRgba,
-} from '../../core/theme/colors';
+import { UI_COLORS, ARENA_COLORS, DEBUFF_COLORS, hexToRgba } from '../../core/theme/colors';
 
 // Parchment theme styles - all text black for readability
 const styles = {
@@ -131,7 +127,7 @@ export function BattleView() {
       {/* Left side - Arena (2/3) */}
       <div
         ref={containerRef}
-        className="flex-[2] flex flex-col items-center justify-center gap-2 min-w-0"
+        className="flex-[2] flex flex-col items-center justify-center gap-2 min-w-0 relative"
       >
         <BattleCanvas
           state={state}
@@ -143,6 +139,8 @@ export function BattleView() {
           onSelectUnit={selectUnit}
           onSelectUnits={selectUnits}
         />
+        {/* Victory/Defeat Overlay */}
+        <WaxSealOverlay outcome={state.outcome} onDismiss={handleReset} />
       </div>
 
       {/* Right side - Info Panel */}
@@ -472,34 +470,8 @@ function ControlsPanel({
         </div>
       </div>
 
-      <div className="pt-4" style={{ borderTop: `1px solid ${UI_COLORS.parchmentDark}` }}>
-        <h4 className="text-sm font-semibold mb-2" style={styles.textFaded}>
-          Unit Types
-        </h4>
-        <div className="space-y-2 text-sm" style={styles.text}>
-          <div className="flex items-center gap-2">
-            <span
-              className="inline-block w-3 h-3"
-              style={{ backgroundColor: UNIT_TYPE_COLORS.warrior.player }}
-            />
-            <span>Warrior - Tanky melee</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span
-              className="inline-block w-0 h-0 border-l-[6px] border-r-[6px] border-b-[10px] border-l-transparent border-r-transparent"
-              style={{ borderBottomColor: UNIT_TYPE_COLORS.archer.player }}
-            />
-            <span>Archer - Ranged DPS</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span
-              className="inline-block w-3 h-3 rounded-full"
-              style={{ backgroundColor: UNIT_TYPE_COLORS.knight.player }}
-            />
-            <span>Knight - Fast melee</span>
-          </div>
-        </div>
-      </div>
+      {/* Map Legend */}
+      <MapLegend className="mt-4" />
 
       {!hasStarted && (
         <div className="text-sm mt-2" style={{ color: UI_COLORS.black }}>
