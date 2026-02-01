@@ -2,7 +2,20 @@ import { useEffect, useRef, useState } from 'react';
 import { useBattle, BattleSpeed } from '../../hooks/useBattle';
 import { BattleCanvas } from './BattleCanvas';
 import { Unit } from '../../core/battle';
-import { UNIT_TYPE_COLORS, UI_COLORS, ARENA_COLORS } from '../../core/theme/colors';
+import {
+  MIN_ARENA_WIDTH,
+  MIN_ARENA_HEIGHT,
+  ARENA_ASPECT_RATIO,
+  SHOCKWAVE_DEBUFF_MOVE_SPEED,
+  SHOCKWAVE_DEBUFF_DAMAGE,
+} from '../../core/battle/BattleConfig';
+import {
+  UNIT_TYPE_COLORS,
+  UI_COLORS,
+  ARENA_COLORS,
+  DEBUFF_COLORS,
+  hexToRgba,
+} from '../../core/theme/colors';
 
 // Parchment theme styles - all text black for readability
 const styles = {
@@ -56,8 +69,11 @@ export function BattleView() {
 
         // Use most of available width, cap height to maintain playable aspect ratio
         // Wider arenas work great for tactical gameplay on PC
-        const width = Math.max(600, availableWidth);
-        const height = Math.max(400, Math.min(availableHeight, width * 0.65));
+        const width = Math.max(MIN_ARENA_WIDTH, availableWidth);
+        const height = Math.max(
+          MIN_ARENA_HEIGHT,
+          Math.min(availableHeight, width * ARENA_ASPECT_RATIO)
+        );
 
         setArenaSize({ width, height });
 
@@ -174,7 +190,7 @@ function UnitInfoPanel({ unit, onDeselect }: UnitInfoPanelProps) {
           style={{
             backgroundColor:
               unit.team === 'player' ? ARENA_COLORS.healthHigh : ARENA_COLORS.healthLow,
-            color: '#FFFFFF',
+            color: UI_COLORS.white,
           }}
         >
           {unit.team === 'player' ? 'Allied' : 'Enemy'}
@@ -269,6 +285,24 @@ function UnitInfoPanel({ unit, onDeselect }: UnitInfoPanelProps) {
         </div>
       </div>
 
+      {/* Active Modifiers (Buffs/Debuffs) */}
+      {unit.activeModifiers.length > 0 && (
+        <div className="pt-2" style={{ borderTop: `1px solid ${UI_COLORS.parchmentDark}` }}>
+          <div className="text-sm mb-2" style={styles.textFaded}>
+            Active Effects
+          </div>
+          <div className="space-y-2">
+            {unit.activeModifiers.map((mod) => (
+              <ModifierDisplay
+                key={mod.id}
+                sourceId={mod.sourceId}
+                remainingDuration={mod.remainingDuration}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Position */}
       <div
         className="text-sm pt-2"
@@ -278,6 +312,76 @@ function UnitInfoPanel({ unit, onDeselect }: UnitInfoPanelProps) {
       </div>
     </div>
   );
+}
+
+interface ModifierDisplayProps {
+  sourceId: string;
+  remainingDuration: number;
+}
+
+function ModifierDisplay({ sourceId, remainingDuration }: ModifierDisplayProps) {
+  // Map source IDs to display info
+  const modifierInfo = getModifierDisplayInfo(sourceId);
+
+  return (
+    <div
+      className="flex items-start gap-2 p-2 rounded text-sm"
+      style={{ backgroundColor: modifierInfo.bgColor }}
+    >
+      <div
+        className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0"
+        style={{ backgroundColor: modifierInfo.iconBgColor }}
+      >
+        <span style={{ color: UI_COLORS.white, fontSize: '12px' }}>{modifierInfo.icon}</span>
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="font-semibold" style={{ color: modifierInfo.textColor }}>
+          {modifierInfo.name}
+        </div>
+        <div className="text-sm" style={{ color: modifierInfo.textColor, opacity: 0.8 }}>
+          {modifierInfo.effects.map((effect, i) => (
+            <div key={i}>{effect}</div>
+          ))}
+        </div>
+        <div className="text-sm mt-1" style={{ color: modifierInfo.textColor, opacity: 0.6 }}>
+          {remainingDuration.toFixed(1)}s remaining
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function getModifierDisplayInfo(sourceId: string): {
+  name: string;
+  icon: string;
+  effects: string[];
+  bgColor: string;
+  iconBgColor: string;
+  textColor: string;
+} {
+  switch (sourceId) {
+    case 'castle_death_shockwave':
+      return {
+        name: 'Castle Collapse',
+        icon: 'X',
+        effects: [
+          `${Math.abs(SHOCKWAVE_DEBUFF_MOVE_SPEED * 100)}% Move Speed`,
+          `${Math.abs(SHOCKWAVE_DEBUFF_DAMAGE * 100)}% Damage`,
+        ],
+        bgColor: hexToRgba(DEBUFF_COLORS.shockwave, 0.2),
+        iconBgColor: DEBUFF_COLORS.shockwave,
+        textColor: UI_COLORS.black,
+      };
+    default:
+      return {
+        name: sourceId,
+        icon: '?',
+        effects: ['Unknown effect'],
+        bgColor: 'rgba(128, 128, 128, 0.2)',
+        iconBgColor: '#808080',
+        textColor: UI_COLORS.black,
+      };
+  }
 }
 
 interface ControlsPanelProps {
@@ -314,7 +418,7 @@ function ControlsPanel({
             className="w-full px-4 py-2 rounded font-semibold hover:opacity-90"
             style={{
               backgroundColor: ARENA_COLORS.healthHigh,
-              color: '#FFFFFF',
+              color: UI_COLORS.white,
             }}
           >
             {hasStarted ? 'Resume' : 'Start Battle'}

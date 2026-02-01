@@ -25,12 +25,14 @@ import {
   WorldEventType,
   WorldEventMap,
   EventListener,
+  KilledEvent,
 } from '../IEntity';
 import { IEntityWorld } from './BaseEntity';
 import { IBattleWorld } from './IBattleWorld';
 import { UnitEntity } from './UnitEntity';
 import { ProjectileEntity, createProjectile } from './ProjectileEntity';
 import { CastleEntity } from './CastleEntity';
+import { ShockwaveEntity, createShockwave } from './ShockwaveEntity';
 import { WorldEventEmitter } from './EventEmitter';
 
 /**
@@ -41,7 +43,9 @@ export class BattleWorld implements IEntityWorld, IBattleWorld, IWorldEventEmitt
   private units: UnitEntity[] = [];
   private projectiles: ProjectileEntity[] = [];
   private castles: CastleEntity[] = [];
+  private shockwaves: ShockwaveEntity[] = [];
   private nextProjectileId = 1;
+  private nextShockwaveId = 1;
   private arenaBounds: EntityBounds | null = null;
   private worldEvents = new WorldEventEmitter();
 
@@ -72,12 +76,54 @@ export class BattleWorld implements IEntityWorld, IBattleWorld, IWorldEventEmitt
   /**
    * Add a castle to the world.
    * Emits 'entity_added' world event.
+   * Subscribes to 'killed' event to spawn shockwave on death.
    */
   addCastle(castle: CastleEntity): void {
     castle.setWorld(this);
     castle.init();
     this.castles.push(castle);
     this.worldEvents.emitWorld({ type: 'entity_added', entity: castle });
+
+    // Subscribe to castle death to spawn shockwave
+    castle.on('killed', (event: KilledEvent) => {
+      this.spawnShockwave(event.entity.position.clone(), castle.team);
+    });
+  }
+
+  /**
+   * Add a shockwave to the world.
+   */
+  addShockwave(shockwave: ShockwaveEntity): void {
+    shockwave.setWorld(this);
+    shockwave.init();
+    this.shockwaves.push(shockwave);
+    this.worldEvents.emitWorld({ type: 'entity_added', entity: shockwave });
+  }
+
+  /**
+   * Spawn a shockwave at a position.
+   * @param position - Center of the shockwave
+   * @param sourceTeam - The team whose castle was destroyed (this team's units get debuffed)
+   */
+  spawnShockwave(position: Vector2, sourceTeam: UnitTeam): void {
+    const id = `shockwave_${this.nextShockwaveId++}`;
+
+    // Calculate max radius to cover entire arena (distance to farthest corner)
+    let maxRadius: number | undefined;
+    if (this.arenaBounds) {
+      const { width, height } = this.arenaBounds;
+      // Check distance to all 4 corners and use the maximum
+      const corners = [
+        new Vector2(0, 0),
+        new Vector2(width, 0),
+        new Vector2(0, height),
+        new Vector2(width, height),
+      ];
+      maxRadius = Math.max(...corners.map((corner) => position.distanceTo(corner)));
+    }
+
+    const shockwave = createShockwave(id, position, sourceTeam, maxRadius);
+    this.addShockwave(shockwave);
   }
 
   /**
@@ -114,10 +160,17 @@ export class BattleWorld implements IEntityWorld, IBattleWorld, IWorldEventEmitt
       castle.destroy();
       castle.setWorld(null);
     }
+    for (const shockwave of this.shockwaves) {
+      this.worldEvents.emitWorld({ type: 'entity_removed', entity: shockwave });
+      shockwave.destroy();
+      shockwave.setWorld(null);
+    }
     this.units = [];
     this.projectiles = [];
     this.castles = [];
+    this.shockwaves = [];
     this.nextProjectileId = 1;
+    this.nextShockwaveId = 1;
   }
 
   // === Main Update Loop ===
@@ -145,7 +198,12 @@ export class BattleWorld implements IEntityWorld, IBattleWorld, IWorldEventEmitt
       castle.update(delta);
     }
 
-    // Phase 5: Remove destroyed entities
+    // Phase 5: Update shockwaves (expansion and debuff application)
+    for (const shockwave of this.shockwaves) {
+      shockwave.update(delta);
+    }
+
+    // Phase 6: Remove destroyed entities
     this.removeDestroyedEntities();
   }
 
@@ -213,12 +271,23 @@ export class BattleWorld implements IEntityWorld, IBattleWorld, IWorldEventEmitt
       }
       return true;
     });
+
+    // Remove destroyed shockwaves
+    this.shockwaves = this.shockwaves.filter((shockwave) => {
+      if (shockwave.isDestroyed()) {
+        shockwave.destroy();
+        this.worldEvents.emitWorld({ type: 'entity_removed', entity: shockwave });
+        shockwave.setWorld(null);
+        return false;
+      }
+      return true;
+    });
   }
 
   // === IEntityWorld Implementation ===
 
   getEntities(): readonly IEntity[] {
-    return [...this.units, ...this.projectiles, ...this.castles];
+    return [...this.units, ...this.projectiles, ...this.castles, ...this.shockwaves];
   }
 
   query<T extends IEntity>(predicate: (entity: IEntity) => entity is T): T[] {
@@ -331,6 +400,10 @@ export class BattleWorld implements IEntityWorld, IBattleWorld, IWorldEventEmitt
 
   getProjectiles(): readonly ProjectileEntity[] {
     return this.projectiles;
+  }
+
+  getShockwaves(): readonly ShockwaveEntity[] {
+    return this.shockwaves;
   }
 
   getPlayerUnits(): UnitEntity[] {

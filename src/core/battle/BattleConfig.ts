@@ -32,6 +32,22 @@ export const SEPARATION_FORCE = 150;
 // =============================================================================
 
 /**
+ * Minimum arena width in pixels.
+ */
+export const MIN_ARENA_WIDTH = 600;
+
+/**
+ * Minimum arena height in pixels.
+ */
+export const MIN_ARENA_HEIGHT = 400;
+
+/**
+ * Arena height as a fraction of width (aspect ratio).
+ * 0.65 = height is 65% of width for a wide tactical view.
+ */
+export const ARENA_ASPECT_RATIO = 0.65;
+
+/**
  * Default margin from arena edges for entity bounds.
  */
 export const DEFAULT_ARENA_MARGIN = 10;
@@ -111,6 +127,19 @@ export const DEFAULT_SHUFFLE_CONFIG: ShuffleConfig = {
  * Outside this radius, units march forward until reaching enemy zone.
  */
 export const AGGRO_RADIUS = 150;
+
+/**
+ * How much closer a new target must be to cause target switch.
+ * 0.7 = new target must be 70% the distance of current target (30% closer).
+ * Lower value = more sticky targeting, higher value = more responsive.
+ */
+export const TARGET_SWITCH_DISTANCE_RATIO = 0.7;
+
+/**
+ * Cooldown in seconds before a unit can switch to a closer target.
+ * Prevents "indecisive" behavior where units flip-flop between targets.
+ */
+export const TARGET_SWITCH_COOLDOWN_SECONDS = 2.0;
 
 /**
  * Bonus score for targeting enemies already being attacked (focus fire).
@@ -234,6 +263,11 @@ export const MAX_UNIT_SCALE = 2;
 export const DRAG_OVERLAP_ITERATIONS = 20;
 
 /**
+ * Margin from arena edges when defining drag bounds for unit placement.
+ */
+export const DRAG_BOUNDS_MARGIN = 20;
+
+/**
  * Minimum drag distance (squared) to register as a drag vs click.
  */
 export const MIN_DRAG_DISTANCE_SQUARED = 25;
@@ -316,6 +350,12 @@ export const OVERLAP_BASE_PUSH = 1;
  */
 export const MIN_SEPARATION_DISTANCE = 0.1;
 
+/**
+ * Center offset for random direction generation.
+ * Used as (Math.random() - CENTER) to get values in range [-0.5, 0.5].
+ */
+export const RANDOM_DIRECTION_CENTER = 0.5;
+
 // =============================================================================
 // ABILITY SYSTEM DEFAULTS
 // =============================================================================
@@ -360,3 +400,33 @@ export const MELEE_SIZE_MULTIPLIER = 2;
  * Units avoid allies within (minDist * this value).
  */
 export const ALLY_AVOIDANCE_DISTANCE_MULTIPLIER = 2;
+
+// =============================================================================
+// SHOCKWAVE CONFIGURATION
+// =============================================================================
+
+/**
+ * Shockwave expansion speed in pixels per second.
+ */
+export const SHOCKWAVE_EXPANSION_SPEED = 120;
+
+/**
+ * Fallback maximum radius if arena bounds aren't available.
+ * Normally calculated dynamically based on arena diagonal.
+ */
+export const SHOCKWAVE_MAX_RADIUS_FALLBACK = 2000;
+
+/**
+ * Movement speed debuff applied by shockwave (-0.9 = -90% speed).
+ */
+export const SHOCKWAVE_DEBUFF_MOVE_SPEED = -0.9;
+
+/**
+ * Damage debuff applied by shockwave (-0.9 = -90% damage).
+ */
+export const SHOCKWAVE_DEBUFF_DAMAGE = -0.9;
+
+/**
+ * Duration of shockwave debuff in seconds.
+ */
+export const SHOCKWAVE_DEBUFF_DURATION_SECONDS = 15;

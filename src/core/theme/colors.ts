@@ -66,6 +66,7 @@ export const UI_COLORS = {
   inkBlack: '#2C1810',
   inkFaded: '#8B7355',
   black: '#000000',
+  white: '#FFFFFF',
 
   // Accents
   goldPrimary: '#FFD700',
@@ -185,6 +186,19 @@ export const CASTLE_COLORS = {
   player: '#808080', // Grey for both teams
   enemy: '#808080',
   door: '#4A3520', // Dark brown for castle door/gate
+} as const;
+
+// =============================================================================
+// DEBUFF COLORS
+// =============================================================================
+
+export const DEBUFF_COLORS = {
+  /** Color for castle death shockwave debuff indicator */
+  shockwave: '#4A90D9', // Light blue
+  /** Color for the expanding shockwave ring */
+  shockwaveRing: 'rgba(74, 144, 217, 0.6)',
+  /** Inner glow color for shockwave */
+  shockwaveGlow: 'rgba(135, 206, 250, 0.4)',
 } as const;
 
 /**

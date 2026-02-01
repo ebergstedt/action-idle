@@ -16,9 +16,10 @@ export { BaseEntity, type IEntityWorld } from './BaseEntity';
 export { type IBattleWorld } from './IBattleWorld';
 
 // Entity implementations
-export { UnitEntity, type UnitData } from './UnitEntity';
+export { UnitEntity, type UnitData, type TemporaryModifier } from './UnitEntity';
 export { ProjectileEntity, type ProjectileData, createProjectile } from './ProjectileEntity';
 export { CastleEntity, type CastleData } from './CastleEntity';
+export { ShockwaveEntity, type ShockwaveData, createShockwave } from './ShockwaveEntity';
 
 // Entity manager
 export { BattleWorld } from './BattleWorld';

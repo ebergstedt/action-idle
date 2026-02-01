@@ -21,6 +21,7 @@ import {
   MIN_UNIT_SCALE,
   OVERLAP_BASE_PUSH,
   OVERLAP_PUSH_FACTOR,
+  RANDOM_DIRECTION_CENTER,
   REFERENCE_ARENA_HEIGHT,
   UNIT_SPACING,
   ZONE_CLAMP_MARGIN,
@@ -68,6 +69,7 @@ export class BattleEngine {
       units: this.world.getUnits().map((u) => u.toLegacyUnit()),
       projectiles: this.world.getProjectiles().map((p) => p.toLegacyProjectile()),
       castles: this.world.getCastles().map((c) => c.toLegacyCastle()),
+      shockwaves: this.world.getShockwaves().map((s) => s.toLegacyShockwave()),
       isRunning: this.isRunning,
       hasStarted: this.hasStarted,
       waveNumber: this.waveNumber,
@@ -168,6 +170,8 @@ export class BattleEngine {
       shuffleDirection: null,
       shuffleTimer: 0,
       seekMode: false,
+      retargetCooldown: 0,
+      activeModifiers: [],
     };
 
     const entity = new UnitEntity(id, position.clone(), data);
@@ -263,7 +267,10 @@ export class BattleEngine {
             const pushDir =
               dist > MIN_SEPARATION_DISTANCE
                 ? diff.normalize()
-                : new Vector2(Math.random() - 0.5, Math.random() - 0.5).normalize();
+                : new Vector2(
+                    Math.random() - RANDOM_DIRECTION_CENTER,
+                    Math.random() - RANDOM_DIRECTION_CENTER
+                  ).normalize();
             const pushAmount = overlap * OVERLAP_PUSH_FACTOR + OVERLAP_BASE_PUSH;
 
             unitA.position = unitA.position.add(pushDir.multiply(pushAmount));

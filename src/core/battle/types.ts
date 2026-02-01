@@ -69,6 +69,16 @@ export interface UnitStats {
 }
 
 /**
+ * Legacy modifier interface for React rendering.
+ * Simplified version of ActiveModifier for display purposes.
+ */
+export interface LegacyModifier {
+  id: string;
+  sourceId: string;
+  remainingDuration: number;
+}
+
+/**
  * Legacy unit interface for React rendering.
  * This is a snapshot of a unit's state, NOT the live entity.
  *
@@ -89,6 +99,7 @@ export interface Unit {
   size: number;
   shuffleDirection: Vector2 | null;
   shuffleTimer: number;
+  activeModifiers: LegacyModifier[];
 }
 
 /**
@@ -120,6 +131,18 @@ export interface Castle {
 }
 
 /**
+ * Legacy shockwave interface for React rendering.
+ */
+export interface Shockwave {
+  id: string;
+  position: Vector2;
+  currentRadius: number;
+  maxRadius: number;
+  sourceTeam: UnitTeam;
+  color: string;
+}
+
+/**
  * Battle outcome after battle ends.
  */
 export type BattleOutcome = 'pending' | 'player_victory' | 'enemy_victory' | 'draw';
@@ -134,6 +157,7 @@ export interface BattleState {
   units: Unit[];
   projectiles: Projectile[];
   castles: Castle[];
+  shockwaves: Shockwave[];
   isRunning: boolean;
   hasStarted: boolean;
   waveNumber: number;

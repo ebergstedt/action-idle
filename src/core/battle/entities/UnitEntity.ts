@@ -22,9 +22,29 @@ import {
   MELEE_SIZE_MULTIPLIER,
   MIN_MOVE_DISTANCE,
   PATH_DOT_THRESHOLD,
+  TARGET_SWITCH_COOLDOWN_SECONDS,
+  TARGET_SWITCH_DISTANCE_RATIO,
   UNIT_SPACING,
   ZONE_HEIGHT_PERCENT,
 } from '../BattleConfig';
+
+/**
+ * Temporary modifier (buff/debuff) applied to a unit.
+ * Modifiers have a duration and modify stats multiplicatively.
+ * This is simpler than the upgrade system's ActiveModifier - just for runtime effects.
+ */
+export interface TemporaryModifier {
+  /** Unique ID for this modifier instance */
+  id: string;
+  /** Source identifier (e.g., 'castle_death_shockwave') */
+  sourceId: string;
+  /** Movement speed modifier (-0.9 = -90% speed) */
+  moveSpeedMod: number;
+  /** Damage modifier (-0.9 = -90% damage) */
+  damageMod: number;
+  /** Remaining duration in seconds */
+  remainingDuration: number;
+}
 import { clampToArenaInPlace } from '../BoundsEnforcer';
 import { applyShuffle } from '../shuffle';
 import { AttackMode, Unit, UnitStats, UnitTeam, UnitType } from '../types';
@@ -52,6 +72,10 @@ export interface UnitData {
   shuffleTimer: number;
   // Once true, unit permanently seeks targets instead of marching
   seekMode: boolean;
+  // Cooldown before unit can switch to a closer target
+  retargetCooldown: number;
+  // Active modifiers (buffs/debuffs)
+  activeModifiers: TemporaryModifier[];
 }
 
 /**
@@ -128,12 +152,81 @@ export class UnitEntity extends BaseEntity {
   set seekMode(value: boolean) {
     this.data.seekMode = value;
   }
+  get retargetCooldown(): number {
+    return this.data.retargetCooldown;
+  }
+  set retargetCooldown(value: number) {
+    this.data.retargetCooldown = value;
+  }
+  get activeModifiers(): TemporaryModifier[] {
+    return this.data.activeModifiers;
+  }
 
   /**
    * Get the world as IBattleWorld for battle-specific queries.
    */
   private getBattleWorld(): IBattleWorld | null {
     return this.world as IBattleWorld | null;
+  }
+
+  // === Modifier Methods ===
+
+  /**
+   * Apply a modifier to this unit.
+   * If a modifier with the same sourceId exists, it refreshes the duration instead of stacking.
+   */
+  applyModifier(modifier: TemporaryModifier): void {
+    // Check for existing modifier from same source
+    const existing = this.data.activeModifiers.find((m) => m.sourceId === modifier.sourceId);
+    if (existing) {
+      // Refresh duration instead of stacking
+      existing.remainingDuration = Math.max(existing.remainingDuration, modifier.remainingDuration);
+      return;
+    }
+    this.data.activeModifiers.push(modifier);
+  }
+
+  /**
+   * Tick all active modifiers, removing expired ones.
+   */
+  tickModifiers(delta: number): void {
+    for (let i = this.data.activeModifiers.length - 1; i >= 0; i--) {
+      this.data.activeModifiers[i].remainingDuration -= delta;
+      if (this.data.activeModifiers[i].remainingDuration <= 0) {
+        this.data.activeModifiers.splice(i, 1);
+      }
+    }
+  }
+
+  /**
+   * Get movement speed after applying all active modifiers.
+   */
+  getModifiedMoveSpeed(): number {
+    let speed = this.stats.moveSpeed;
+    for (const mod of this.data.activeModifiers) {
+      // Multiplicative: -0.9 means 10% of original
+      speed *= 1 + mod.moveSpeedMod;
+    }
+    return Math.max(0, speed);
+  }
+
+  /**
+   * Get damage multiplier from all active modifiers.
+   * Returns a multiplier to apply to damage dealt.
+   */
+  getDamageMultiplier(): number {
+    let mult = 1;
+    for (const mod of this.data.activeModifiers) {
+      mult *= 1 + mod.damageMod;
+    }
+    return Math.max(0, mult);
+  }
+
+  /**
+   * Check if unit has a modifier from a specific source.
+   */
+  hasModifierFromSource(sourceId: string): boolean {
+    return this.data.activeModifiers.some((m) => m.sourceId === sourceId);
   }
 
   /**
@@ -147,6 +240,14 @@ export class UnitEntity extends BaseEntity {
     // Skip if already destroyed (death is handled by takeDamage)
     if (this._destroyed || this.health <= 0) {
       return;
+    }
+
+    // Tick active modifiers (buffs/debuffs)
+    this.tickModifiers(delta);
+
+    // Decrement retarget cooldown
+    if (this.retargetCooldown > 0) {
+      this.retargetCooldown -= delta;
     }
 
     // Phase 1: Target acquisition
@@ -208,6 +309,11 @@ export class UnitEntity extends BaseEntity {
       size: this.size,
       shuffleDirection: this.shuffleDirection,
       shuffleTimer: this.shuffleTimer,
+      activeModifiers: this.activeModifiers.map((m) => ({
+        id: m.id,
+        sourceId: m.sourceId,
+        remainingDuration: m.remainingDuration,
+      })),
     };
   }
 
@@ -217,23 +323,57 @@ export class UnitEntity extends BaseEntity {
     const world = this.getBattleWorld();
     if (!world) return;
 
-    // Clear dead/destroyed targets
+    // Clear dead/destroyed targets (and reset retarget cooldown when target dies)
     if (this.target && (this.target.isDestroyed() || this.target.health <= 0)) {
       this.target = null;
+      this.retargetCooldown = 0; // Can immediately acquire new target
     }
     if (this.castleTarget && (this.castleTarget.isDestroyed() || this.castleTarget.health <= 0)) {
       this.castleTarget = null;
-    }
-
-    // If already have a valid unit target, keep it (prioritize units over castles)
-    if (this.target) {
-      this.castleTarget = null;
-      return;
+      this.retargetCooldown = 0;
     }
 
     // Check if unit should permanently enter seek mode
     if (!this.seekMode && this.isDeepInEnemyZone()) {
       this.seekMode = true;
+    }
+
+    // In seek mode, recheck for closer targets (with cooldown)
+    if (this.seekMode) {
+      const nearestUnit = this.findNearestUnit();
+      const nearestCastle = this.findNearestCastle();
+
+      // If we have a current target and cooldown expired, check for closer targets
+      if (this.target && nearestUnit && this.retargetCooldown <= 0) {
+        const currentDist = this.position.distanceTo(this.target.position);
+        const nearestDist = this.position.distanceTo(nearestUnit.position);
+        // Switch to closer target if it's significantly closer
+        if (nearestDist < currentDist * TARGET_SWITCH_DISTANCE_RATIO) {
+          this.target = nearestUnit;
+          this.castleTarget = null;
+          this.retargetCooldown = TARGET_SWITCH_COOLDOWN_SECONDS;
+          return;
+        }
+      }
+
+      // If no unit target yet, acquire one
+      if (!this.target && (nearestUnit || nearestCastle)) {
+        this.setClosestTarget(nearestUnit, nearestCastle);
+        this.retargetCooldown = TARGET_SWITCH_COOLDOWN_SECONDS;
+        return;
+      }
+
+      // Keep existing valid target in seek mode
+      if (this.target) {
+        this.castleTarget = null;
+        return;
+      }
+    }
+
+    // If already have a valid unit target (not in seek mode), keep it
+    if (this.target) {
+      this.castleTarget = null;
+      return;
     }
 
     // Phase 1: Check for targets within aggro radius (always active)
@@ -244,17 +384,6 @@ export class UnitEntity extends BaseEntity {
       // Something in aggro range - target the closest one
       this.setClosestTarget(nearestUnitInRange, nearestCastleInRange);
       return;
-    }
-
-    // Phase 2: In seek mode - hunt down nearest target anywhere
-    if (this.seekMode) {
-      const nearestUnit = this.findNearestUnit();
-      const nearestCastle = this.findNearestCastle();
-
-      if (nearestUnit || nearestCastle) {
-        this.setClosestTarget(nearestUnit, nearestCastle);
-        return;
-      }
     }
 
     // Not in seek mode and nothing in aggro range - will march forward
@@ -517,11 +646,12 @@ export class UnitEntity extends BaseEntity {
       }
     }
 
-    // Combine forward movement with avoidance
-    let moveDirection = forwardDir.multiply(this.stats.moveSpeed).add(avoidance);
+    // Combine forward movement with avoidance (using modified speed)
+    const modifiedSpeed = this.getModifiedMoveSpeed();
+    let moveDirection = forwardDir.multiply(modifiedSpeed).add(avoidance);
     const speed = moveDirection.magnitude();
-    if (speed > this.stats.moveSpeed) {
-      moveDirection = moveDirection.normalize().multiply(this.stats.moveSpeed);
+    if (speed > modifiedSpeed) {
+      moveDirection = moveDirection.normalize().multiply(modifiedSpeed);
     }
 
     const movement = moveDirection.multiply(delta);
@@ -579,19 +709,21 @@ export class UnitEntity extends BaseEntity {
 
   private performAttack(target: UnitEntity, attackMode: AttackMode): void {
     const isMelee = attackMode.range <= MELEE_ATTACK_RANGE_THRESHOLD;
+    // Apply damage modifier from buffs/debuffs
+    const modifiedDamage = Math.round(attackMode.damage * this.getDamageMultiplier());
 
     // Emit attacked event: entity = attacker, target = who was attacked
     this.emit({
       type: 'attacked',
       entity: this,
       target,
-      damage: attackMode.damage,
+      damage: modifiedDamage,
       attackMode: isMelee ? 'melee' : 'ranged',
     });
 
     if (isMelee) {
       // Direct damage
-      target.takeDamage(attackMode.damage, this);
+      target.takeDamage(modifiedDamage, this);
     } else {
       // Spawn projectile
       const world = this.getBattleWorld();
@@ -599,7 +731,7 @@ export class UnitEntity extends BaseEntity {
         world.spawnProjectile(
           this.position.clone(),
           target.position.clone(),
-          attackMode.damage,
+          modifiedDamage,
           this.team,
           this, // Pass source unit for damage attribution
           getProjectileColor(this.team)
@@ -610,10 +742,12 @@ export class UnitEntity extends BaseEntity {
 
   private performCastleAttack(castle: CastleEntity, attackMode: AttackMode): void {
     const isMelee = attackMode.range <= MELEE_ATTACK_RANGE_THRESHOLD;
+    // Apply damage modifier from buffs/debuffs
+    const modifiedDamage = Math.round(attackMode.damage * this.getDamageMultiplier());
 
     if (isMelee) {
       // Direct damage
-      castle.takeDamage(attackMode.damage, this);
+      castle.takeDamage(modifiedDamage, this);
     } else {
       // Spawn projectile at castle
       const world = this.getBattleWorld();
@@ -621,7 +755,7 @@ export class UnitEntity extends BaseEntity {
         world.spawnProjectile(
           this.position.clone(),
           castle.position.clone(),
-          attackMode.damage,
+          modifiedDamage,
           this.team,
           this, // Pass source unit for damage attribution
           getProjectileColor(this.team)
@@ -674,11 +808,12 @@ export class UnitEntity extends BaseEntity {
       }
     }
 
-    // Combine movement with avoidance
-    moveDirection = moveDirection.multiply(this.stats.moveSpeed).add(avoidance);
+    // Combine movement with avoidance (using modified speed)
+    const modifiedSpeed = this.getModifiedMoveSpeed();
+    moveDirection = moveDirection.multiply(modifiedSpeed).add(avoidance);
     const speed = moveDirection.magnitude();
-    if (speed > this.stats.moveSpeed) {
-      moveDirection = moveDirection.normalize().multiply(this.stats.moveSpeed);
+    if (speed > modifiedSpeed) {
+      moveDirection = moveDirection.normalize().multiply(modifiedSpeed);
     }
 
     const movement = moveDirection.multiply(delta);
@@ -707,10 +842,10 @@ export class UnitEntity extends BaseEntity {
 
   private applyCombatShuffle(delta: number): void {
     // Use the existing shuffle module
-    // Create a Shuffleable object that the shuffle function can work with
+    // Create a Shuffleable object that the shuffle function can work with (using modified speed)
     const shuffleUnit = {
       position: this.position,
-      stats: { moveSpeed: this.stats.moveSpeed },
+      stats: { moveSpeed: this.getModifiedMoveSpeed() },
       shuffleDirection: this.shuffleDirection,
       shuffleTimer: this.shuffleTimer,
     };

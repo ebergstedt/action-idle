@@ -8,9 +8,17 @@
  */
 
 import { useEffect, useRef, useCallback, useState } from 'react';
-import { BattleState, Unit, Projectile, Castle, ZONE_HEIGHT_PERCENT } from '../../core/battle';
+import {
+  BattleState,
+  Unit,
+  Projectile,
+  Castle,
+  Shockwave,
+  ZONE_HEIGHT_PERCENT,
+} from '../../core/battle';
+import { DRAG_BOUNDS_MARGIN } from '../../core/battle/BattleConfig';
 import { Vector2 } from '../../core/physics/Vector2';
-import { ARENA_COLORS } from '../../core/theme/colors';
+import { ARENA_COLORS, UI_COLORS, CASTLE_COLORS, DEBUFF_COLORS } from '../../core/theme/colors';
 import {
   startDrag,
   calculateDragPositions,
@@ -59,12 +67,11 @@ export function BattleCanvas({
   // Calculate bounds for allied deployment zone
   const getDragBounds = useCallback((): DragBounds => {
     const zoneHeight = height * ZONE_HEIGHT_PERCENT;
-    const margin = 20;
     return {
-      minX: margin,
-      maxX: width - margin,
-      minY: height - zoneHeight + margin,
-      maxY: height - margin,
+      minX: DRAG_BOUNDS_MARGIN,
+      maxX: width - DRAG_BOUNDS_MARGIN,
+      minY: height - zoneHeight + DRAG_BOUNDS_MARGIN,
+      maxY: height - DRAG_BOUNDS_MARGIN,
     };
   }, [width, height]);
 
@@ -292,6 +299,11 @@ export function BattleCanvas({
     ctx.lineTo(width, height - zoneHeight);
     ctx.stroke();
 
+    // Shockwaves (draw early so other elements appear on top)
+    for (const shockwave of state.shockwaves) {
+      drawShockwave(ctx, shockwave, width, height);
+    }
+
     // Castles (draw before units so units appear on top)
     for (const castle of state.castles) {
       drawCastle(ctx, castle);
@@ -313,6 +325,11 @@ export function BattleCanvas({
     // Health bars (separate pass - units)
     for (const unit of state.units) {
       drawHealthBar(ctx, unit);
+    }
+
+    // Debuff indicators (separate pass - above health bars)
+    for (const unit of state.units) {
+      drawDebuffIndicator(ctx, unit);
     }
 
     // Health bars for castles (separate pass)
@@ -382,7 +399,7 @@ function drawUnitBody(
   // Unit shape
   ctx.globalAlpha = isBeingDragged ? 0.8 : 1;
   ctx.fillStyle = color;
-  ctx.strokeStyle = '#000000';
+  ctx.strokeStyle = UI_COLORS.black;
   ctx.lineWidth = 3;
 
   switch (shape) {
@@ -462,7 +479,7 @@ function drawSelectionBox(
   ctx.save();
 
   // Semi-transparent fill
-  ctx.fillStyle = 'rgba(0, 200, 255, 0.15)';
+  ctx.fillStyle = ARENA_COLORS.boxSelectFill;
   ctx.fillRect(box.minX, box.minY, width, height);
 
   // Border
@@ -482,7 +499,7 @@ function drawCastle(ctx: CanvasRenderingContext2D, castle: Castle): void {
 
   // Castle base - larger filled rectangle
   ctx.fillStyle = color;
-  ctx.strokeStyle = '#000000';
+  ctx.strokeStyle = UI_COLORS.black;
   ctx.lineWidth = 3;
 
   // Draw castle as a fortified structure (pentagon shape for tower look)
@@ -507,7 +524,7 @@ function drawCastle(ctx: CanvasRenderingContext2D, castle: Castle): void {
   ctx.stroke();
 
   // Castle door/gate
-  ctx.fillStyle = '#4A3520';
+  ctx.fillStyle = CASTLE_COLORS.door;
   const doorWidth = size * 0.4;
   const doorHeight = size * 0.6;
   ctx.fillRect(-doorWidth / 2, halfSize - doorHeight, doorWidth, doorHeight);
@@ -539,6 +556,90 @@ function drawCastleHealthBar(ctx: CanvasRenderingContext2D, castle: Castle): voi
         ? ARENA_COLORS.healthMedium
         : ARENA_COLORS.healthLow;
   ctx.fillRect(-barWidth / 2, barY, barWidth * healthPercent, barHeight);
+
+  ctx.restore();
+}
+
+function drawShockwave(
+  ctx: CanvasRenderingContext2D,
+  shockwave: Shockwave,
+  arenaWidth: number,
+  arenaHeight: number
+): void {
+  const { position, currentRadius, color } = shockwave;
+
+  ctx.save();
+
+  // Clip to arena bounds so shockwave doesn't render outside
+  ctx.beginPath();
+  ctx.rect(0, 0, arenaWidth, arenaHeight);
+  ctx.clip();
+
+  ctx.translate(position.x, position.y);
+
+  // Constant ring thickness
+  const ringThickness = 8;
+
+  // Outer glow
+  ctx.beginPath();
+  ctx.arc(0, 0, currentRadius, 0, Math.PI * 2);
+  ctx.strokeStyle = color;
+  ctx.lineWidth = ringThickness + 4;
+  ctx.globalAlpha = 0.3;
+  ctx.stroke();
+
+  // Main ring
+  ctx.beginPath();
+  ctx.arc(0, 0, currentRadius, 0, Math.PI * 2);
+  ctx.strokeStyle = DEBUFF_COLORS.shockwave;
+  ctx.lineWidth = ringThickness;
+  ctx.globalAlpha = 1;
+  ctx.stroke();
+
+  // Inner highlight
+  ctx.beginPath();
+  ctx.arc(0, 0, currentRadius - ringThickness / 2, 0, Math.PI * 2);
+  ctx.strokeStyle = DEBUFF_COLORS.shockwaveGlow;
+  ctx.lineWidth = 2;
+  ctx.globalAlpha = 0.6;
+  ctx.stroke();
+
+  ctx.restore();
+}
+
+function drawDebuffIndicator(ctx: CanvasRenderingContext2D, unit: Unit): void {
+  // Only draw if unit has shockwave debuff
+  const hasShockwaveDebuff = unit.activeModifiers.some(
+    (m) => m.sourceId === 'castle_death_shockwave'
+  );
+  if (!hasShockwaveDebuff) return;
+
+  const { position, size } = unit;
+
+  ctx.save();
+  ctx.translate(position.x, position.y);
+
+  // Position above health bar
+  const iconY = -size - 32;
+  const iconSize = 8;
+
+  // Draw a small skull-like icon (simplified as X in circle)
+  ctx.fillStyle = DEBUFF_COLORS.shockwave;
+  ctx.strokeStyle = UI_COLORS.white;
+  ctx.lineWidth = 1.5;
+
+  // Circle background
+  ctx.beginPath();
+  ctx.arc(0, iconY, iconSize, 0, Math.PI * 2);
+  ctx.fill();
+
+  // X mark inside
+  ctx.beginPath();
+  ctx.moveTo(-iconSize * 0.5, iconY - iconSize * 0.5);
+  ctx.lineTo(iconSize * 0.5, iconY + iconSize * 0.5);
+  ctx.moveTo(iconSize * 0.5, iconY - iconSize * 0.5);
+  ctx.lineTo(-iconSize * 0.5, iconY + iconSize * 0.5);
+  ctx.stroke();
 
   ctx.restore();
 }
