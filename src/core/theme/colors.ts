@@ -102,13 +102,13 @@ export const ARENA_COLORS = {
   gridLine: '#3D3A2E', // Subtle grid
 
   // Zones - using faction colors with better visibility
-  // Enemy (France blue) - cool tones at top
-  enemyZoneFill: 'rgba(0, 0, 160, 0.20)', // France primary blue
-  enemyZoneBorder: 'rgba(0, 0, 160, 0.6)',
+  // Enemy (England red) - danger tones at top
+  enemyZoneFill: 'rgba(200, 0, 0, 0.20)', // England primary red
+  enemyZoneBorder: 'rgba(200, 0, 0, 0.6)',
 
-  // Ally (England red) - warm tones at bottom
-  allyZoneFill: 'rgba(200, 0, 0, 0.20)', // England primary red
-  allyZoneBorder: 'rgba(200, 0, 0, 0.6)',
+  // Ally (Milan green) - friendly tones at bottom
+  allyZoneFill: 'rgba(0, 100, 0, 0.20)', // Milan primary green
+  allyZoneBorder: 'rgba(0, 100, 0, 0.6)',
 
   // Selection and indicators
   selectionRing: UI_COLORS.goldPrimary,
