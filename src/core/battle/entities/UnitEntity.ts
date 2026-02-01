@@ -13,9 +13,9 @@
 import { Vector2 } from '../../physics/Vector2';
 import { getProjectileColor } from '../../theme/colors';
 import {
-  AGGRO_RADIUS,
+  BASE_AGGRO_RADIUS,
   ALLY_AVOIDANCE_DISTANCE_MULTIPLIER,
-  ALLY_AVOIDANCE_FORCE,
+  BASE_ALLY_AVOIDANCE_FORCE,
   DIRECTION_CHECK_MULTIPLIER,
   MELEE_ATTACK_RANGE_THRESHOLD,
   MELEE_RANGE_BUFFER,
@@ -26,6 +26,7 @@ import {
   TARGET_SWITCH_DISTANCE_RATIO,
   UNIT_SPACING,
   ZONE_HEIGHT_PERCENT,
+  scaleValue,
 } from '../BattleConfig';
 
 /**
@@ -167,6 +168,28 @@ export class UnitEntity extends BaseEntity {
    */
   private getBattleWorld(): IBattleWorld | null {
     return this.world as IBattleWorld | null;
+  }
+
+  /**
+   * Get current arena height for scaling calculations.
+   */
+  private getArenaHeight(): number {
+    const world = this.getBattleWorld();
+    return world?.getArenaBounds()?.height ?? 600;
+  }
+
+  /**
+   * Get scaled aggro radius for current arena size.
+   */
+  private getAggroRadius(): number {
+    return scaleValue(BASE_AGGRO_RADIUS, this.getArenaHeight());
+  }
+
+  /**
+   * Get scaled ally avoidance force for current arena size.
+   */
+  private getAllyAvoidanceForce(): number {
+    return scaleValue(BASE_ALLY_AVOIDANCE_FORCE, this.getArenaHeight());
   }
 
   // === Modifier Methods ===
@@ -445,7 +468,7 @@ export class UnitEntity extends BaseEntity {
 
     const enemies = world.getEnemiesOf(this);
     let nearest: UnitEntity | null = null;
-    let nearestDist = AGGRO_RADIUS;
+    let nearestDist = this.getAggroRadius();
 
     for (const enemy of enemies) {
       if (enemy.health <= 0) continue;
@@ -468,7 +491,7 @@ export class UnitEntity extends BaseEntity {
 
     const castles = world.getEnemyCastlesOf(this);
     let nearest: CastleEntity | null = null;
-    let nearestDist = AGGRO_RADIUS;
+    let nearestDist = this.getAggroRadius();
 
     for (const castle of castles) {
       if (castle.health <= 0) continue;
@@ -630,6 +653,7 @@ export class UnitEntity extends BaseEntity {
     // Apply ally avoidance while marching
     const allies = world.getAlliesOf(this);
     let avoidance = Vector2.zero();
+    const allyAvoidanceForce = this.getAllyAvoidanceForce();
 
     for (const ally of allies) {
       if (ally.id === this.id || ally.health <= 0) continue;
@@ -642,7 +666,7 @@ export class UnitEntity extends BaseEntity {
       if (dist < avoidDist && dist > 0) {
         // Push away from nearby allies
         const pushStrength = (avoidDist - dist) / avoidDist;
-        avoidance = avoidance.add(toAlly.normalize().multiply(pushStrength * ALLY_AVOIDANCE_FORCE));
+        avoidance = avoidance.add(toAlly.normalize().multiply(pushStrength * allyAvoidanceForce));
       }
     }
 
@@ -778,6 +802,7 @@ export class UnitEntity extends BaseEntity {
     // Apply ally avoidance
     const allies = world.getAlliesOf(this);
     let avoidance = Vector2.zero();
+    const allyAvoidanceForce = this.getAllyAvoidanceForce();
 
     for (const ally of allies) {
       if (ally.id === this.id || ally.health <= 0) continue;
@@ -795,13 +820,13 @@ export class UnitEntity extends BaseEntity {
           const rightClear = this.isDirectionClear(perpendicular.multiply(-1), allies);
 
           if (leftClear && !rightClear) {
-            avoidance = avoidance.add(perpendicular.multiply(ALLY_AVOIDANCE_FORCE / dist));
+            avoidance = avoidance.add(perpendicular.multiply(allyAvoidanceForce / dist));
           } else if (rightClear && !leftClear) {
-            avoidance = avoidance.add(perpendicular.multiply(-ALLY_AVOIDANCE_FORCE / dist));
+            avoidance = avoidance.add(perpendicular.multiply(-allyAvoidanceForce / dist));
           } else {
             const cross = moveDirection.x * toAlly.y - moveDirection.y * toAlly.x;
             avoidance = avoidance.add(
-              perpendicular.multiply(((cross > 0 ? 1 : -1) * ALLY_AVOIDANCE_FORCE) / dist)
+              perpendicular.multiply(((cross > 0 ? 1 : -1) * allyAvoidanceForce) / dist)
             );
           }
         }

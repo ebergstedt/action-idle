@@ -579,6 +579,24 @@ All colors are in `src/core/theme/colors.ts` - never use hardcoded hex values. B
 
 Run `npm run test:core` to validate core code independently of React.
 
+### Scaling System Note
+
+The codebase has a manual scaling system in `BattleConfig.ts` using `scaleValue(baseValue, arenaHeight)`. This exists because React/browser doesn't have built-in viewport scaling.
+
+**For Godot, you have two options:**
+
+| Option | Approach | Recommendation |
+|--------|----------|----------------|
+| **A (Recommended)** | Use Godot's built-in stretch mode | Set project base resolution to 600px height, use `stretch_mode = "canvas_items"`. Remove `scaleValue()` calls and use `BASE_` constants directly. |
+| **B** | Keep manual scaling | Set `stretch_mode = "disabled"`. Use `scale_value(BASE_X, get_viewport().size.y)` as-is. |
+
+**Why Option A is better:**
+- Godot's stretch system handles scaling automatically
+- Less code to maintain
+- Avoids risk of double-scaling (Godot + manual)
+
+**If using Option A**, the `scaleValue()` function and `REFERENCE_ARENA_HEIGHT` constant can be removed during the Godot port. The `BASE_` prefixed constants become the actual values used directly.
+
 ## Save System
 
 - Autosaves every 30 seconds

@@ -18,14 +18,16 @@
 export const UNIT_SPACING = 1.2;
 
 /**
- * Force applied to separate overlapping allied units during movement.
+ * Base force applied to separate overlapping allied units during movement.
+ * Scaled by arena size at runtime.
  */
-export const ALLY_AVOIDANCE_FORCE = 80;
+export const BASE_ALLY_AVOIDANCE_FORCE = 80;
 
 /**
- * Force applied to separate overlapping units in BattleWorld.
+ * Base force applied to separate overlapping units in BattleWorld.
+ * Scaled by arena size at runtime.
  */
-export const SEPARATION_FORCE = 150;
+export const BASE_SEPARATION_FORCE = 150;
 
 // =============================================================================
 // ARENA CONFIGURATION
@@ -63,9 +65,10 @@ export const ZONE_HEIGHT_PERCENT = 0.375;
 // =============================================================================
 
 /**
- * Default projectile travel speed (pixels per second).
+ * Base projectile travel speed (pixels per second).
+ * Scaled by arena size at runtime.
  */
-export const PROJECTILE_SPEED = 300;
+export const BASE_PROJECTILE_SPEED = 300;
 
 /**
  * Distance from target at which projectile is considered to have hit.
@@ -123,10 +126,10 @@ export const DEFAULT_SHUFFLE_CONFIG: ShuffleConfig = {
 // =============================================================================
 
 /**
- * Radius within which units will acquire targets while advancing.
- * Outside this radius, units march forward until reaching enemy zone.
+ * Base radius within which units will acquire targets while advancing.
+ * Scaled by arena size at runtime.
  */
-export const AGGRO_RADIUS = 150;
+export const BASE_AGGRO_RADIUS = 150;
 
 /**
  * How much closer a new target must be to cause target switch.
@@ -183,11 +186,10 @@ export const CASTLE_MAX_HEALTH = 1;
 export const CASTLE_SIZE = 14;
 
 /**
- * Horizontal offset from arena edge for castle placement.
- * Castles are placed at (margin, zoneCenter) and (width - margin, zoneCenter).
- * Higher value = more toward center.
+ * Base horizontal offset from arena edge for castle placement.
+ * Scaled by arena size at runtime.
  */
-export const CASTLE_HORIZONTAL_MARGIN = 300;
+export const BASE_CASTLE_HORIZONTAL_MARGIN = 300;
 
 // =============================================================================
 // SEPARATION & COLLISION
@@ -234,24 +236,56 @@ export const DIRECTION_CHECK_MULTIPLIER = 3;
 export const PATH_DOT_THRESHOLD = 0.3;
 
 // =============================================================================
-// UNIT SCALING
+// SCALING SYSTEM
 // =============================================================================
 
 /**
- * Reference arena height for unit size scaling.
- * Units are scaled relative to this baseline.
+ * Reference arena height for scaling all pixel-based values.
+ * All base values are tuned for this arena height.
  */
 export const REFERENCE_ARENA_HEIGHT = 600;
 
 /**
- * Minimum scale factor for units.
+ * Minimum scale factor to prevent things from getting too small.
  */
-export const MIN_UNIT_SCALE = 0.8;
+export const MIN_SCALE = 0.8;
 
 /**
- * Maximum scale factor for units.
+ * Maximum scale factor to prevent things from getting too large.
  */
-export const MAX_UNIT_SCALE = 2;
+export const MAX_SCALE = 2.5;
+
+/**
+ * Calculate scale factor based on arena height.
+ * @param arenaHeight - Current arena height in pixels
+ * @returns Scale factor clamped between MIN_SCALE and MAX_SCALE
+ */
+export function getScaleFactor(arenaHeight: number): number {
+  return Math.max(MIN_SCALE, Math.min(MAX_SCALE, arenaHeight / REFERENCE_ARENA_HEIGHT));
+}
+
+/**
+ * Scale a pixel-based value for the current arena size.
+ * Use this for distances, speeds, forces, margins, etc.
+ * @param baseValue - Value tuned for REFERENCE_ARENA_HEIGHT
+ * @param arenaHeight - Current arena height in pixels
+ * @returns Scaled value
+ */
+export function scaleValue(baseValue: number, arenaHeight: number): number {
+  return baseValue * getScaleFactor(arenaHeight);
+}
+
+/**
+ * Scale a pixel-based value and round to integer.
+ * Use this for sizes, margins, and other values that should be whole numbers.
+ */
+export function scaleValueInt(baseValue: number, arenaHeight: number): number {
+  return Math.round(scaleValue(baseValue, arenaHeight));
+}
+
+// Legacy aliases for backward compatibility
+export const MIN_UNIT_SCALE = MIN_SCALE;
+export const MAX_UNIT_SCALE = MAX_SCALE;
 
 // =============================================================================
 // DRAG & SELECTION
@@ -371,9 +405,10 @@ export const DEFAULT_HEALTH_BELOW_THRESHOLD = 0.25;
 export const DEFAULT_HEALTH_ABOVE_THRESHOLD = 0.75;
 
 /**
- * Default range for "nearby" ability targets (pixels).
+ * Base range for "nearby" ability targets (pixels).
+ * Scaled by arena size at runtime.
  */
-export const DEFAULT_ABILITY_RANGE = 100;
+export const BASE_ABILITY_RANGE = 100;
 
 // =============================================================================
 // DAMAGE CALCULATION
@@ -406,9 +441,10 @@ export const ALLY_AVOIDANCE_DISTANCE_MULTIPLIER = 2;
 // =============================================================================
 
 /**
- * Shockwave expansion speed in pixels per second.
+ * Base shockwave expansion speed in pixels per second.
+ * Scaled by arena size at runtime.
  */
-export const SHOCKWAVE_EXPANSION_SPEED = 120;
+export const BASE_SHOCKWAVE_EXPANSION_SPEED = 120;
 
 /**
  * Fallback maximum radius if arena bounds aren't available.

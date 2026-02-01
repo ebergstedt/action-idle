@@ -9,9 +9,10 @@
 
 import { Vector2 } from '../../physics/Vector2';
 import {
-  DEFAULT_ABILITY_RANGE,
+  BASE_ABILITY_RANGE,
   DEFAULT_HEALTH_ABOVE_THRESHOLD,
   DEFAULT_HEALTH_BELOW_THRESHOLD,
+  scaleValue,
 } from '../BattleConfig';
 import { UnitInstance } from '../units/types';
 import {
@@ -41,6 +42,9 @@ export interface AbilityProcessorState {
 
   /** Current battle time in seconds */
   battleTime: number;
+
+  /** Arena height for scaling range values */
+  arenaHeight?: number;
 }
 
 /**
@@ -188,7 +192,8 @@ export class AbilityProcessor {
         return state.units.filter((u) => u.team !== sourceTeam).map((u) => u.id);
 
       case 'nearby_allies': {
-        const range = effect.range ?? DEFAULT_ABILITY_RANGE;
+        const baseRange = effect.range ?? BASE_ABILITY_RANGE;
+        const range = scaleValue(baseRange, state.arenaHeight ?? 600);
         return state.units
           .filter(
             (u) =>
@@ -198,7 +203,8 @@ export class AbilityProcessor {
       }
 
       case 'nearby_enemies': {
-        const range = effect.range ?? DEFAULT_ABILITY_RANGE;
+        const baseRange = effect.range ?? BASE_ABILITY_RANGE;
+        const range = scaleValue(baseRange, state.arenaHeight ?? 600);
         return state.units
           .filter(
             (u) =>

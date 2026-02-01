@@ -16,8 +16,9 @@ import {
   SHOCKWAVE_DEBUFF_DAMAGE,
   SHOCKWAVE_DEBUFF_DURATION_SECONDS,
   SHOCKWAVE_DEBUFF_MOVE_SPEED,
-  SHOCKWAVE_EXPANSION_SPEED,
+  BASE_SHOCKWAVE_EXPANSION_SPEED,
   SHOCKWAVE_MAX_RADIUS_FALLBACK,
+  scaleValue,
 } from '../BattleConfig';
 import { Shockwave, UnitTeam } from '../types';
 import { BaseEntity } from './BaseEntity';
@@ -160,17 +161,19 @@ export class ShockwaveEntity extends BaseEntity {
  * Factory function to create a shockwave at a castle's position.
  * @param sourceTeam - The team whose castle was destroyed (this team's units get debuffed)
  * @param maxRadius - Maximum expansion radius (should be arena diagonal for full coverage)
+ * @param arenaHeight - Arena height for scaling expansion speed
  */
 export function createShockwave(
   id: string,
   position: Vector2,
   sourceTeam: UnitTeam,
-  maxRadius: number = SHOCKWAVE_MAX_RADIUS_FALLBACK
+  maxRadius: number = SHOCKWAVE_MAX_RADIUS_FALLBACK,
+  arenaHeight: number = 600
 ): ShockwaveEntity {
   const data: ShockwaveData = {
     sourceTeam,
     maxRadius,
-    expansionSpeed: SHOCKWAVE_EXPANSION_SPEED,
+    expansionSpeed: scaleValue(BASE_SHOCKWAVE_EXPANSION_SPEED, arenaHeight),
     currentRadius: 0,
     hitUnitIds: new Set(),
     color: DEBUFF_COLORS.shockwaveRing,

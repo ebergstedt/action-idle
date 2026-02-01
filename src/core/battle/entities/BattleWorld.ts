@@ -14,8 +14,9 @@ import {
   ALLY_PUSH_MULTIPLIER,
   ENEMY_PUSH_MULTIPLIER,
   PATH_BLOCK_RADIUS_MULTIPLIER,
-  SEPARATION_FORCE,
+  BASE_SEPARATION_FORCE,
   UNIT_SPACING,
+  scaleValue,
 } from '../BattleConfig';
 import { EntityBounds } from '../BoundsEnforcer';
 import { UnitTeam } from '../units/types';
@@ -110,8 +111,10 @@ export class BattleWorld implements IEntityWorld, IBattleWorld, IWorldEventEmitt
 
     // Calculate max radius to cover entire arena (distance to farthest corner)
     let maxRadius: number | undefined;
+    let arenaHeight = 600; // Default fallback
     if (this.arenaBounds) {
       const { width, height } = this.arenaBounds;
+      arenaHeight = height;
       // Check distance to all 4 corners and use the maximum
       const corners = [
         new Vector2(0, 0),
@@ -122,7 +125,7 @@ export class BattleWorld implements IEntityWorld, IBattleWorld, IWorldEventEmitt
       maxRadius = Math.max(...corners.map((corner) => position.distanceTo(corner)));
     }
 
-    const shockwave = createShockwave(id, position, sourceTeam, maxRadius);
+    const shockwave = createShockwave(id, position, sourceTeam, maxRadius, arenaHeight);
     this.addShockwave(shockwave);
   }
 
@@ -208,6 +211,9 @@ export class BattleWorld implements IEntityWorld, IBattleWorld, IWorldEventEmitt
   }
 
   private applySeparation(delta: number): void {
+    const arenaHeight = this.arenaBounds?.height ?? 600;
+    const separationForce = scaleValue(BASE_SEPARATION_FORCE, arenaHeight);
+
     for (let i = 0; i < this.units.length; i++) {
       const unitA = this.units[i];
       if (unitA.isDestroyed()) continue;
@@ -223,7 +229,7 @@ export class BattleWorld implements IEntityWorld, IBattleWorld, IWorldEventEmitt
         if (dist < minDist && dist > 0) {
           const overlap = minDist - dist;
           const pushDir = diff.normalize();
-          const pushAmount = overlap * SEPARATION_FORCE * delta;
+          const pushAmount = overlap * separationForce * delta;
 
           // Push both units, but less if they're enemies
           const pushMultiplier =
@@ -374,6 +380,7 @@ export class BattleWorld implements IEntityWorld, IBattleWorld, IWorldEventEmitt
     color: string
   ): void {
     const id = `proj_${this.nextProjectileId++}`;
+    const arenaHeight = this.arenaBounds?.height ?? 600;
     const projectile = createProjectile(
       id,
       position,
@@ -381,7 +388,8 @@ export class BattleWorld implements IEntityWorld, IBattleWorld, IWorldEventEmitt
       damage,
       sourceTeam,
       sourceUnit,
-      color
+      color,
+      arenaHeight
     );
     this.addProjectile(projectile);
   }

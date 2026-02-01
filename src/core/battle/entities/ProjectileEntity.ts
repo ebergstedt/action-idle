@@ -11,7 +11,12 @@
  */
 
 import { Vector2 } from '../../physics/Vector2';
-import { PROJECTILE_HIT_RADIUS, PROJECTILE_SPLASH_RADIUS, PROJECTILE_SPEED } from '../BattleConfig';
+import {
+  PROJECTILE_HIT_RADIUS,
+  PROJECTILE_SPLASH_RADIUS,
+  BASE_PROJECTILE_SPEED,
+  scaleValue,
+} from '../BattleConfig';
 import { isOutOfBounds } from '../BoundsEnforcer';
 import { Projectile, UnitTeam } from '../types';
 import { BaseEntity } from './BaseEntity';
@@ -137,7 +142,8 @@ export class ProjectileEntity extends BaseEntity {
 }
 
 /**
- * Factory function to create a projectile with default speed.
+ * Factory function to create a projectile with scaled speed.
+ * @param arenaHeight - Arena height for scaling projectile speed
  */
 export function createProjectile(
   id: string,
@@ -146,11 +152,12 @@ export function createProjectile(
   damage: number,
   sourceTeam: UnitTeam,
   sourceUnit: UnitEntity | null,
-  color: string
+  color: string,
+  arenaHeight: number = 600
 ): ProjectileEntity {
   return new ProjectileEntity(id, position, {
     target,
-    speed: PROJECTILE_SPEED,
+    speed: scaleValue(BASE_PROJECTILE_SPEED, arenaHeight),
     damage,
     sourceTeam,
     sourceUnit,

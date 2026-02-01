@@ -10,15 +10,15 @@
 import { Vector2 } from '../physics/Vector2';
 import { getCastleColor, getUnitColor } from '../theme/colors';
 import {
-  CASTLE_HORIZONTAL_MARGIN,
+  BASE_CASTLE_HORIZONTAL_MARGIN,
   CASTLE_MAX_HEALTH,
   CASTLE_SIZE,
   DEFAULT_ARENA_MARGIN,
   DRAG_OVERLAP_ITERATIONS,
   DRAG_POSITION_MAX_ITERATIONS,
-  MAX_UNIT_SCALE,
+  MAX_SCALE,
   MIN_SEPARATION_DISTANCE,
-  MIN_UNIT_SCALE,
+  MIN_SCALE,
   OVERLAP_BASE_PUSH,
   OVERLAP_PUSH_FACTOR,
   RANDOM_DIRECTION_CENTER,
@@ -26,6 +26,7 @@ import {
   UNIT_SPACING,
   ZONE_CLAMP_MARGIN,
   ZONE_HEIGHT_PERCENT,
+  scaleValue,
 } from './BattleConfig';
 import { EntityBounds } from './BoundsEnforcer';
 import { BattleWorld, UnitEntity, UnitData, CastleEntity, CastleData } from './entities';
@@ -192,10 +193,7 @@ export class BattleEngine {
     position: Vector2,
     arenaHeight: number = REFERENCE_ARENA_HEIGHT
   ): CastleEntity {
-    const scale = Math.max(
-      MIN_UNIT_SCALE,
-      Math.min(MAX_UNIT_SCALE, arenaHeight / REFERENCE_ARENA_HEIGHT)
-    );
+    const scale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, arenaHeight / REFERENCE_ARENA_HEIGHT));
     const size = Math.round(CASTLE_SIZE * scale);
 
     const id = `castle_${this.nextCastleId++}`;
@@ -223,9 +221,10 @@ export class BattleEngine {
     const { width, height } = this.arenaBounds;
     const zoneHeight = height * ZONE_HEIGHT_PERCENT;
 
-    // Castle X positions (horizontal flanks)
-    const leftX = CASTLE_HORIZONTAL_MARGIN;
-    const rightX = width - CASTLE_HORIZONTAL_MARGIN;
+    // Castle X positions (horizontal flanks) - scaled for arena size
+    const castleMargin = scaleValue(BASE_CASTLE_HORIZONTAL_MARGIN, height);
+    const leftX = castleMargin;
+    const rightX = width - castleMargin;
 
     // Player castles (bottom zone) - vertically centered in zone
     const playerY = height - zoneHeight / 2;
