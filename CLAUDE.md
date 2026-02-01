@@ -82,8 +82,12 @@ npm run test:core        # Only core tests (Godot-portable code)
 ### Docker
 
 ```bash
-docker compose up -d     # Start dev server (port 3000)
-docker compose down      # Stop container
+# Development (hot reload on port 5177)
+docker compose -f docker-compose.dev.yml up
+
+# Production (static build on port 3000)
+docker compose up -d
+docker compose down
 docker compose build     # Rebuild after dependency changes
 ```
 
@@ -153,6 +157,27 @@ GitHub Actions workflow (`.github/workflows/ci.yml`) runs on push/PR to main:
 3. Format checking
 4. Tests with coverage
 5. Build verification
+
+## Visual Debugging
+
+Use Puppeteer to take screenshots and verify UI changes:
+
+```bash
+# Take a screenshot of the running app (saves to screenshots/ folder)
+node scripts/screenshot.cjs http://localhost:5177 screenshots/my-screenshot.png
+```
+
+The script (`scripts/screenshot.cjs`):
+- Disables cache to get fresh content
+- Forces a page reload before capturing
+- Waits for rendering to complete
+
+Use screenshots to:
+- Verify layout changes before telling the user
+- Debug visual issues
+- Confirm styling updates
+
+The dev server runs on port **5177** (configured in `vite.config.ts` with `strictPort: true`).
 
 ## Documentation
 
