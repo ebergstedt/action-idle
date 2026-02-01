@@ -203,10 +203,10 @@ function drawUnit(
     ctx.stroke();
   }
 
-  // Draw health bar with black outline
+  // Draw health bar with black outline - positioned well above unit
   const healthBarWidth = size * 2.5;
   const healthBarHeight = 6;
-  const healthBarY = -size - 14;
+  const healthBarY = -size - 20; // Extra spacing to prevent overlap
 
   // Black outline (padding)
   ctx.fillStyle = ARENA_COLORS.healthBarBg;
