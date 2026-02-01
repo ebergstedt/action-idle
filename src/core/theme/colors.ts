@@ -97,9 +97,9 @@ export const ENV_COLORS = {
 // =============================================================================
 
 export const ARENA_COLORS = {
-  // Background - warm parchment/earth tones for medieval feel
-  background: '#2D2A1E', // Dark earth brown
-  gridLine: '#3D3A2E', // Subtle grid
+  // Background - parchment/paper like medieval maps
+  background: UI_COLORS.parchmentBase, // #D8C9A6 - warm paper yellow
+  gridLine: UI_COLORS.parchmentShadow, // #B8A681 - subtle darker lines
 
   // Zones - using faction colors with better visibility
   // Enemy (England red) - danger tones at top
@@ -112,11 +112,11 @@ export const ARENA_COLORS = {
 
   // Selection and indicators
   selectionRing: UI_COLORS.goldPrimary,
-  moveIndicator: 'rgba(255, 215, 0, 0.3)', // Gold tint for allied units
-  unitOutline: '#1E1E1E', // Dark outline for better contrast on parchment
+  moveIndicator: 'rgba(92, 64, 51, 0.3)', // Ink brown tint for allied units
+  unitOutline: UI_COLORS.inkBrown, // #5C4033 - dark ink outline
 
   // Health bar
-  healthBarBg: '#1E1810', // Dark brown
+  healthBarBg: UI_COLORS.inkBrown, // Dark ink brown
   healthHigh: '#4A7023', // Forest green (grassland)
   healthMedium: '#C2A366', // Desert ochre (warning)
   healthLow: FACTION_COLORS.england.primary, // England red (danger)
