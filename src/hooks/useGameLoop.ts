@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { MAX_FRAME_DELTA } from '../core/battle/BattleConfig';
 
 /**
  * Custom hook that runs a game loop using requestAnimationFrame.
@@ -28,7 +29,7 @@ export function useGameLoop(onTick: (delta: number) => void, isRunning: boolean 
       const deltaSec = deltaMs / 1000;
 
       // Cap delta to prevent huge jumps (e.g., after tab sleep)
-      const cappedDelta = Math.min(deltaSec, 1);
+      const cappedDelta = Math.min(deltaSec, MAX_FRAME_DELTA);
 
       lastTimeRef.current = currentTime;
       onTickRef.current(cappedDelta);

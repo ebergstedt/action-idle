@@ -61,6 +61,17 @@ export const DEFAULT_ARENA_MARGIN = 10;
 export const ZONE_HEIGHT_PERCENT = 0.375;
 
 // =============================================================================
+// FRAME TIMING
+// =============================================================================
+
+/**
+ * Maximum frame delta time in seconds.
+ * Prevents huge simulation jumps when returning from inactive tab.
+ * 0.1 = 100ms = ~6 frames at 60fps max per update.
+ */
+export const MAX_FRAME_DELTA = 0.1;
+
+// =============================================================================
 // PROJECTILE CONFIGURATION
 // =============================================================================
 
