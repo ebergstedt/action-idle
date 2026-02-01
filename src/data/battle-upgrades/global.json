@@ -1,0 +1,64 @@
+[
+  {
+    "id": "global_health_1",
+    "name": "Fortitude",
+    "description": "All units gain +10 max health per level.",
+    "scope": "global",
+    "upgradeType": "stat_modifier",
+    "modifiers": [
+      {
+        "id": "global_health_flat",
+        "target": "maxHealth",
+        "type": "flat",
+        "value": 10
+      }
+    ],
+    "baseCost": 50,
+    "costMultiplier": 1.5,
+    "maxLevel": 20,
+    "prerequisites": []
+  },
+  {
+    "id": "global_speed_1",
+    "name": "Swift March",
+    "description": "All units gain +5% move speed per level.",
+    "scope": "global",
+    "upgradeType": "stat_modifier",
+    "modifiers": [
+      {
+        "id": "global_speed_percent",
+        "target": "moveSpeed",
+        "type": "percent",
+        "value": 0.05
+      }
+    ],
+    "baseCost": 75,
+    "costMultiplier": 1.5,
+    "maxLevel": 10,
+    "prerequisites": []
+  },
+  {
+    "id": "global_armor_1",
+    "name": "Steel Plating",
+    "description": "All units gain +2 armor per level.",
+    "scope": "global",
+    "upgradeType": "stat_modifier",
+    "modifiers": [
+      {
+        "id": "global_armor_flat",
+        "target": "armor",
+        "type": "flat",
+        "value": 2
+      }
+    ],
+    "baseCost": 100,
+    "costMultiplier": 1.6,
+    "maxLevel": 15,
+    "prerequisites": [
+      {
+        "type": "wave",
+        "targetId": "3"
+      }
+    ]
+  }
+]

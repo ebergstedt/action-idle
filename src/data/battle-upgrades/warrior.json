@@ -1,0 +1,61 @@
+[
+  {
+    "id": "warrior_damage_1",
+    "name": "Warrior Strength",
+    "description": "Warriors deal +3 melee damage per level.",
+    "scope": "unit_type",
+    "targetId": "warrior",
+    "upgradeType": "stat_modifier",
+    "modifiers": [
+      {
+        "id": "warrior_damage_flat",
+        "target": "melee.damage",
+        "type": "flat",
+        "value": 3
+      }
+    ],
+    "baseCost": 75,
+    "costMultiplier": 1.4,
+    "maxLevel": 10,
+    "prerequisites": []
+  },
+  {
+    "id": "warrior_health_1",
+    "name": "Warrior Endurance",
+    "description": "Warriors gain +15 max health per level.",
+    "scope": "unit_type",
+    "targetId": "warrior",
+    "upgradeType": "stat_modifier",
+    "modifiers": [
+      {
+        "id": "warrior_health_flat",
+        "target": "maxHealth",
+        "type": "flat",
+        "value": 15
+      }
+    ],
+    "baseCost": 60,
+    "costMultiplier": 1.4,
+    "maxLevel": 10,
+    "prerequisites": []
+  },
+  {
+    "id": "warrior_bloodlust",
+    "name": "Warrior Bloodlust",
+    "description": "Warriors gain the Bloodlust ability.",
+    "scope": "unit_type",
+    "targetId": "warrior",
+    "upgradeType": "ability_grant",
+    "abilityId": "bloodlust",
+    "baseCost": 200,
+    "costMultiplier": 1,
+    "maxLevel": 1,
+    "prerequisites": [
+      {
+        "type": "upgrade",
+        "targetId": "warrior_damage_1",
+        "level": 3
+      }
+    ]
+  }
+]

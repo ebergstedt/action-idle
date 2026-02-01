@@ -1,0 +1,25 @@
+{
+  "id": "warrior",
+  "name": "Warrior",
+  "description": "A sturdy melee fighter with high health and consistent damage.",
+  "category": "infantry",
+  "tier": 1,
+  "baseStats": {
+    "maxHealth": 100,
+    "moveSpeed": 80,
+    "armor": 0,
+    "melee": {
+      "damage": 15,
+      "attackSpeed": 1.0,
+      "range": 35
+    },
+    "ranged": null
+  },
+  "visuals": {
+    "shape": "square",
+    "baseSize": 20,
+    "colorKey": "warrior"
+  },
+  "innateAbilities": [],
+  "unlockRequirements": []
+}

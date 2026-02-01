@@ -1,0 +1,61 @@
+[
+  {
+    "id": "knight_damage_1",
+    "name": "Knight's Fury",
+    "description": "Knights deal +4 melee damage per level.",
+    "scope": "unit_type",
+    "targetId": "knight",
+    "upgradeType": "stat_modifier",
+    "modifiers": [
+      {
+        "id": "knight_damage_flat",
+        "target": "melee.damage",
+        "type": "flat",
+        "value": 4
+      }
+    ],
+    "baseCost": 90,
+    "costMultiplier": 1.4,
+    "maxLevel": 10,
+    "prerequisites": []
+  },
+  {
+    "id": "knight_speed_1",
+    "name": "Cavalry Charge",
+    "description": "Knights gain +10% move speed per level.",
+    "scope": "unit_type",
+    "targetId": "knight",
+    "upgradeType": "stat_modifier",
+    "modifiers": [
+      {
+        "id": "knight_speed_percent",
+        "target": "moveSpeed",
+        "type": "percent",
+        "value": 0.1
+      }
+    ],
+    "baseCost": 100,
+    "costMultiplier": 1.5,
+    "maxLevel": 5,
+    "prerequisites": []
+  },
+  {
+    "id": "knight_quick_reflexes",
+    "name": "Quick Reflexes Training",
+    "description": "Knights gain the Quick Reflexes ability.",
+    "scope": "unit_type",
+    "targetId": "knight",
+    "upgradeType": "ability_grant",
+    "abilityId": "quick_reflexes",
+    "baseCost": 200,
+    "costMultiplier": 1,
+    "maxLevel": 1,
+    "prerequisites": [
+      {
+        "type": "upgrade",
+        "targetId": "knight_speed_1",
+        "level": 2
+      }
+    ]
+  }
+]

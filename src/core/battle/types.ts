@@ -1,19 +1,39 @@
 import { Vector2 } from '../physics/Vector2';
 import { UNIT_TYPE_COLORS } from '../theme/colors';
+import type { UnitTeam as UnitTeamType } from './units/types';
 
-export type UnitTeam = 'player' | 'enemy';
+// Re-export new unit system types for consumers
+export type {
+  UnitTeam,
+  UnitCategory,
+  UnitShape,
+  UnitInstance,
+  UnitDefinition,
+} from './units/types';
+export type { AttackModeStats, BaseStats, ComputedStats } from './units/types';
 
+// Local alias for use in this file
+type UnitTeam = UnitTeamType;
+
+// Legacy type aliases for backward compatibility
 export type UnitType = 'warrior' | 'archer' | 'knight';
 
 export type AttackType = 'melee' | 'ranged';
 
-// Individual attack mode stats
+/**
+ * Individual attack mode stats.
+ * @deprecated Use AttackModeStats from './units/types' instead
+ */
 export interface AttackMode {
   damage: number;
   attackSpeed: number; // attacks per second
   range: number; // pixels - melee ~35, ranged ~200
 }
 
+/**
+ * Legacy unit stats interface.
+ * @deprecated Use BaseStats from './units/types' instead
+ */
 export interface UnitStats {
   maxHealth: number;
   moveSpeed: number; // pixels per second
@@ -56,6 +76,11 @@ export interface BattleState {
   waveNumber: number;
 }
 
+/**
+ * Legacy unit stats constant.
+ * @deprecated Use UnitRegistry with unit definitions from JSON instead.
+ * This is kept for backward compatibility during migration.
+ */
 export const UNIT_STATS: Record<UnitType, UnitStats> = {
   warrior: {
     maxHealth: 100,
@@ -77,7 +102,10 @@ export const UNIT_STATS: Record<UnitType, UnitStats> = {
   },
 };
 
-// Base sizes - will be scaled based on arena size
+/**
+ * Legacy unit visuals constant.
+ * @deprecated Use UnitRegistry with unit definitions from JSON instead.
+ */
 export const UNIT_VISUALS: Record<UnitType, { shape: Unit['shape']; baseSize: number }> = {
   warrior: { shape: 'square', baseSize: 20 },
   archer: { shape: 'triangle', baseSize: 16 },

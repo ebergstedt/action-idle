@@ -1,0 +1,114 @@
+[
+  {
+    "id": "bloodlust",
+    "name": "Bloodlust",
+    "description": "After killing an enemy, gain 10% attack speed for 3 seconds.",
+    "trigger": {
+      "type": "on_kill"
+    },
+    "cooldown": 0,
+    "chance": 1,
+    "effects": [
+      {
+        "type": "apply_modifier",
+        "target": "self",
+        "modifier": {
+          "id": "bloodlust_attackspeed",
+          "target": "melee.attackSpeed",
+          "type": "percent",
+          "value": 0.1
+        },
+        "duration": 3
+      }
+    ]
+  },
+  {
+    "id": "battle_hardened",
+    "name": "Battle Hardened",
+    "description": "At the start of battle, gain 10 armor for the duration.",
+    "trigger": {
+      "type": "on_battle_start"
+    },
+    "cooldown": 0,
+    "chance": 1,
+    "effects": [
+      {
+        "type": "apply_modifier",
+        "target": "self",
+        "modifier": {
+          "id": "battle_hardened_armor",
+          "target": "armor",
+          "type": "flat",
+          "value": 10
+        }
+      }
+    ]
+  },
+  {
+    "id": "last_stand",
+    "name": "Last Stand",
+    "description": "When health drops below 25%, gain 50% damage.",
+    "trigger": {
+      "type": "health_below",
+      "healthThreshold": 0.25
+    },
+    "cooldown": 0,
+    "chance": 1,
+    "effects": [
+      {
+        "type": "apply_modifier",
+        "target": "self",
+        "modifier": {
+          "id": "last_stand_damage",
+          "target": "melee.damage",
+          "type": "percent",
+          "value": 0.5
+        }
+      }
+    ]
+  },
+  {
+    "id": "focused_shot",
+    "name": "Focused Shot",
+    "description": "Ranged attacks deal 15% more damage.",
+    "trigger": {
+      "type": "on_spawn"
+    },
+    "cooldown": 0,
+    "chance": 1,
+    "effects": [
+      {
+        "type": "apply_modifier",
+        "target": "self",
+        "modifier": {
+          "id": "focused_shot_damage",
+          "target": "ranged.damage",
+          "type": "percent",
+          "value": 0.15
+        }
+      }
+    ]
+  },
+  {
+    "id": "quick_reflexes",
+    "name": "Quick Reflexes",
+    "description": "Move 20% faster.",
+    "trigger": {
+      "type": "on_spawn"
+    },
+    "cooldown": 0,
+    "chance": 1,
+    "effects": [
+      {
+        "type": "apply_modifier",
+        "target": "self",
+        "modifier": {
+          "id": "quick_reflexes_speed",
+          "target": "moveSpeed",
+          "type": "percent",
+          "value": 0.2
+        }
+      }
+    ]
+  }
+]

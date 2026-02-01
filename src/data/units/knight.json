@@ -1,0 +1,25 @@
+{
+  "id": "knight",
+  "name": "Knight",
+  "description": "A fast cavalry unit with high damage and mobility. Excels at flanking.",
+  "category": "cavalry",
+  "tier": 1,
+  "baseStats": {
+    "maxHealth": 80,
+    "moveSpeed": 100,
+    "armor": 0,
+    "melee": {
+      "damage": 20,
+      "attackSpeed": 1.2,
+      "range": 35
+    },
+    "ranged": null
+  },
+  "visuals": {
+    "shape": "circle",
+    "baseSize": 18,
+    "colorKey": "knight"
+  },
+  "innateAbilities": [],
+  "unlockRequirements": []
+}

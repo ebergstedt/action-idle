@@ -80,7 +80,19 @@ Current focus: **Battle System** - unit spawning, formations, combat mechanics.
 
 ## Commands
 
-### Development
+**⚠️ IMPORTANT: Always use Docker for development, never run npm commands directly.**
+
+### Development (Docker - PREFERRED)
+
+```bash
+# Start dev server with hot reload on port 5177
+docker compose -f docker-compose.dev.yml up
+
+# Or run in background
+docker compose -f docker-compose.dev.yml up -d
+```
+
+### npm scripts (run inside Docker container only)
 
 ```bash
 npm run dev              # Start Vite dev server

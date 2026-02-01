@@ -1,0 +1,29 @@
+{
+  "id": "archer",
+  "name": "Archer",
+  "description": "A ranged attacker with high damage but low health. Falls back to weak melee when enemies get close.",
+  "category": "ranged",
+  "tier": 1,
+  "baseStats": {
+    "maxHealth": 50,
+    "moveSpeed": 60,
+    "armor": 0,
+    "melee": {
+      "damage": 8,
+      "attackSpeed": 0.6,
+      "range": 35
+    },
+    "ranged": {
+      "damage": 25,
+      "attackSpeed": 0.8,
+      "range": 200
+    }
+  },
+  "visuals": {
+    "shape": "triangle",
+    "baseSize": 16,
+    "colorKey": "archer"
+  },
+  "innateAbilities": [],
+  "unlockRequirements": []
+}

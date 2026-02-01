@@ -1,0 +1,61 @@
+[
+  {
+    "id": "archer_damage_1",
+    "name": "Archer Precision",
+    "description": "Archers deal +4 ranged damage per level.",
+    "scope": "unit_type",
+    "targetId": "archer",
+    "upgradeType": "stat_modifier",
+    "modifiers": [
+      {
+        "id": "archer_damage_flat",
+        "target": "ranged.damage",
+        "type": "flat",
+        "value": 4
+      }
+    ],
+    "baseCost": 80,
+    "costMultiplier": 1.4,
+    "maxLevel": 10,
+    "prerequisites": []
+  },
+  {
+    "id": "archer_range_1",
+    "name": "Long Shot",
+    "description": "Archers gain +20 ranged attack range per level.",
+    "scope": "unit_type",
+    "targetId": "archer",
+    "upgradeType": "stat_modifier",
+    "modifiers": [
+      {
+        "id": "archer_range_flat",
+        "target": "ranged.range",
+        "type": "flat",
+        "value": 20
+      }
+    ],
+    "baseCost": 100,
+    "costMultiplier": 1.5,
+    "maxLevel": 5,
+    "prerequisites": []
+  },
+  {
+    "id": "archer_focused_shot",
+    "name": "Focused Shot Training",
+    "description": "Archers gain the Focused Shot ability.",
+    "scope": "unit_type",
+    "targetId": "archer",
+    "upgradeType": "ability_grant",
+    "abilityId": "focused_shot",
+    "baseCost": 250,
+    "costMultiplier": 1,
+    "maxLevel": 1,
+    "prerequisites": [
+      {
+        "type": "upgrade",
+        "targetId": "archer_damage_1",
+        "level": 3
+      }
+    ]
+  }
+]
