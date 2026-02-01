@@ -18,6 +18,7 @@ import {
   BASE_ALLY_AVOIDANCE_FORCE,
   BASE_MELEE_KNOCKBACK_DISTANCE,
   BASE_MELEE_LUNGE_DISTANCE,
+  DEATH_FADE_DURATION,
   DIRECTION_CHECK_MULTIPLIER,
   HIT_FLASH_DURATION,
   MELEE_ATTACK_RANGE_THRESHOLD,
@@ -84,6 +85,8 @@ export interface UnitData {
   visualOffset: Vector2;
   // Timer for hit flash effect (counts down from HIT_FLASH_DURATION)
   hitFlashTimer: number;
+  // Timer for death fade effect (counts down from DEATH_FADE_DURATION, -1 = alive)
+  deathFadeTimer: number;
 }
 
 /**
@@ -174,6 +177,15 @@ export class UnitEntity extends BaseEntity {
   }
   set hitFlashTimer(value: number) {
     this.data.hitFlashTimer = value;
+  }
+  get deathFadeTimer(): number {
+    return this.data.deathFadeTimer;
+  }
+  set deathFadeTimer(value: number) {
+    this.data.deathFadeTimer = value;
+  }
+  get isDying(): boolean {
+    return this.data.deathFadeTimer >= 0;
   }
 
   /**
@@ -273,8 +285,17 @@ export class UnitEntity extends BaseEntity {
    * We only check if already destroyed to skip processing dead units.
    */
   override update(delta: number): void {
-    // Skip if already destroyed (death is handled by takeDamage)
-    if (this._destroyed || this.health <= 0) {
+    // Handle death fade animation
+    if (this.isDying) {
+      this.deathFadeTimer -= delta;
+      if (this.deathFadeTimer <= 0) {
+        this.markDestroyed();
+      }
+      return;
+    }
+
+    // Skip if already destroyed
+    if (this._destroyed) {
       return;
     }
 
@@ -352,8 +373,9 @@ export class UnitEntity extends BaseEntity {
       currentHealth: this.health,
     });
 
-    if (this.health <= 0) {
-      this.markDestroyed();
+    if (this.health <= 0 && !this.isDying) {
+      // Start death fade animation instead of immediate destruction
+      this.deathFadeTimer = DEATH_FADE_DURATION;
       // Emit killed event: entity = who died, killer = who killed them
       this.emit({ type: 'killed', entity: this, killer: attacker });
     }
@@ -386,6 +408,7 @@ export class UnitEntity extends BaseEntity {
       })),
       visualOffset: this.visualOffset,
       hitFlashTimer: this.hitFlashTimer,
+      deathFadeTimer: this.deathFadeTimer,
     };
   }
 
@@ -486,6 +509,8 @@ export class UnitEntity extends BaseEntity {
     let nearestDist = this.getAggroRadius();
 
     for (const enemy of enemies) {
+      // Skip dying enemies (health <= 0)
+      if (enemy.health <= 0) continue;
       const dist = this.position.distanceTo(enemy.position);
       if (dist < nearestDist) {
         nearestDist = dist;
@@ -508,6 +533,8 @@ export class UnitEntity extends BaseEntity {
     let nearestDist = Infinity;
 
     for (const enemy of enemies) {
+      // Skip dying enemies (health <= 0)
+      if (enemy.health <= 0) continue;
       const dist = this.position.distanceTo(enemy.position);
       if (dist < nearestDist) {
         nearestDist = dist;
@@ -810,6 +837,7 @@ export class UnitEntity extends BaseEntity {
   }
 
   override isDestroyed(): boolean {
-    return this._destroyed || this.health <= 0;
+    // Only destroyed after death fade completes
+    return this._destroyed;
   }
 }

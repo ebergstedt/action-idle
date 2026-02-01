@@ -104,6 +104,8 @@ export interface UnitRenderData {
   visualOffset: Vector2;
   /** Timer for hit flash effect (> 0 means unit should flash) */
   hitFlashTimer: number;
+  /** Timer for death fade effect (>= 0 means dying, -1 means alive) */
+  deathFadeTimer: number;
 }
 
 /**

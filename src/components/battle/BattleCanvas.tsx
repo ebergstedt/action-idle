@@ -16,7 +16,11 @@ import {
   ShockwaveRenderData,
   ZONE_HEIGHT_PERCENT,
 } from '../../core/battle';
-import { DRAG_BOUNDS_MARGIN, HIT_FLASH_DURATION } from '../../core/battle/BattleConfig';
+import {
+  DRAG_BOUNDS_MARGIN,
+  HIT_FLASH_DURATION,
+  DEATH_FADE_DURATION,
+} from '../../core/battle/BattleConfig';
 import { Vector2 } from '../../core/physics/Vector2';
 import { ARENA_COLORS, UI_COLORS, CASTLE_COLORS, DEBUFF_COLORS } from '../../core/theme/colors';
 import {
@@ -385,12 +389,17 @@ export function BattleCanvas({
         }
       }
 
-      drawHealthBar(ctx, unit, ghostHealth);
+      // Skip health bar for dying units
+      if (unit.deathFadeTimer < 0) {
+        drawHealthBar(ctx, unit, ghostHealth);
+      }
     }
 
-    // Debuff indicators (separate pass - above health bars)
+    // Debuff indicators (separate pass - above health bars, skip dying units)
     for (const unit of state.units) {
-      drawDebuffIndicator(ctx, unit);
+      if (unit.deathFadeTimer < 0) {
+        drawDebuffIndicator(ctx, unit);
+      }
     }
 
     // Health bars for castles (separate pass)
@@ -430,7 +439,13 @@ function drawUnitBody(
   isSelected: boolean,
   isBeingDragged: boolean
 ): void {
-  const { position, color, shape, size, team, visualOffset } = unit;
+  const { position, color, shape, size, team, visualOffset, deathFadeTimer } = unit;
+
+  // Calculate death fade effect
+  const isDying = deathFadeTimer >= 0;
+  const deathProgress = isDying ? 1 - deathFadeTimer / DEATH_FADE_DURATION : 0;
+  const deathOpacity = isDying ? 1 - deathProgress : 1;
+  const deathScale = isDying ? 1 - deathProgress * 0.3 : 1; // Shrink to 70% at death
 
   // Apply visual offset (lunge/knockback) to rendered position
   const renderX = position.x + (visualOffset?.x ?? 0);
@@ -439,8 +454,13 @@ function drawUnitBody(
   ctx.save();
   ctx.translate(renderX, renderY);
 
-  // Selection ring
-  if (isSelected || isBeingDragged) {
+  // Apply death scale
+  if (isDying) {
+    ctx.scale(deathScale, deathScale);
+  }
+
+  // Selection ring (skip for dying units)
+  if ((isSelected || isBeingDragged) && !isDying) {
     ctx.strokeStyle = ARENA_COLORS.selectionRing;
     ctx.lineWidth = 3;
     ctx.beginPath();
@@ -452,8 +472,8 @@ function drawUnitBody(
     ctx.shadowBlur = 0;
   }
 
-  // Move indicator for unselected player units
-  if (team === 'player' && !isSelected && !isBeingDragged) {
+  // Move indicator for unselected player units (skip for dying units)
+  if (team === 'player' && !isSelected && !isBeingDragged && !isDying) {
     ctx.strokeStyle = ARENA_COLORS.moveIndicator;
     ctx.lineWidth = 1;
     ctx.beginPath();
@@ -462,7 +482,8 @@ function drawUnitBody(
   }
 
   // Unit shape
-  ctx.globalAlpha = isBeingDragged ? 0.8 : 1;
+  const baseAlpha = isBeingDragged ? 0.8 : 1;
+  ctx.globalAlpha = baseAlpha * deathOpacity;
   ctx.fillStyle = color;
   ctx.strokeStyle = UI_COLORS.black;
   ctx.lineWidth = 3;

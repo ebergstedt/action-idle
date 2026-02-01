@@ -174,6 +174,7 @@ export class BattleEngine {
       activeModifiers: [],
       visualOffset: Vector2.zero(),
       hitFlashTimer: 0,
+      deathFadeTimer: -1, // -1 means alive
     };
 
     const entity = new UnitEntity(id, position.clone(), data);
