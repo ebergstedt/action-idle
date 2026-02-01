@@ -449,22 +449,6 @@ export const BASE_MELEE_KNOCKBACK_DISTANCE = 6;
 export const MELEE_OFFSET_DECAY_RATE = 12;
 
 /**
- * Duration of the melee attack visual effect in seconds.
- */
-export const MELEE_EFFECT_DURATION = 0.15;
-
-/**
- * Base length of the melee attack visual effect (spear thrust).
- * Scaled by arena size at runtime.
- */
-export const BASE_MELEE_EFFECT_LENGTH = 25;
-
-/**
- * Width of the melee attack visual effect line.
- */
-export const MELEE_EFFECT_WIDTH = 3;
-
-/**
  * Multiplier for ally avoidance distance check during movement.
  * Units avoid allies within (minDist * this value).
  */
