@@ -116,10 +116,11 @@ export const ARENA_COLORS = {
   unitOutline: UI_COLORS.inkBrown, // #5C4033 - dark ink outline
 
   // Health bar
-  healthBarBg: UI_COLORS.inkBrown, // Dark ink brown
-  healthHigh: '#4A7023', // Forest green (grassland)
-  healthMedium: '#C2A366', // Desert ochre (warning)
-  healthLow: FACTION_COLORS.england.primary, // England red (danger)
+  healthBarBg: '#000000', // Black background for contrast
+  healthBarOutline: '#000000', // Black outline
+  healthHigh: '#22C55E', // Bright green (easy to see)
+  healthMedium: '#EAB308', // Bright yellow (warning)
+  healthLow: '#EF4444', // Bright red (danger)
 } as const;
 
 // =============================================================================

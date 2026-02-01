@@ -203,13 +203,16 @@ function drawUnit(
     ctx.stroke();
   }
 
-  // Draw health bar background
-  const healthBarWidth = size * 2;
-  const healthBarHeight = 4;
-  ctx.fillStyle = ARENA_COLORS.healthBarBg;
-  ctx.fillRect(-healthBarWidth / 2, -size - 12, healthBarWidth, healthBarHeight);
+  // Draw health bar with black outline
+  const healthBarWidth = size * 2.5;
+  const healthBarHeight = 6;
+  const healthBarY = -size - 14;
 
-  // Draw health bar
+  // Black outline (padding)
+  ctx.fillStyle = ARENA_COLORS.healthBarBg;
+  ctx.fillRect(-healthBarWidth / 2 - 1, healthBarY - 1, healthBarWidth + 2, healthBarHeight + 2);
+
+  // Health bar fill
   const healthPercent = health / stats.maxHealth;
   ctx.fillStyle =
     healthPercent > 0.5
@@ -217,7 +220,7 @@ function drawUnit(
       : healthPercent > 0.25
         ? ARENA_COLORS.healthMedium
         : ARENA_COLORS.healthLow;
-  ctx.fillRect(-healthBarWidth / 2, -size - 12, healthBarWidth * healthPercent, healthBarHeight);
+  ctx.fillRect(-healthBarWidth / 2, healthBarY, healthBarWidth * healthPercent, healthBarHeight);
 
   // Draw shape with optional drag opacity
   ctx.globalAlpha = isBeingDragged ? 0.8 : 1;
