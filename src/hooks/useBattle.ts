@@ -88,26 +88,103 @@ export function useBattle(): UseBattleReturn {
     const engine = engineRef.current;
     const zoneHeight = arenaHeight * ZONE_HEIGHT_PERCENT;
 
-    // Spawn player units in allied zone (bottom)
-    const playerTypes: UnitType[] = ['warrior', 'warrior', 'archer', 'knight'];
-    const playerSpacing = arenaWidth / (playerTypes.length + 1);
-    const allyZoneCenter = arenaHeight - zoneHeight / 2;
+    // Unit spacing based on arena size
+    const unitSpacing = Math.max(35, arenaWidth / 30);
 
-    playerTypes.forEach((type, i) => {
-      const x = playerSpacing * (i + 1);
-      const y = allyZoneCenter;
-      engine.spawnUnit(type, 'player', new Vector2(x, y), arenaHeight);
+    // === ALLIED ARMY - Classic battle formation (10 units max) ===
+    // Front (toward enemy): Warriors (melee infantry)
+    // Back (toward our side): Archers (ranged)
+    // Flanks: Knights (cavalry)
+
+    const allyZoneTop = arenaHeight - zoneHeight + 30;
+    const centerX = arenaWidth / 2;
+
+    // Front line - 4 Warriors closest to enemy (lower Y = closer to top/enemy)
+    const frontLineY = allyZoneTop + unitSpacing * 0.5;
+    const warriorCount = 4;
+    const warriorStartX = centerX - ((warriorCount - 1) * unitSpacing) / 2;
+
+    for (let i = 0; i < warriorCount; i++) {
+      const x = warriorStartX + i * unitSpacing;
+      engine.spawnUnit('warrior', 'player', new Vector2(x, frontLineY), arenaHeight);
+    }
+
+    // Back line - 4 Archers behind warriors (higher Y = further from enemy)
+    const backLineY = frontLineY + unitSpacing;
+    const archerCount = 4;
+    const archerStartX = centerX - ((archerCount - 1) * unitSpacing) / 2;
+
+    for (let i = 0; i < archerCount; i++) {
+      const x = archerStartX + i * unitSpacing;
+      engine.spawnUnit('archer', 'player', new Vector2(x, backLineY), arenaHeight);
+    }
+
+    // Flanks - Knights (cavalry) on left and right sides
+    const flankY = (frontLineY + backLineY) / 2; // Between front and back
+    const flankOffset = unitSpacing * 3; // Distance from center to flanks
+
+    // Left flank - 1 Knight
+    engine.spawnUnit('knight', 'player', new Vector2(centerX - flankOffset, flankY), arenaHeight);
+
+    // Right flank - 1 Knight
+    engine.spawnUnit('knight', 'player', new Vector2(centerX + flankOffset, flankY), arenaHeight);
+
+    // === ENEMY ARMY - Randomized positions (10 units max) ===
+
+    const enemyZoneTop = 30;
+    const enemyZoneBottom = zoneHeight - 30;
+
+    // Enemy composition: 4 warriors, 3 archers, 3 knights = 10 total
+    const enemyComposition: UnitType[] = [
+      'warrior',
+      'warrior',
+      'warrior',
+      'warrior',
+      'archer',
+      'archer',
+      'archer',
+      'knight',
+      'knight',
+      'knight',
+    ];
+
+    // Shuffle enemy composition for variety
+    const shuffled = [...enemyComposition].sort(() => Math.random() - 0.5);
+
+    // Spawn enemies in a loose grid with randomization
+    const margin = 80;
+    const availableWidth = arenaWidth - margin * 2;
+    const availableHeight = enemyZoneBottom - enemyZoneTop;
+
+    // Create a grid-based spawn with jitter for natural look
+    const cols = 4;
+    const rows = 3;
+    const cellWidth = availableWidth / cols;
+    const cellHeight = availableHeight / rows;
+
+    shuffled.forEach((type, index) => {
+      const col = index % cols;
+      const row = Math.floor(index / cols);
+
+      // Base position in grid cell center
+      const baseX = margin + col * cellWidth + cellWidth / 2;
+      const baseY = enemyZoneTop + row * cellHeight + cellHeight / 2;
+
+      // Add randomization within cell (30% of cell size)
+      const jitterX = (Math.random() - 0.5) * cellWidth * 0.6;
+      const jitterY = (Math.random() - 0.5) * cellHeight * 0.6;
+
+      const x = baseX + jitterX;
+      const y = baseY + jitterY;
+
+      engine.spawnUnit(type, 'enemy', new Vector2(x, y), arenaHeight);
     });
 
-    // Spawn enemy units in enemy zone (top)
-    const enemyTypes: UnitType[] = ['warrior', 'archer', 'warrior'];
-    const enemySpacing = arenaWidth / (enemyTypes.length + 1);
-    const enemyZoneCenter = zoneHeight / 2;
-
-    enemyTypes.forEach((type, i) => {
-      const x = enemySpacing * (i + 1);
-      const y = enemyZoneCenter;
-      engine.spawnUnit(type, 'enemy', new Vector2(x, y), arenaHeight);
+    // Resolve any overlapping units after spawning (with zone clamping)
+    engine.resolveOverlaps(30, {
+      arenaWidth,
+      arenaHeight,
+      zoneHeightPercent: ZONE_HEIGHT_PERCENT,
     });
 
     setState({ ...engine.getState() });

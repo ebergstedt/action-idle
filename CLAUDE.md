@@ -1,4 +1,4 @@
-# Action Idle - Project Context
+# Total Idle - Project Context
 
 ## Primary Constraint
 
@@ -178,6 +178,20 @@ Use screenshots to:
 - Confirm styling updates
 
 The dev server runs on port **5177** (configured in `vite.config.ts` with `strictPort: true`).
+
+## Battle Arena Coordinate System
+
+The battle arena uses standard screen coordinates:
+- **Y = 0** is at the **top** of the screen (enemy side)
+- **Y increases downward** toward the bottom (allied side)
+
+When positioning units:
+- **Lower Y = closer to enemy** (front line)
+- **Higher Y = further from enemy** (back line)
+
+Zone layout:
+- **Enemy zone**: Top 25% of arena (Y: 0 to `arenaHeight * 0.25`)
+- **Allied zone**: Bottom 25% of arena (Y: `arenaHeight * 0.75` to `arenaHeight`)
 
 ## Documentation
 

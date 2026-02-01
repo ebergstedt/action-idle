@@ -75,12 +75,8 @@ export function BattleView() {
 
   const handleReset = () => {
     reset();
+    // Let the useEffect handle respawning when units.length becomes 0
     hasSpawnedRef.current = false;
-    // Respawn units after reset
-    setTimeout(() => {
-      hasSpawnedRef.current = true;
-      spawnWave(arenaSize.width, arenaSize.height);
-    }, 50);
   };
 
   return (

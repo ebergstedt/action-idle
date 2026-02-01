@@ -1,4 +1,4 @@
-# Action Idle - Game Design Document
+# Total Idle - Game Design Document
 
 ## Vision Statement
 
