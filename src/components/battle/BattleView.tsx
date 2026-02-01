@@ -2,7 +2,25 @@ import { useEffect, useRef, useState } from 'react';
 import { useBattle } from '../../hooks/useBattle';
 import { BattleCanvas } from './BattleCanvas';
 import { Unit } from '../../core/battle';
-import { UNIT_TYPE_COLORS, DARK_THEME, TEAM_COLORS } from '../../core/theme/colors';
+import { UNIT_TYPE_COLORS, UI_COLORS, ARENA_COLORS } from '../../core/theme/colors';
+
+// Parchment theme styles - dark text on light background for readability
+const styles = {
+  text: { color: UI_COLORS.inkBlack }, // Primary text - black for readability
+  textFaded: { color: UI_COLORS.inkBrown }, // Secondary text - brown
+  textDark: { color: UI_COLORS.inkBlack }, // Emphasis text - black
+  border: { borderColor: UI_COLORS.parchmentDark },
+  panelBg: { backgroundColor: UI_COLORS.parchmentShadow },
+  buttonPrimary: {
+    backgroundColor: UI_COLORS.goldPrimary,
+    color: UI_COLORS.inkBlack,
+  },
+  buttonSecondary: {
+    backgroundColor: UI_COLORS.parchmentDark,
+    color: UI_COLORS.inkBlack,
+  },
+  healthBarBg: { backgroundColor: UI_COLORS.inkBrown },
+};
 
 export function BattleView() {
   const { state, selectedUnitId, start, stop, reset, spawnWave, moveUnit, selectUnit } =
@@ -95,15 +113,15 @@ export function BattleView() {
           selectedUnitId={selectedUnitId}
           onSelectUnit={selectUnit}
         />
-        <div className="flex gap-4 text-sm flex-shrink-0">
-          <span style={{ color: TEAM_COLORS.player.primary }}>Allies: {playerCount}</span>
-          <span style={{ color: DARK_THEME.textTertiary }}>|</span>
-          <span style={{ color: TEAM_COLORS.enemy.primary }}>Enemies: {enemyCount}</span>
+        <div className="flex gap-4 text-sm flex-shrink-0" style={styles.text}>
+          <span style={{ color: ARENA_COLORS.healthHigh }}>Allies: {playerCount}</span>
+          <span style={styles.textFaded}>|</span>
+          <span style={{ color: ARENA_COLORS.healthLow }}>Enemies: {enemyCount}</span>
         </div>
       </div>
 
       {/* Right side - Info Panel */}
-      <div className="w-80 flex-shrink-0 bg-gray-800 rounded-lg p-5 overflow-y-auto">
+      <div className="w-80 flex-shrink-0 rounded-lg p-5 overflow-y-auto" style={styles.panelBg}>
         {selectedUnit ? (
           <UnitInfoPanel unit={selectedUnit} onDeselect={() => selectUnit(null)} />
         ) : (
@@ -129,19 +147,24 @@ function UnitInfoPanel({ unit, onDeselect }: UnitInfoPanelProps) {
   const healthPercent = Math.round((unit.health / unit.stats.maxHealth) * 100);
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-4" style={styles.text}>
       <div className="flex justify-between items-center">
         <h3 className="text-lg font-bold capitalize" style={{ color: unit.color }}>
           {unit.type}
         </h3>
-        <button onClick={onDeselect} className="text-gray-500 hover:text-gray-300 text-sm">
+        <button onClick={onDeselect} className="text-sm hover:underline" style={styles.textFaded}>
           Close
         </button>
       </div>
 
-      <div className="text-sm text-gray-400">
+      <div className="text-sm">
         <span
-          className={`px-2 py-0.5 rounded text-xs ${unit.team === 'player' ? 'bg-blue-900 text-blue-300' : 'bg-red-900 text-red-300'}`}
+          className="px-2 py-0.5 rounded text-xs"
+          style={{
+            backgroundColor:
+              unit.team === 'player' ? ARENA_COLORS.healthHigh : ARENA_COLORS.healthLow,
+            color: '#FFFFFF',
+          }}
         >
           {unit.team === 'player' ? 'Allied' : 'Enemy'}
         </span>
@@ -149,16 +172,24 @@ function UnitInfoPanel({ unit, onDeselect }: UnitInfoPanelProps) {
 
       {/* Health bar */}
       <div>
-        <div className="flex justify-between text-xs text-gray-400 mb-1">
+        <div className="flex justify-between text-xs mb-1" style={styles.textFaded}>
           <span>Health</span>
           <span>
             {Math.round(unit.health)} / {unit.stats.maxHealth}
           </span>
         </div>
-        <div className="h-3 bg-gray-700 rounded overflow-hidden">
+        <div className="h-3 rounded overflow-hidden" style={styles.healthBarBg}>
           <div
-            className={`h-full transition-all ${healthPercent > 50 ? 'bg-green-500' : healthPercent > 25 ? 'bg-yellow-500' : 'bg-red-500'}`}
-            style={{ width: `${healthPercent}%` }}
+            className="h-full transition-all"
+            style={{
+              width: `${healthPercent}%`,
+              backgroundColor:
+                healthPercent > 50
+                  ? ARENA_COLORS.healthHigh
+                  : healthPercent > 25
+                    ? ARENA_COLORS.healthMedium
+                    : ARENA_COLORS.healthLow,
+            }}
           />
         </div>
       </div>
@@ -167,19 +198,24 @@ function UnitInfoPanel({ unit, onDeselect }: UnitInfoPanelProps) {
       <div className="space-y-2 text-sm">
         {/* Melee Attack */}
         {unit.stats.melee && (
-          <div className="border-b border-gray-700 pb-2 mb-2">
-            <div className="text-xs text-gray-400 mb-1">Melee Attack</div>
-            <div className="flex justify-between">
-              <span className="text-gray-500">Damage</span>
-              <span className="text-gray-200">{unit.stats.melee.damage}</span>
+          <div
+            className="pb-2 mb-2"
+            style={{ borderBottom: `1px solid ${UI_COLORS.parchmentDark}` }}
+          >
+            <div className="text-xs mb-1" style={styles.textFaded}>
+              Melee Attack
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-500">Speed</span>
-              <span className="text-gray-200">{unit.stats.melee.attackSpeed}/s</span>
+              <span style={styles.textFaded}>Damage</span>
+              <span style={styles.textDark}>{unit.stats.melee.damage}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-500">DPS</span>
-              <span style={{ color: DARK_THEME.accentGold }}>
+              <span style={styles.textFaded}>Speed</span>
+              <span style={styles.textDark}>{unit.stats.melee.attackSpeed}/s</span>
+            </div>
+            <div className="flex justify-between">
+              <span style={styles.textFaded}>DPS</span>
+              <span style={{ color: UI_COLORS.goldDark, fontWeight: 'bold' }}>
                 {(unit.stats.melee.damage * unit.stats.melee.attackSpeed).toFixed(1)}
               </span>
             </div>
@@ -188,23 +224,28 @@ function UnitInfoPanel({ unit, onDeselect }: UnitInfoPanelProps) {
 
         {/* Ranged Attack */}
         {unit.stats.ranged && (
-          <div className="border-b border-gray-700 pb-2 mb-2">
-            <div className="text-xs text-gray-400 mb-1">Ranged Attack</div>
-            <div className="flex justify-between">
-              <span className="text-gray-500">Damage</span>
-              <span className="text-gray-200">{unit.stats.ranged.damage}</span>
+          <div
+            className="pb-2 mb-2"
+            style={{ borderBottom: `1px solid ${UI_COLORS.parchmentDark}` }}
+          >
+            <div className="text-xs mb-1" style={styles.textFaded}>
+              Ranged Attack
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-500">Speed</span>
-              <span className="text-gray-200">{unit.stats.ranged.attackSpeed}/s</span>
+              <span style={styles.textFaded}>Damage</span>
+              <span style={styles.textDark}>{unit.stats.ranged.damage}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-500">Range</span>
-              <span className="text-gray-200">{unit.stats.ranged.range}px</span>
+              <span style={styles.textFaded}>Speed</span>
+              <span style={styles.textDark}>{unit.stats.ranged.attackSpeed}/s</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-500">DPS</span>
-              <span style={{ color: DARK_THEME.accentGold }}>
+              <span style={styles.textFaded}>Range</span>
+              <span style={styles.textDark}>{unit.stats.ranged.range}px</span>
+            </div>
+            <div className="flex justify-between">
+              <span style={styles.textFaded}>DPS</span>
+              <span style={{ color: UI_COLORS.goldDark, fontWeight: 'bold' }}>
                 {(unit.stats.ranged.damage * unit.stats.ranged.attackSpeed).toFixed(1)}
               </span>
             </div>
@@ -212,13 +253,16 @@ function UnitInfoPanel({ unit, onDeselect }: UnitInfoPanelProps) {
         )}
 
         <div className="flex justify-between">
-          <span className="text-gray-500">Move Speed</span>
-          <span className="text-gray-200">{unit.stats.moveSpeed}</span>
+          <span style={styles.textFaded}>Move Speed</span>
+          <span style={styles.textDark}>{unit.stats.moveSpeed}</span>
         </div>
       </div>
 
       {/* Position */}
-      <div className="text-xs text-gray-600 border-t border-gray-700 pt-2">
+      <div
+        className="text-xs pt-2"
+        style={{ ...styles.textFaded, borderTop: `1px solid ${UI_COLORS.parchmentDark}` }}
+      >
         Position: ({Math.round(unit.position.x)}, {Math.round(unit.position.y)})
       </div>
     </div>
@@ -235,21 +279,31 @@ interface ControlsPanelProps {
 
 function ControlsPanel({ isRunning, hasStarted, onStart, onStop, onReset }: ControlsPanelProps) {
   return (
-    <div className="flex flex-col gap-4">
-      <h3 className="text-lg font-bold text-gray-200">Battle Controls</h3>
+    <div className="flex flex-col gap-4" style={styles.text}>
+      <h3 className="text-lg font-bold" style={styles.textDark}>
+        Battle Controls
+      </h3>
 
       <div className="flex flex-col gap-2">
         {!isRunning ? (
           <button
             onClick={onStart}
-            className="w-full px-4 py-2 bg-green-600 hover:bg-green-500 rounded font-semibold"
+            className="w-full px-4 py-2 rounded font-semibold hover:opacity-90"
+            style={{
+              backgroundColor: ARENA_COLORS.healthHigh,
+              color: '#FFFFFF',
+            }}
           >
             {hasStarted ? 'Resume' : 'Start Battle'}
           </button>
         ) : (
           <button
             onClick={onStop}
-            className="w-full px-4 py-2 bg-yellow-600 hover:bg-yellow-500 rounded font-semibold"
+            className="w-full px-4 py-2 rounded font-semibold hover:opacity-90"
+            style={{
+              backgroundColor: ARENA_COLORS.healthMedium,
+              color: UI_COLORS.inkBlack,
+            }}
           >
             Pause
           </button>
@@ -257,15 +311,18 @@ function ControlsPanel({ isRunning, hasStarted, onStart, onStop, onReset }: Cont
 
         <button
           onClick={onReset}
-          className="w-full px-4 py-2 bg-gray-600 hover:bg-gray-500 rounded font-semibold"
+          className="w-full px-4 py-2 rounded font-semibold hover:opacity-90"
+          style={styles.buttonSecondary}
         >
           Reset
         </button>
       </div>
 
-      <div className="border-t border-gray-700 pt-4">
-        <h4 className="text-sm font-semibold text-gray-400 mb-2">Unit Types</h4>
-        <div className="space-y-2 text-xs text-gray-500">
+      <div className="pt-4" style={{ borderTop: `1px solid ${UI_COLORS.parchmentDark}` }}>
+        <h4 className="text-sm font-semibold mb-2" style={styles.textFaded}>
+          Unit Types
+        </h4>
+        <div className="space-y-2 text-xs" style={styles.text}>
           <div className="flex items-center gap-2">
             <span
               className="inline-block w-3 h-3"
@@ -291,7 +348,7 @@ function ControlsPanel({ isRunning, hasStarted, onStart, onStop, onReset }: Cont
       </div>
 
       {!hasStarted && (
-        <div className="text-xs mt-2" style={{ color: DARK_THEME.accentGoldDark }}>
+        <div className="text-xs mt-2" style={{ color: UI_COLORS.goldDark }}>
           Tip: Drag allied units to reposition before starting
         </div>
       )}

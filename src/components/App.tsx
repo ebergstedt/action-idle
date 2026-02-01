@@ -1,11 +1,23 @@
 import { BattleView } from './battle';
-import { DARK_THEME } from '../core/theme/colors';
+import { UI_COLORS } from '../core/theme/colors';
 
 function App() {
   return (
-    <div className="h-screen w-screen bg-gray-900 text-gray-100 flex flex-col overflow-hidden">
-      <header className="text-center py-3 flex-shrink-0 border-b border-gray-800 bg-gray-900/50">
-        <h1 className="text-2xl font-bold" style={{ color: DARK_THEME.accentGold }}>
+    <div
+      className="h-screen w-screen flex flex-col overflow-hidden"
+      style={{
+        backgroundColor: UI_COLORS.parchmentBase,
+        color: UI_COLORS.inkBrown,
+      }}
+    >
+      <header
+        className="text-center py-3 flex-shrink-0"
+        style={{
+          borderBottom: `1px solid ${UI_COLORS.parchmentShadow}`,
+          backgroundColor: UI_COLORS.parchmentDark,
+        }}
+      >
+        <h1 className="text-2xl font-bold" style={{ color: UI_COLORS.inkBrown }}>
           Total Idle
         </h1>
       </header>
