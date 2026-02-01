@@ -226,7 +226,7 @@ function drawUnit(
   ctx.globalAlpha = isBeingDragged ? 0.8 : 1;
   ctx.fillStyle = color;
   ctx.strokeStyle = ARENA_COLORS.unitOutline;
-  ctx.lineWidth = 2;
+  ctx.lineWidth = 4; // Thick black outline for visibility
 
   switch (shape) {
     case 'circle':
