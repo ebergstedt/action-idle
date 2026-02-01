@@ -13,7 +13,8 @@ import {
   IEventEmitter,
   EntityEvent,
   EntityEventType,
-  EntityEventListener,
+  EntityEventMap,
+  EventListener,
 } from '../IEntity';
 import { EventEmitter } from './EventEmitter';
 
@@ -60,7 +61,7 @@ export abstract class BaseEntity implements IEntity, IEventEmitter {
    * Override to add initialization logic.
    */
   init(): void {
-    this.emit({ type: 'spawned', source: this });
+    this.emit({ type: 'spawned', entity: this });
   }
 
   /**
@@ -74,7 +75,7 @@ export abstract class BaseEntity implements IEntity, IEventEmitter {
   destroy(): void {
     if (this._destroyed) return;
     this._destroyed = true;
-    this.emit({ type: 'destroyed', source: this });
+    this.emit({ type: 'destroyed', entity: this });
     this.eventEmitter.clearAllListeners();
     this.world = null;
   }
@@ -88,11 +89,11 @@ export abstract class BaseEntity implements IEntity, IEventEmitter {
 
   // IEventEmitter implementation (delegated to EventEmitter)
 
-  on(event: EntityEventType, listener: EntityEventListener): void {
+  on<K extends EntityEventType>(event: K, listener: EventListener<EntityEventMap[K]>): void {
     this.eventEmitter.on(event, listener);
   }
 
-  off(event: EntityEventType, listener: EntityEventListener): void {
+  off<K extends EntityEventType>(event: K, listener: EventListener<EntityEventMap[K]>): void {
     this.eventEmitter.off(event, listener);
   }
 

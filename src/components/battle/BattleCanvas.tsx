@@ -8,7 +8,7 @@
  */
 
 import { useEffect, useRef, useCallback, useState } from 'react';
-import { BattleState, Unit, Projectile } from '../../core/battle';
+import { BattleState, Unit, Projectile, ZONE_HEIGHT_PERCENT } from '../../core/battle';
 import { Vector2 } from '../../core/physics/Vector2';
 import { ARENA_COLORS } from '../../core/theme/colors';
 import {
@@ -29,8 +29,6 @@ import {
   isBoxSelectActive,
   BoxSelectSession,
 } from '../../core/battle/BoxSelectController';
-
-const ZONE_HEIGHT_PERCENT = 0.25;
 
 interface BattleCanvasProps {
   state: BattleState;

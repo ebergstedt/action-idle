@@ -1,26 +1,10 @@
 import { Vector2 } from '../physics/Vector2';
+import { DEFAULT_SHUFFLE_CONFIG, ShuffleConfig } from './BattleConfig';
 import { Unit } from './types';
 
-// Shuffle configuration
-export interface ShuffleConfig {
-  horizontalBias: number; // How much to favor side-to-side movement
-  moveTimeMin: number; // Min seconds to move in one direction
-  moveTimeMax: number; // Max seconds to move in one direction
-  pauseTimeMin: number; // Min seconds to pause between shuffles
-  pauseTimeMax: number; // Max seconds to pause between shuffles
-  speedMultiplier: number; // Fraction of unit's moveSpeed to use
-  moveProbability: number; // Chance to move vs pause (0-1)
-}
-
-export const DEFAULT_SHUFFLE_CONFIG: ShuffleConfig = {
-  horizontalBias: 3,
-  moveTimeMin: 0.15,
-  moveTimeMax: 0.4,
-  pauseTimeMin: 0.1,
-  pauseTimeMax: 0.3,
-  speedMultiplier: 0.25,
-  moveProbability: 0.6,
-};
+// Re-export for backward compatibility
+export { DEFAULT_SHUFFLE_CONFIG } from './BattleConfig';
+export type { ShuffleConfig } from './BattleConfig';
 
 // Generate a random time within a range
 const randomInRange = (min: number, max: number): number => min + Math.random() * (max - min);

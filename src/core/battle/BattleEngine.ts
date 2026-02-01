@@ -9,14 +9,12 @@
 
 import { Vector2 } from '../physics/Vector2';
 import { getUnitColor } from '../theme/colors';
+import { DEFAULT_ARENA_MARGIN, UNIT_SPACING } from './BattleConfig';
 import { EntityBounds } from './BoundsEnforcer';
 import { BattleWorld, UnitEntity, UnitData } from './entities';
 import { BattleState, getScaledUnitSize, Unit } from './types';
 import { UnitDefinition, UnitTeam } from './units/types';
 import { UnitRegistry } from './units';
-
-const UNIT_SPACING = 1.2;
-const DEFAULT_ARENA_MARGIN = 10;
 
 /**
  * Battle engine - orchestrates combat simulation.

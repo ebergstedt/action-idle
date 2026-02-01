@@ -1,3 +1,6 @@
+// Configuration (centralized constants)
+export * from './BattleConfig';
+
 // Legacy types and constants (maintained for backward compatibility)
 export * from './types';
 export * from './shuffle';

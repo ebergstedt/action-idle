@@ -12,15 +12,20 @@
 
 import { Vector2 } from '../../physics/Vector2';
 import { getProjectileColor } from '../../theme/colors';
+import {
+  ALLY_AVOIDANCE_FORCE,
+  BLOCKED_TARGET_PENALTY,
+  FOCUS_FIRE_BONUS,
+  MAX_FOCUS_FIRE_ALLIES,
+  MELEE_ATTACK_RANGE_THRESHOLD,
+  MELEE_RANGE_BUFFER,
+  UNIT_SPACING,
+} from '../BattleConfig';
 import { clampToArenaInPlace } from '../BoundsEnforcer';
 import { applyShuffle } from '../shuffle';
 import { AttackMode, Unit, UnitStats, UnitTeam, UnitType } from '../types';
 import { BaseEntity } from './BaseEntity';
 import { IBattleWorld } from './IBattleWorld';
-
-// Constants
-const UNIT_SPACING = 1.2;
-const ALLY_AVOIDANCE_FORCE = 80;
 
 /**
  * Unit data that UnitEntity wraps.
@@ -118,7 +123,7 @@ export class UnitEntity extends BaseEntity {
   override update(delta: number): void {
     if (this.health <= 0) {
       this.markDestroyed();
-      this.emit({ type: 'killed', source: this });
+      this.emit({ type: 'killed', entity: this });
       return;
     }
 
@@ -137,26 +142,34 @@ export class UnitEntity extends BaseEntity {
 
   /**
    * Apply damage to this unit.
+   * @param amount - Damage to apply
+   * @param attacker - The entity that dealt the damage (optional)
    */
-  takeDamage(amount: number, source?: UnitEntity): void {
+  takeDamage(amount: number, attacker?: UnitEntity): void {
     const previousHealth = this.health;
     this.health = Math.max(0, this.health - amount);
 
+    // Emit damaged event: entity = who was damaged, attacker = who caused it
     this.emit({
       type: 'damaged',
-      source: this,
-      target: source,
-      data: { amount, previousHealth, currentHealth: this.health },
+      entity: this,
+      attacker,
+      amount,
+      previousHealth,
+      currentHealth: this.health,
     });
 
     if (this.health <= 0) {
       this.markDestroyed();
-      this.emit({ type: 'killed', source: this, target: source });
+      // Emit killed event: entity = who died, killer = who killed them
+      this.emit({ type: 'killed', entity: this, killer: attacker });
     }
   }
 
   /**
    * Convert to legacy Unit interface for backward compatibility.
+   * Note: target is set to null to avoid infinite recursion when units target each other.
+   * React rendering doesn't need the full target object - that's internal battle logic.
    */
   toLegacyUnit(): Unit {
     return {
@@ -166,7 +179,7 @@ export class UnitEntity extends BaseEntity {
       position: this.position,
       health: this.health,
       stats: this.stats,
-      target: this.target ? this.target.toLegacyUnit() : null,
+      target: null, // Avoid circular reference - React doesn't need target for rendering
       attackCooldown: this.attackCooldown,
       color: this.color,
       shape: this.shape,
@@ -258,14 +271,14 @@ export class UnitEntity extends BaseEntity {
       // Bonus for enemies already engaged (focus fire)
       const allies = world.getAlliesOf(this);
       const alliesTargeting = allies.filter((a) => a.target === enemy && a.id !== this.id).length;
-      if (alliesTargeting > 0 && alliesTargeting < 3) {
-        score += 50;
+      if (alliesTargeting > 0 && alliesTargeting < MAX_FOCUS_FIRE_ALLIES) {
+        score += FOCUS_FIRE_BONUS;
       }
 
       // For ranged units, prefer unblocked targets
       if (this.stats.ranged) {
         if (world.isPathBlocked(this.position, enemy.position, this)) {
-          score -= 100;
+          score -= BLOCKED_TARGET_PENALTY;
         }
       }
 
@@ -283,7 +296,7 @@ export class UnitEntity extends BaseEntity {
     const meleeRange = melee ? melee.range + this.size * 2 : 0;
 
     // If in melee range and has melee attack, use melee
-    if (melee && distanceToTarget <= meleeRange + 20) {
+    if (melee && distanceToTarget <= meleeRange + MELEE_RANGE_BUFFER) {
       return melee;
     }
 
@@ -306,18 +319,20 @@ export class UnitEntity extends BaseEntity {
   private isInMeleeMode(distanceToTarget: number): boolean {
     const { melee } = this.stats;
     if (!melee) return false;
-    const meleeRange = melee.range + this.size * 2 + 20;
+    const meleeRange = melee.range + this.size * 2 + MELEE_RANGE_BUFFER;
     return distanceToTarget <= meleeRange;
   }
 
   private performAttack(target: UnitEntity, attackMode: AttackMode): void {
-    const isMelee = attackMode.range <= 50;
+    const isMelee = attackMode.range <= MELEE_ATTACK_RANGE_THRESHOLD;
 
+    // Emit attacked event: entity = attacker, target = who was attacked
     this.emit({
       type: 'attacked',
-      source: this,
+      entity: this,
       target,
-      data: { damage: attackMode.damage, attackMode: isMelee ? 'melee' : 'ranged' },
+      damage: attackMode.damage,
+      attackMode: isMelee ? 'melee' : 'ranged',
     });
 
     if (isMelee) {
@@ -342,6 +357,7 @@ export class UnitEntity extends BaseEntity {
     const world = this.getBattleWorld();
     if (!world) return;
 
+    const previousPosition = this.position.clone();
     const toTarget = targetPos.subtract(this.position);
     const distToTarget = toTarget.magnitude();
     if (distToTarget < 1) return;
@@ -390,7 +406,13 @@ export class UnitEntity extends BaseEntity {
     const movement = moveDirection.multiply(delta);
     this.position = this.position.add(movement);
 
-    this.emit({ type: 'moved', source: this, data: { delta: movement } });
+    // Emit moved event with typed payload
+    this.emit({
+      type: 'moved',
+      entity: this,
+      delta: movement,
+      previousPosition,
+    });
   }
 
   private isDirectionClear(direction: Vector2, allies: UnitEntity[]): boolean {

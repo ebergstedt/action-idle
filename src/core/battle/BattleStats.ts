@@ -2,12 +2,19 @@
  * Battle Statistics Tracker
  *
  * Subscribes to entity events to track battle statistics.
+ * Uses world events for automatic subscription to new units.
  * Demonstrates the event system and provides useful game data.
  *
  * Godot equivalent: Autoload or node that connects to unit signals.
  */
 
-import { EntityEvent, EntityEventListener } from './IEntity';
+import {
+  DamagedEvent,
+  KilledEvent,
+  EntityAddedEvent,
+  EntityRemovedEvent,
+  EventListener,
+} from './IEntity';
 import { BattleWorld } from './entities/BattleWorld';
 import { UnitEntity } from './entities/UnitEntity';
 import { UnitTeam } from './units/types';
@@ -47,18 +54,29 @@ function createEmptyTeamStats(): TeamStats {
 }
 
 /**
+ * Type guard to check if an entity is a UnitEntity.
+ */
+function isUnitEntity(entity: unknown): entity is UnitEntity {
+  return entity instanceof UnitEntity;
+}
+
+/**
  * Battle statistics tracker.
  * Subscribes to entity events to track kills, damage, etc.
+ * Auto-subscribes to new units via world events.
  */
 export class BattleStats {
   private stats: BattleStatistics;
   private subscribedUnits: Set<string> = new Set();
   private world: BattleWorld | null = null;
 
-  // Event listeners (bound for proper unsubscription)
-  private onDamagedListener: EntityEventListener;
-  private onKilledListener: EntityEventListener;
-  private onSpawnedListener: EntityEventListener;
+  // Typed event listeners (bound for proper unsubscription)
+  private onDamagedListener: EventListener<DamagedEvent>;
+  private onKilledListener: EventListener<KilledEvent>;
+
+  // World event listeners
+  private onEntityAddedListener: EventListener<EntityAddedEvent>;
+  private onEntityRemovedListener: EventListener<EntityRemovedEvent>;
 
   constructor() {
     this.stats = {
@@ -68,17 +86,25 @@ export class BattleStats {
       totalKills: 0,
     };
 
-    // Bind listeners
+    // Bind entity event listeners
     this.onDamagedListener = this.handleDamaged.bind(this);
     this.onKilledListener = this.handleKilled.bind(this);
-    this.onSpawnedListener = this.handleSpawned.bind(this);
+
+    // Bind world event listeners
+    this.onEntityAddedListener = this.handleEntityAdded.bind(this);
+    this.onEntityRemovedListener = this.handleEntityRemoved.bind(this);
   }
 
   /**
    * Attach to a BattleWorld and start tracking.
+   * Subscribes to world events for automatic unit subscription.
    */
   attach(world: BattleWorld): void {
     this.world = world;
+
+    // Subscribe to world events for auto-subscription
+    world.onWorld('entity_added', this.onEntityAddedListener);
+    world.onWorld('entity_removed', this.onEntityRemovedListener);
 
     // Subscribe to existing units
     for (const unit of world.getUnits()) {
@@ -92,6 +118,10 @@ export class BattleStats {
   detach(): void {
     if (!this.world) return;
 
+    // Unsubscribe from world events
+    this.world.offWorld('entity_added', this.onEntityAddedListener);
+    this.world.offWorld('entity_removed', this.onEntityRemovedListener);
+
     // Unsubscribe from all units
     for (const unit of this.world.getUnits()) {
       this.unsubscribeFromUnit(unit);
@@ -103,14 +133,12 @@ export class BattleStats {
 
   /**
    * Subscribe to a unit's events.
-   * Call this when a new unit is spawned.
    */
-  subscribeToUnit(unit: UnitEntity): void {
+  private subscribeToUnit(unit: UnitEntity): void {
     if (this.subscribedUnits.has(unit.id)) return;
 
     unit.on('damaged', this.onDamagedListener);
     unit.on('killed', this.onKilledListener);
-    unit.on('spawned', this.onSpawnedListener);
 
     this.subscribedUnits.add(unit.id);
 
@@ -121,12 +149,11 @@ export class BattleStats {
   /**
    * Unsubscribe from a unit's events.
    */
-  unsubscribeFromUnit(unit: UnitEntity): void {
+  private unsubscribeFromUnit(unit: UnitEntity): void {
     if (!this.subscribedUnits.has(unit.id)) return;
 
     unit.off('damaged', this.onDamagedListener);
     unit.off('killed', this.onKilledListener);
-    unit.off('spawned', this.onSpawnedListener);
 
     this.subscribedUnits.delete(unit.id);
   }
@@ -158,41 +185,50 @@ export class BattleStats {
     this.stats.battleDuration += delta;
   }
 
-  // === Event Handlers ===
+  // === World Event Handlers ===
 
-  private handleDamaged(event: EntityEvent): void {
-    const damaged = event.source as UnitEntity;
-    const amount = (event.data?.amount as number) ?? 0;
-
-    // Track damage taken by the damaged unit's team
-    this.getTeamStats(damaged.team).damageTaken += amount;
-
-    // Track damage dealt by the attacker's team (if known)
-    if (event.target) {
-      const attacker = event.target as UnitEntity;
-      this.getTeamStats(attacker.team).damageDealt += amount;
+  private handleEntityAdded(event: EntityAddedEvent): void {
+    // Only subscribe to units, not projectiles
+    if (isUnitEntity(event.entity)) {
+      this.subscribeToUnit(event.entity);
     }
   }
 
-  private handleKilled(event: EntityEvent): void {
-    const killed = event.source as UnitEntity;
+  private handleEntityRemoved(event: EntityRemovedEvent): void {
+    // Cleanup subscription when entity is removed
+    if (isUnitEntity(event.entity)) {
+      this.unsubscribeFromUnit(event.entity);
+    }
+  }
+
+  // === Entity Event Handlers ===
+
+  private handleDamaged(event: DamagedEvent): void {
+    const damaged = event.entity as UnitEntity;
+
+    // Track damage taken by the damaged unit's team
+    this.getTeamStats(damaged.team).damageTaken += event.amount;
+
+    // Track damage dealt by the attacker's team (if known)
+    if (event.attacker && isUnitEntity(event.attacker)) {
+      this.getTeamStats(event.attacker.team).damageDealt += event.amount;
+    }
+  }
+
+  private handleKilled(event: KilledEvent): void {
+    const killed = event.entity as UnitEntity;
 
     // Track death for the killed unit's team
     this.getTeamStats(killed.team).deaths++;
     this.stats.totalKills++;
 
     // Track kill for the killer's team (if known)
-    if (event.target) {
-      const killer = event.target as UnitEntity;
-      this.getTeamStats(killer.team).kills++;
+    if (event.killer && isUnitEntity(event.killer)) {
+      this.getTeamStats(event.killer.team).kills++;
     }
 
     // Unsubscribe from the dead unit
     this.unsubscribeFromUnit(killed);
-  }
-
-  private handleSpawned(_event: EntityEvent): void {
-    // Spawn is tracked in subscribeToUnit
   }
 
   private getTeamStats(team: UnitTeam): TeamStats {

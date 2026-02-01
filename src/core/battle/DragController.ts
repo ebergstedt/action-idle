@@ -8,6 +8,7 @@
  */
 
 import { Vector2 } from '../physics/Vector2';
+import { DRAG_OVERLAP_ITERATIONS, UNIT_SPACING } from './BattleConfig';
 import { Unit } from './types';
 
 export interface DragSession {
@@ -31,8 +32,6 @@ export interface DragBounds {
 export interface DragResult {
   moves: Array<{ unitId: string; position: Vector2 }>;
 }
-
-const UNIT_SPACING = 1.2;
 
 /**
  * Starts a drag session.
@@ -137,7 +136,7 @@ export function calculateDragPositions(
     let finalPos = new Vector2(data.pos.x + adjustX, data.pos.y + adjustY);
 
     // Resolve overlaps with static units (best effort)
-    finalPos = resolveOverlaps(finalPos, data.size, staticUnits, 5);
+    finalPos = resolveOverlaps(finalPos, data.size, staticUnits, DRAG_OVERLAP_ITERATIONS);
 
     moves.push({ unitId, position: finalPos });
   }

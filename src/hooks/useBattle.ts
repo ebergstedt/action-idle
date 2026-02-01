@@ -9,11 +9,10 @@ import {
   calculateEnemySpawnPositions,
   getEnemyCompositionForWave,
   UnitRegistry,
+  ZONE_HEIGHT_PERCENT,
 } from '../core/battle';
 import { Vector2 } from '../core/physics/Vector2';
 import { unitDefinitions } from '../data/units';
-
-const ZONE_HEIGHT_PERCENT = 0.25; // Must match BattleCanvas
 
 export type BattleSpeed = 0.5 | 1 | 5;
 
@@ -163,15 +162,10 @@ export function useBattle(): UseBattleReturn {
     }
 
     // Spawn allied army using formation
+    // Note: BattleStats auto-subscribes to new units via world events
     const alliedPositions = calculateAlliedSpawnPositions(CLASSIC_FORMATION, bounds);
     for (const spawn of alliedPositions) {
       engine.spawnUnit(spawn.type, 'player', spawn.position, arenaHeight);
-      // Subscribe stats to newly spawned unit
-      const units = engine.getWorld().getUnits();
-      const lastUnit = units[units.length - 1];
-      if (lastUnit && statsRef.current) {
-        statsRef.current.subscribeToUnit(lastUnit);
-      }
     }
 
     // Spawn enemy army
@@ -180,12 +174,6 @@ export function useBattle(): UseBattleReturn {
     const enemyPositions = calculateEnemySpawnPositions(enemyComposition, bounds);
     for (const spawn of enemyPositions) {
       engine.spawnUnit(spawn.type, 'enemy', spawn.position, arenaHeight);
-      // Subscribe stats to newly spawned unit
-      const units = engine.getWorld().getUnits();
-      const lastUnit = units[units.length - 1];
-      if (lastUnit && statsRef.current) {
-        statsRef.current.subscribeToUnit(lastUnit);
-      }
     }
 
     // Resolve any overlapping units after spawning

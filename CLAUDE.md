@@ -40,7 +40,11 @@ Current focus: **Battle System** - unit spawning, formations, combat mechanics.
 │   ├── ui/                 # 🟡 StatsDisplay, UpgradeShop
 │   └── App.tsx
 ├── data/
-│   └── upgrades.json       # 🟡 Upgrade definitions (JSON-driven content)
+│   ├── upgrades.json       # 🟡 Upgrade definitions (economy - dormant)
+│   ├── units/              # 🟢 Unit definitions (warrior, archer, knight)
+│   ├── abilities/          # 🟢 Ability definitions (triggers, effects)
+│   ├── battle-upgrades/    # 🟢 Battle upgrade definitions (stat mods)
+│   └── battle/             # 🟢 Battle data initializer
 └── test/
     └── setup.ts            # Vitest setup (jest-dom matchers)
 ```
@@ -252,15 +256,16 @@ class BattleWorld {
 **Key classes:**
 
 ```
-/src/core/battle/entities/
-├── IEntity.ts           # Lifecycle interface
-├── EventEmitter.ts      # Signal system implementation
-├── BaseEntity.ts        # Abstract base with common functionality
-├── UnitEntity.ts        # Unit with targeting, combat, movement
-├── ProjectileEntity.ts  # Projectile with movement, hit detection
-├── BattleWorld.ts       # Entity manager (SceneTree equivalent)
-├── IBattleWorld.ts      # Query interface for entities
-└── index.ts
+/src/core/battle/
+├── IEntity.ts                    # Lifecycle interface + typed events
+├── entities/
+│   ├── EventEmitter.ts           # Signal system implementation
+│   ├── BaseEntity.ts             # Abstract base with common functionality
+│   ├── UnitEntity.ts             # Unit with targeting, combat, movement
+│   ├── ProjectileEntity.ts       # Projectile with movement, hit detection
+│   ├── BattleWorld.ts            # Entity manager (SceneTree equivalent)
+│   ├── IBattleWorld.ts           # Query interface for entities
+│   └── index.ts
 ```
 
 **Using the Event System (Godot Signals):**
@@ -271,57 +276,22 @@ Entities emit events that map to Godot signals. Subscribe to react to game event
 // Subscribe to entity events (like Godot's connect())
 const unit = engine.getWorld().getUnitById('unit_1');
 unit.on('damaged', (event) => {
-  console.log(`${event.source.id} took ${event.data?.amount} damage`);
+  console.log(`${event.entity.id} took ${event.amount} damage`);
 });
 unit.on('killed', (event) => {
-  console.log(`${event.source.id} was killed by ${event.target?.id}`);
+  console.log(`${event.entity.id} was killed by ${event.killer?.id}`);
 });
 unit.on('attacked', (event) => {
-  // Play attack animation, spawn particles, etc.
+  console.log(`${event.entity.id} attacked ${event.target.id} for ${event.damage}`);
 });
 
 // Unsubscribe (like Godot's disconnect())
 unit.off('damaged', myHandler);
 ```
 
-**Available events:**
-- `spawned` - Entity added to world
-- `destroyed` - Entity removed from world
-- `damaged` - Unit took damage (data: amount, previousHealth, currentHealth)
-- `killed` - Unit died (target = killer)
-- `attacked` - Unit performed attack (data: damage, attackMode)
-- `moved` - Unit moved (data: delta vector)
+**Events:** See `IEntity.ts` for all typed events (`spawned`, `destroyed`, `damaged`, `killed`, `attacked`, `moved`) and world events (`entity_added`, `entity_removed`). BattleStats uses world events to auto-subscribe to new units.
 
-**Creating New Entity Types:**
-
-To add a new entity (e.g., `TrapEntity`):
-
-```typescript
-// 1. Create entity class extending BaseEntity
-export class TrapEntity extends BaseEntity {
-  constructor(id: string, position: Vector2, public damage: number) {
-    super(id, position);
-  }
-
-  update(delta: number): void {
-    const world = this.world as IBattleWorld;
-    if (!world) return;
-
-    // Check for units stepping on trap
-    for (const unit of world.getUnits()) {
-      if (this.position.distanceTo(unit.position) < 20) {
-        unit.takeDamage(this.damage);
-        this.emit({ type: 'attacked', source: this, target: unit });
-        this.markDestroyed();
-        break;
-      }
-    }
-  }
-}
-
-// 2. Add to BattleWorld (or create method in BattleWorld)
-// 3. In Godot: becomes Trap.gd extending Area2D
-```
+**Creating New Entity Types:** Extend `BaseEntity`, implement `update(delta)`, use `this.emit()` for events. See `UnitEntity.ts` and `ProjectileEntity.ts` for examples.
 
 **Migration Status: ✅ COMPLETE**
 
@@ -339,6 +309,10 @@ The battle system is fully Godot-ready:
 **For new code:** Use `engine.getWorld()` to access entities directly.
 **For Godot port:** Translate entity classes to GDScript scenes. Ignore legacy types in `types.ts` - they only exist for React rendering.
 
+### 10. Centralized Configuration
+
+All game constants (spacing, speeds, combat values, etc.) are in `/src/core/battle/BattleConfig.ts`. **Never use magic numbers in code** - always import from BattleConfig.
+
 ## Key Files
 
 ### Battle System (Active)
@@ -347,6 +321,7 @@ The battle system is fully Godot-ready:
 
 | File | Purpose |
 |------|---------|
+| `src/core/battle/BattleConfig.ts` | **Centralized constants** - all magic numbers in one place |
 | `src/core/battle/BattleEngine.ts` | Battle orchestrator - delegates to BattleWorld |
 | `src/core/battle/entities/` | **Entity system (Godot Scene/Node pattern)** |
 | `src/core/battle/entities/BattleWorld.ts` | Entity manager - lifecycle, queries, separation |
@@ -358,6 +333,9 @@ The battle system is fully Godot-ready:
 | `src/core/battle/DragController.ts` | Multi-unit drag with relative positioning, edge clamping |
 | `src/core/battle/FormationManager.ts` | Formation templates and spawn positioning |
 | `src/core/battle/InputAdapter.ts` | Platform-agnostic input - hit detection |
+| `src/core/battle/BoxSelectController.ts` | Box/marquee selection for multiple units |
+| `src/core/battle/BoundsEnforcer.ts` | Pure functions for arena boundary enforcement |
+| `src/core/battle/shuffle.ts` | Combat shuffle for melee units |
 | `src/core/battle/types.ts` | Legacy types for React rendering only |
 | `src/core/battle/BattleStats.ts` | Battle statistics via entity events |
 | `src/core/battle/units/` | Unit definitions, instances, registry, factory |
@@ -506,48 +484,7 @@ Uses `break_infinity.js` for numbers up to 10^9e15. Key functions in `src/core/u
 
 ## Color System
 
-All colors are centralized in `src/core/theme/colors.ts` - a single source of truth that's Godot-portable.
-
-### Color Palette
-
-Based on **Medieval II: Total War** faction colors:
-
-| Category | Usage |
-|----------|-------|
-| `FACTION_COLORS` | 20+ historical factions (England, France, Byzantium, etc.) |
-| `TEAM_COLORS` | Player (England red/white) vs Enemy (France blue/yellow) |
-| `UNIT_TYPE_COLORS` | Warrior, Archer, Knight colors per team |
-| `ARENA_COLORS` | Canvas backgrounds, zones, health bars, selection |
-| `DARK_THEME` | UI backgrounds, text, borders, accents |
-| `UI_COLORS` | Parchment, ink, gold, semantic (success/warning/danger) |
-
-### Usage
-
-```typescript
-// In React components (inline styles for critical colors)
-import { DARK_THEME, UNIT_TYPE_COLORS } from '../core/theme/colors';
-<span style={{ color: DARK_THEME.accentGold }}>Gold Text</span>
-
-// In Canvas rendering
-import { ARENA_COLORS } from '../core/theme/colors';
-ctx.fillStyle = ARENA_COLORS.background;
-
-// Utility functions
-import { hexToRgba, getUnitColor } from '../core/theme/colors';
-const transparentRed = hexToRgba('#C80000', 0.5);
-const warriorColor = getUnitColor('player', 'warrior');
-```
-
-### Godot Migration
-
-Convert hex strings to Godot colors:
-```gdscript
-# GDScript
-var england_red = Color.html("#C80000")
-var england_rgb = Color8(200, 0, 0)  # Same color via RGB
-
-# Use the hexToRgb() function output for Color8()
-```
+All colors are in `src/core/theme/colors.ts` - never use hardcoded hex values. Based on Medieval II faction colors. Includes utility functions (`hexToRgba`, `getUnitColor`). For Godot, convert hex to `Color.html()` or `Color8()`.
 
 ## Godot Migration Path
 

@@ -10,53 +10,65 @@
  */
 
 import { Vector2 } from '../../physics/Vector2';
+import { SEPARATION_FORCE, UNIT_SPACING } from '../BattleConfig';
 import { EntityBounds } from '../BoundsEnforcer';
 import { UnitTeam } from '../units/types';
-import { IEntity } from '../IEntity';
+import {
+  IEntity,
+  IWorldEventEmitter,
+  WorldEventType,
+  WorldEventMap,
+  EventListener,
+} from '../IEntity';
 import { IEntityWorld } from './BaseEntity';
 import { IBattleWorld } from './IBattleWorld';
 import { UnitEntity } from './UnitEntity';
 import { ProjectileEntity, createProjectile } from './ProjectileEntity';
-
-// Constants
-const UNIT_SPACING = 1.2;
-const SEPARATION_FORCE = 150;
+import { WorldEventEmitter } from './EventEmitter';
 
 /**
  * Battle world - manages all battle entities.
+ * Implements IWorldEventEmitter to notify listeners when entities are added/removed.
  */
-export class BattleWorld implements IEntityWorld, IBattleWorld {
+export class BattleWorld implements IEntityWorld, IBattleWorld, IWorldEventEmitter {
   private units: UnitEntity[] = [];
   private projectiles: ProjectileEntity[] = [];
   private nextProjectileId = 1;
   private arenaBounds: EntityBounds | null = null;
+  private worldEvents = new WorldEventEmitter();
 
   // === Entity Management ===
 
   /**
    * Add a unit to the world.
+   * Emits 'entity_added' world event.
    */
   addUnit(unit: UnitEntity): void {
     unit.setWorld(this);
     unit.init();
     this.units.push(unit);
+    this.worldEvents.emitWorld({ type: 'entity_added', entity: unit });
   }
 
   /**
    * Add a projectile to the world.
+   * Emits 'entity_added' world event.
    */
   addProjectile(projectile: ProjectileEntity): void {
     projectile.setWorld(this);
     projectile.init();
     this.projectiles.push(projectile);
+    this.worldEvents.emitWorld({ type: 'entity_added', entity: projectile });
   }
 
   /**
    * Remove a unit from the world.
+   * Emits 'entity_removed' world event.
    */
   removeUnit(unit: UnitEntity): void {
     const index = this.units.indexOf(unit);
     if (index !== -1) {
+      this.worldEvents.emitWorld({ type: 'entity_removed', entity: unit });
       unit.destroy();
       unit.setWorld(null);
       this.units.splice(index, 1);
@@ -65,13 +77,16 @@ export class BattleWorld implements IEntityWorld, IBattleWorld {
 
   /**
    * Clear all entities.
+   * Emits 'entity_removed' for each entity.
    */
   clear(): void {
     for (const unit of this.units) {
+      this.worldEvents.emitWorld({ type: 'entity_removed', entity: unit });
       unit.destroy();
       unit.setWorld(null);
     }
     for (const proj of this.projectiles) {
+      this.worldEvents.emitWorld({ type: 'entity_removed', entity: proj });
       proj.destroy();
       proj.setWorld(null);
     }
@@ -136,6 +151,7 @@ export class BattleWorld implements IEntityWorld, IBattleWorld {
     // Remove destroyed units
     this.units = this.units.filter((unit) => {
       if (unit.isDestroyed()) {
+        this.worldEvents.emitWorld({ type: 'entity_removed', entity: unit });
         unit.setWorld(null);
         return false;
       }
@@ -145,6 +161,7 @@ export class BattleWorld implements IEntityWorld, IBattleWorld {
     // Remove destroyed projectiles
     this.projectiles = this.projectiles.filter((proj) => {
       if (proj.isDestroyed()) {
+        this.worldEvents.emitWorld({ type: 'entity_removed', entity: proj });
         proj.setWorld(null);
         return false;
       }
@@ -282,5 +299,23 @@ export class BattleWorld implements IEntityWorld, IBattleWorld {
       return { over: true, winner: 'player' };
     }
     return { over: false, winner: null };
+  }
+
+  // === IWorldEventEmitter Implementation ===
+
+  /**
+   * Subscribe to world events.
+   * Godot: connect("entity_added", callable)
+   */
+  onWorld<K extends WorldEventType>(event: K, listener: EventListener<WorldEventMap[K]>): void {
+    this.worldEvents.onWorld(event, listener);
+  }
+
+  /**
+   * Unsubscribe from world events.
+   * Godot: disconnect("entity_added", callable)
+   */
+  offWorld<K extends WorldEventType>(event: K, listener: EventListener<WorldEventMap[K]>): void {
+    this.worldEvents.offWorld(event, listener);
   }
 }

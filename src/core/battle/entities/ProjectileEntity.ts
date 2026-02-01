@@ -11,14 +11,11 @@
  */
 
 import { Vector2 } from '../../physics/Vector2';
+import { PROJECTILE_HIT_RADIUS, PROJECTILE_SPLASH_RADIUS, PROJECTILE_SPEED } from '../BattleConfig';
 import { isOutOfBounds } from '../BoundsEnforcer';
 import { Projectile, UnitTeam } from '../types';
 import { BaseEntity } from './BaseEntity';
 import { IBattleWorld } from './IBattleWorld';
-
-const PROJECTILE_SPEED = 300;
-const HIT_RADIUS = 10;
-const SPLASH_RADIUS = 15;
 
 /**
  * Projectile data.
@@ -90,7 +87,7 @@ export class ProjectileEntity extends BaseEntity {
 
     // Check if reached target
     const distToTarget = this.position.distanceTo(this.target);
-    if (distToTarget < HIT_RADIUS) {
+    if (distToTarget < PROJECTILE_HIT_RADIUS) {
       this.onReachTarget();
     }
   }
@@ -124,7 +121,7 @@ export class ProjectileEntity extends BaseEntity {
       if (unit.health <= 0) continue;
 
       const dist = unit.position.distanceTo(this.target);
-      if (dist < unit.size + SPLASH_RADIUS) {
+      if (dist < unit.size + PROJECTILE_SPLASH_RADIUS) {
         unit.takeDamage(this.damage);
       }
     }
