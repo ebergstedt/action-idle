@@ -449,6 +449,18 @@ export const BASE_MELEE_KNOCKBACK_DISTANCE = 6;
 export const MELEE_OFFSET_DECAY_RATE = 12;
 
 /**
+ * Duration of the hit flash effect in seconds.
+ * Unit flashes white/red briefly when taking damage.
+ */
+export const HIT_FLASH_DURATION = 0.15;
+
+/**
+ * Duration of the death fade effect in seconds.
+ * Unit fades out and shrinks when dying.
+ */
+export const DEATH_FADE_DURATION = 0.4;
+
+/**
  * Multiplier for ally avoidance distance check during movement.
  * Units avoid allies within (minDist * this value).
  */

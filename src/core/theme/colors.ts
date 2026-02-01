@@ -126,6 +126,7 @@ export const ARENA_COLORS = {
   healthMedium: '#EAB308', // Bright yellow (warning)
   healthLow: '#EF4444', // Bright red (danger)
   healthGhost: '#8B0000', // Dark red ghost damage indicator
+  hitFlash: '#FFFFFF', // White flash when unit takes damage
 } as const;
 
 // =============================================================================

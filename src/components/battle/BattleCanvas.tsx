@@ -16,7 +16,7 @@ import {
   ShockwaveRenderData,
   ZONE_HEIGHT_PERCENT,
 } from '../../core/battle';
-import { DRAG_BOUNDS_MARGIN } from '../../core/battle/BattleConfig';
+import { DRAG_BOUNDS_MARGIN, HIT_FLASH_DURATION } from '../../core/battle/BattleConfig';
 import { Vector2 } from '../../core/physics/Vector2';
 import { ARENA_COLORS, UI_COLORS, CASTLE_COLORS, DEBUFF_COLORS } from '../../core/theme/colors';
 import {
@@ -487,6 +487,33 @@ function drawUnitBody(
       ctx.fill();
       ctx.stroke();
       break;
+  }
+
+  // Hit flash overlay - white flash when unit takes damage
+  const hitFlashTimer = unit.hitFlashTimer ?? 0;
+  if (hitFlashTimer > 0) {
+    const flashIntensity = hitFlashTimer / HIT_FLASH_DURATION;
+    ctx.fillStyle = ARENA_COLORS.hitFlash;
+    ctx.globalAlpha = flashIntensity * 0.7; // Max 70% opacity for the flash
+
+    switch (shape) {
+      case 'circle':
+        ctx.beginPath();
+        ctx.arc(0, 0, size, 0, Math.PI * 2);
+        ctx.fill();
+        break;
+      case 'square':
+        ctx.fillRect(-size, -size, size * 2, size * 2);
+        break;
+      case 'triangle':
+        ctx.beginPath();
+        ctx.moveTo(0, -size);
+        ctx.lineTo(-size, size);
+        ctx.lineTo(size, size);
+        ctx.closePath();
+        ctx.fill();
+        break;
+    }
   }
 
   ctx.restore();

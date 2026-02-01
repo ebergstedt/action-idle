@@ -173,6 +173,7 @@ export class BattleEngine {
       retargetCooldown: 0,
       activeModifiers: [],
       visualOffset: Vector2.zero(),
+      hitFlashTimer: 0,
     };
 
     const entity = new UnitEntity(id, position.clone(), data);

@@ -102,6 +102,8 @@ export interface UnitRenderData {
   activeModifiers: ModifierRenderData[];
   /** Visual offset for melee lunge/knockback effects */
   visualOffset: Vector2;
+  /** Timer for hit flash effect (> 0 means unit should flash) */
+  hitFlashTimer: number;
 }
 
 /**

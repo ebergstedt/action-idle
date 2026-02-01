@@ -19,6 +19,7 @@ import {
   BASE_MELEE_KNOCKBACK_DISTANCE,
   BASE_MELEE_LUNGE_DISTANCE,
   DIRECTION_CHECK_MULTIPLIER,
+  HIT_FLASH_DURATION,
   MELEE_ATTACK_RANGE_THRESHOLD,
   MELEE_OFFSET_DECAY_RATE,
   MELEE_RANGE_BUFFER,
@@ -81,6 +82,8 @@ export interface UnitData {
   activeModifiers: TemporaryModifier[];
   // Visual offset for melee lunge/knockback effects (decays over time)
   visualOffset: Vector2;
+  // Timer for hit flash effect (counts down from HIT_FLASH_DURATION)
+  hitFlashTimer: number;
 }
 
 /**
@@ -165,6 +168,12 @@ export class UnitEntity extends BaseEntity {
   }
   set visualOffset(value: Vector2) {
     this.data.visualOffset = value;
+  }
+  get hitFlashTimer(): number {
+    return this.data.hitFlashTimer;
+  }
+  set hitFlashTimer(value: number) {
+    this.data.hitFlashTimer = value;
   }
 
   /**
@@ -275,6 +284,11 @@ export class UnitEntity extends BaseEntity {
     // Decay visual offset (lunge/knockback effect)
     this.decayVisualOffset(delta);
 
+    // Decay hit flash timer
+    if (this.hitFlashTimer > 0) {
+      this.hitFlashTimer = Math.max(0, this.hitFlashTimer - delta);
+    }
+
     // Decrement retarget cooldown
     if (this.retargetCooldown > 0) {
       this.retargetCooldown -= delta;
@@ -325,6 +339,9 @@ export class UnitEntity extends BaseEntity {
     const previousHealth = this.health;
     this.health = Math.max(0, this.health - amount);
 
+    // Trigger hit flash effect
+    this.hitFlashTimer = HIT_FLASH_DURATION;
+
     // Emit damaged event: entity = who was damaged, attacker = who caused it
     this.emit({
       type: 'damaged',
@@ -368,6 +385,7 @@ export class UnitEntity extends BaseEntity {
         remainingDuration: m.remainingDuration,
       })),
       visualOffset: this.visualOffset,
+      hitFlashTimer: this.hitFlashTimer,
     };
   }
 
