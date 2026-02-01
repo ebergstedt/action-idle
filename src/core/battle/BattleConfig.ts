@@ -153,6 +153,16 @@ export const INK_HIT_SPLATTER_DISTANCE = 20;
 export const INK_HIT_SPLATTER_SPREAD = 0.8;
 
 /**
+ * Compass rose size as fraction of arena height.
+ */
+export const COMPASS_ROSE_SIZE = 0.08;
+
+/**
+ * Compass rose margin from corner (pixels).
+ */
+export const COMPASS_ROSE_MARGIN = 15;
+
+/**
  * Ink hit splatter initial speed (pixels per second).
  */
 export const INK_HIT_SPLATTER_SPEED = 140;

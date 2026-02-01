@@ -22,6 +22,8 @@ import { drawShockwave, drawDamageNumber } from './drawEffects';
 import { drawSelectionBox } from './drawSelection';
 import { drawParchmentBackground, drawVignette } from './drawBackground';
 import { drawInkSplatters } from './drawInkSplatter';
+import { drawCompassRose } from './drawCompass';
+import { COMPASS_ROSE_SIZE, COMPASS_ROSE_MARGIN } from '../../../core/battle/BattleConfig';
 import type { InkSplatter } from '../hooks/useInkSplatter';
 
 /**
@@ -180,7 +182,13 @@ export function renderBattle(context: RenderContext): void {
   // 13. Vignette effect (darkens edges, drawn over everything)
   drawVignette(ctx, width, height);
 
-  // 14. Box selection rectangle (drawn last, above vignette)
+  // 14. Compass rose (bottom-right corner decoration)
+  const compassSize = height * COMPASS_ROSE_SIZE;
+  const compassX = width - compassSize - COMPASS_ROSE_MARGIN;
+  const compassY = height - compassSize - COMPASS_ROSE_MARGIN;
+  drawCompassRose(ctx, compassX, compassY, compassSize);
+
+  // 15. Box selection rectangle (drawn last, above vignette)
   if (boxSelectSession && isBoxSelectActive(boxSelectSession)) {
     const box = getSelectionBox(boxSelectSession);
     drawSelectionBox(ctx, box);

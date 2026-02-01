@@ -16,3 +16,4 @@ export { drawShockwave, drawDamageNumber } from './drawEffects';
 export { drawSelectionBox } from './drawSelection';
 export type { SelectionBox } from './drawSelection';
 export { drawInkSplatters } from './drawInkSplatter';
+export { drawCompassRose } from './drawCompass';
