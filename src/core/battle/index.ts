@@ -1,7 +1,7 @@
 // Configuration (centralized constants)
 export * from './BattleConfig';
 
-// Legacy types and constants (maintained for backward compatibility)
+// Render data types (for React rendering layer)
 export * from './types';
 export * from './shuffle';
 export { BattleEngine } from './BattleEngine';

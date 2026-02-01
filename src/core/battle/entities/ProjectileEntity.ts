@@ -18,7 +18,7 @@ import {
   scaleValue,
 } from '../BattleConfig';
 import { isOutOfBounds } from '../BoundsEnforcer';
-import { Projectile, UnitTeam } from '../types';
+import { ProjectileRenderData, UnitTeam } from '../types';
 import { BaseEntity } from './BaseEntity';
 import { IBattleWorld } from './IBattleWorld';
 import { UnitEntity } from './UnitEntity';
@@ -103,9 +103,9 @@ export class ProjectileEntity extends BaseEntity {
   }
 
   /**
-   * Convert to legacy Projectile interface.
+   * Convert to render data for React layer.
    */
-  toLegacyProjectile(): Projectile {
+  toRenderData(): ProjectileRenderData {
     return {
       id: this.id,
       position: this.position,

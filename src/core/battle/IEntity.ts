@@ -246,7 +246,7 @@ export interface WorldEventMap {
 export type EventListener<T> = (event: T) => void;
 
 /**
- * Legacy untyped listener (for backward compatibility).
+ * Untyped listener (for backward compatibility).
  * @deprecated Use typed listeners instead
  */
 export type EntityEventListener = (event: EntityEvent) => void;

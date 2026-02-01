@@ -10,10 +10,10 @@
 import { useEffect, useRef, useCallback, useState } from 'react';
 import {
   BattleState,
-  Unit,
-  Projectile,
-  Castle,
-  Shockwave,
+  UnitRenderData,
+  ProjectileRenderData,
+  CastleRenderData,
+  ShockwaveRenderData,
   ZONE_HEIGHT_PERCENT,
 } from '../../core/battle';
 import { DRAG_BOUNDS_MARGIN } from '../../core/battle/BattleConfig';
@@ -365,7 +365,7 @@ export function BattleCanvas({
 
 function drawUnitBody(
   ctx: CanvasRenderingContext2D,
-  unit: Unit,
+  unit: UnitRenderData,
   isSelected: boolean,
   isBeingDragged: boolean
 ): void {
@@ -427,7 +427,7 @@ function drawUnitBody(
   ctx.restore();
 }
 
-function drawHealthBar(ctx: CanvasRenderingContext2D, unit: Unit): void {
+function drawHealthBar(ctx: CanvasRenderingContext2D, unit: UnitRenderData): void {
   const { position, size, health, stats } = unit;
 
   ctx.save();
@@ -454,7 +454,7 @@ function drawHealthBar(ctx: CanvasRenderingContext2D, unit: Unit): void {
   ctx.restore();
 }
 
-function drawProjectile(ctx: CanvasRenderingContext2D, proj: Projectile): void {
+function drawProjectile(ctx: CanvasRenderingContext2D, proj: ProjectileRenderData): void {
   ctx.save();
   ctx.translate(proj.position.x, proj.position.y);
 
@@ -491,7 +491,7 @@ function drawSelectionBox(
   ctx.restore();
 }
 
-function drawCastle(ctx: CanvasRenderingContext2D, castle: Castle): void {
+function drawCastle(ctx: CanvasRenderingContext2D, castle: CastleRenderData): void {
   const { position, color, size } = castle;
 
   ctx.save();
@@ -533,7 +533,7 @@ function drawCastle(ctx: CanvasRenderingContext2D, castle: Castle): void {
   ctx.restore();
 }
 
-function drawCastleHealthBar(ctx: CanvasRenderingContext2D, castle: Castle): void {
+function drawCastleHealthBar(ctx: CanvasRenderingContext2D, castle: CastleRenderData): void {
   const { position, size, health, maxHealth } = castle;
 
   ctx.save();
@@ -562,7 +562,7 @@ function drawCastleHealthBar(ctx: CanvasRenderingContext2D, castle: Castle): voi
 
 function drawShockwave(
   ctx: CanvasRenderingContext2D,
-  shockwave: Shockwave,
+  shockwave: ShockwaveRenderData,
   arenaWidth: number,
   arenaHeight: number
 ): void {
@@ -610,7 +610,7 @@ function drawShockwave(
   ctx.restore();
 }
 
-function drawDebuffIndicator(ctx: CanvasRenderingContext2D, unit: Unit): void {
+function drawDebuffIndicator(ctx: CanvasRenderingContext2D, unit: UnitRenderData): void {
   // Only draw if unit has shockwave debuff
   const hasShockwaveDebuff = unit.activeModifiers.some(
     (m) => m.sourceId === 'castle_death_shockwave'

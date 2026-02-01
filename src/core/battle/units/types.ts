@@ -180,12 +180,12 @@ export interface UnitInstance {
 }
 
 /**
- * Legacy Unit type alias for backward compatibility during migration.
- * Maps the new UnitInstance structure to the old Unit interface.
+ * Unit render data for React rendering layer.
+ * Maps the UnitInstance structure to a flat DTO for the presentation layer.
  *
- * @deprecated Use UnitInstance directly
+ * @deprecated Use UnitInstance directly in core code
  */
-export interface LegacyUnit {
+export interface UnitRenderDataLegacy {
   id: string;
   type: string; // UnitDefinition.id
   team: UnitTeam;
@@ -197,7 +197,7 @@ export interface LegacyUnit {
     melee: AttackModeStats | null;
     ranged: AttackModeStats | null;
   };
-  target: LegacyUnit | null;
+  target: UnitRenderDataLegacy | null;
   attackCooldown: number;
   color: string;
   shape: UnitShape;

@@ -30,13 +30,13 @@ import {
 } from './BattleConfig';
 import { EntityBounds } from './BoundsEnforcer';
 import { BattleWorld, UnitEntity, UnitData, CastleEntity, CastleData } from './entities';
-import { BattleState, BattleOutcome, getScaledUnitSize, Unit } from './types';
+import { BattleState, BattleOutcome, getScaledUnitSize, UnitRenderData } from './types';
 import { UnitDefinition, UnitTeam } from './units/types';
 import { UnitRegistry } from './units';
 
 /**
  * Battle engine - orchestrates combat simulation.
- * Uses entity system internally, provides legacy interface externally.
+ * Uses entity system internally, provides render data interface externally.
  */
 export class BattleEngine {
   private world: BattleWorld;
@@ -62,15 +62,15 @@ export class BattleEngine {
   }
 
   /**
-   * Get battle state in legacy format.
-   * Converts internal entities to legacy types for backward compatibility.
+   * Get battle state as render data.
+   * Converts internal entities to render data types for React rendering.
    */
   getState(): BattleState {
     return {
-      units: this.world.getUnits().map((u) => u.toLegacyUnit()),
-      projectiles: this.world.getProjectiles().map((p) => p.toLegacyProjectile()),
-      castles: this.world.getCastles().map((c) => c.toLegacyCastle()),
-      shockwaves: this.world.getShockwaves().map((s) => s.toLegacyShockwave()),
+      units: this.world.getUnits().map((u) => u.toRenderData()),
+      projectiles: this.world.getProjectiles().map((p) => p.toRenderData()),
+      castles: this.world.getCastles().map((c) => c.toRenderData()),
+      shockwaves: this.world.getShockwaves().map((s) => s.toRenderData()),
       isRunning: this.isRunning,
       hasStarted: this.hasStarted,
       waveNumber: this.waveNumber,
@@ -128,7 +128,7 @@ export class BattleEngine {
     team: UnitTeam,
     position: Vector2,
     arenaHeight: number = REFERENCE_ARENA_HEIGHT
-  ): Unit {
+  ): UnitRenderData {
     const definition = this.registry.get(definitionId);
     return this.spawnUnitFromDefinition(definition, team, position, arenaHeight);
   }
@@ -141,10 +141,10 @@ export class BattleEngine {
     team: UnitTeam,
     position: Vector2,
     arenaHeight: number = REFERENCE_ARENA_HEIGHT
-  ): Unit {
+  ): UnitRenderData {
     const { baseStats, visuals } = definition;
 
-    // Convert BaseStats to legacy UnitStats format (without armor)
+    // Convert BaseStats to render data UnitStats format (without armor)
     const stats = {
       maxHealth: baseStats.maxHealth,
       moveSpeed: baseStats.moveSpeed,
@@ -177,7 +177,7 @@ export class BattleEngine {
     const entity = new UnitEntity(id, position.clone(), data);
     this.world.addUnit(entity);
 
-    return entity.toLegacyUnit();
+    return entity.toRenderData();
   }
 
   /**
@@ -340,25 +340,25 @@ export class BattleEngine {
   }
 
   /**
-   * Get player units in legacy format.
+   * Get player units as render data.
    */
-  getPlayerUnits(): Unit[] {
-    return this.world.getPlayerUnits().map((u) => u.toLegacyUnit());
+  getPlayerUnits(): UnitRenderData[] {
+    return this.world.getPlayerUnits().map((u) => u.toRenderData());
   }
 
   /**
-   * Get enemy units in legacy format.
+   * Get enemy units as render data.
    */
-  getEnemyUnits(): Unit[] {
-    return this.world.getEnemyUnits().map((u) => u.toLegacyUnit());
+  getEnemyUnits(): UnitRenderData[] {
+    return this.world.getEnemyUnits().map((u) => u.toRenderData());
   }
 
   /**
-   * Get a unit by ID in legacy format.
+   * Get a unit by ID as render data.
    */
-  getUnit(id: string): Unit | undefined {
+  getUnit(id: string): UnitRenderData | undefined {
     const entity = this.world.getUnitById(id);
-    return entity?.toLegacyUnit();
+    return entity?.toRenderData();
   }
 
   /**

@@ -20,7 +20,7 @@ import {
   SHOCKWAVE_MAX_RADIUS_FALLBACK,
   scaleValue,
 } from '../BattleConfig';
-import { Shockwave, UnitTeam } from '../types';
+import { ShockwaveRenderData, UnitTeam } from '../types';
 import { BaseEntity } from './BaseEntity';
 import { IBattleWorld } from './IBattleWorld';
 import { TemporaryModifier, UnitEntity } from './UnitEntity';
@@ -143,9 +143,9 @@ export class ShockwaveEntity extends BaseEntity {
   }
 
   /**
-   * Convert to legacy Shockwave interface for React rendering.
+   * Convert to render data for React layer.
    */
-  toLegacyShockwave(): Shockwave {
+  toRenderData(): ShockwaveRenderData {
     return {
       id: this.id,
       position: this.position,

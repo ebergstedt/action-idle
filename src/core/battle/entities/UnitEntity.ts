@@ -49,7 +49,7 @@ export interface TemporaryModifier {
 import { clampToArenaInPlace } from '../BoundsEnforcer';
 import { IDamageable } from '../IEntity';
 import { applyShuffle } from '../shuffle';
-import { AttackMode, Unit, UnitStats, UnitTeam, UnitType } from '../types';
+import { AttackMode, UnitRenderData, UnitStats, UnitTeam, UnitType } from '../types';
 import { BaseEntity } from './BaseEntity';
 import { IBattleWorld } from './IBattleWorld';
 
@@ -306,11 +306,11 @@ export class UnitEntity extends BaseEntity {
   }
 
   /**
-   * Convert to legacy Unit interface for backward compatibility.
+   * Convert to render data for React layer.
    * Note: target is set to null to avoid infinite recursion when units target each other.
    * React rendering doesn't need the full target object - that's internal battle logic.
    */
-  toLegacyUnit(): Unit {
+  toRenderData(): UnitRenderData {
     return {
       id: this.id,
       type: this.type,

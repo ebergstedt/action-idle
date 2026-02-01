@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useBattle, BattleSpeed } from '../../hooks/useBattle';
 import { BattleCanvas } from './BattleCanvas';
-import { Unit } from '../../core/battle';
+import { UnitRenderData } from '../../core/battle';
 import {
   MIN_ARENA_WIDTH,
   MIN_ARENA_HEIGHT,
@@ -166,7 +166,7 @@ export function BattleView() {
 }
 
 interface UnitInfoPanelProps {
-  unit: Unit;
+  unit: UnitRenderData;
   onDeselect: () => void;
 }
 

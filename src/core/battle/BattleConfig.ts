@@ -283,7 +283,7 @@ export function scaleValueInt(baseValue: number, arenaHeight: number): number {
   return Math.round(scaleValue(baseValue, arenaHeight));
 }
 
-// Legacy aliases for backward compatibility
+// Aliases for backward compatibility
 export const MIN_UNIT_SCALE = MIN_SCALE;
 export const MAX_UNIT_SCALE = MAX_SCALE;
 

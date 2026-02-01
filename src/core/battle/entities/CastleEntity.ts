@@ -11,6 +11,7 @@
  */
 
 import { Vector2 } from '../../physics/Vector2';
+import { CastleRenderData } from '../types';
 import { UnitTeam } from '../units/types';
 import { BaseEntity } from './BaseEntity';
 
@@ -90,10 +91,10 @@ export class CastleEntity extends BaseEntity {
   }
 
   /**
-   * Convert to legacy Castle interface for React rendering.
-   * Returns a plain object compatible with the Castle interface in types.ts.
+   * Convert to render data for React layer.
+   * Returns a plain object compatible with the CastleRenderData interface in types.ts.
    */
-  toLegacyCastle() {
+  toRenderData(): CastleRenderData {
     return {
       id: this.id,
       team: this.team,

@@ -304,10 +304,10 @@ The battle system is fully Godot-ready:
 | Unit definitions | ✅ Done | JSON files in `/src/data/units/` |
 | Unit registry | ✅ Done | BattleEngine uses UnitRegistry |
 | Stats tracking | ✅ Done | BattleStats subscribes to entity events |
-| React rendering | ✅ Done | Uses legacy adapter (intentional) |
+| React rendering | ✅ Done | Uses render data adapter (intentional) |
 
 **For new code:** Use `engine.getWorld()` to access entities directly.
-**For Godot port:** Translate entity classes to GDScript scenes. Ignore legacy types in `types.ts` - they only exist for React rendering.
+**For Godot port:** Translate entity classes to GDScript scenes. Ignore render data types in `types.ts` - they only exist for React rendering.
 
 ### 10. Centralized Configuration
 
@@ -415,7 +415,7 @@ destroy(): void {
 | `src/core/battle/BoxSelectController.ts` | Box/marquee selection for multiple units |
 | `src/core/battle/BoundsEnforcer.ts` | Pure functions for arena boundary enforcement |
 | `src/core/battle/shuffle.ts` | Combat shuffle for melee units |
-| `src/core/battle/types.ts` | Legacy types for React rendering only |
+| `src/core/battle/types.ts` | Render data types for React rendering only |
 | `src/core/battle/BattleStats.ts` | Battle statistics via entity events |
 | `src/core/battle/units/` | Unit definitions, instances, registry, factory |
 | `src/core/battle/modifiers/` | Stat modification system with stacking rules |
@@ -424,15 +424,15 @@ destroy(): void {
 | `src/core/theme/colors.ts` | Centralized color palette (Medieval II factions) |
 | `src/core/physics/Vector2.ts` | 2D math utilities for positioning |
 
-**React Layer (Thin wrappers - uses legacy interface):**
+**React Layer (Thin wrappers - uses render data interface):**
 
 | File | Purpose | Migration |
 |------|---------|-----------|
 | `src/hooks/useBattle.ts` | React bridge - manages state | Uses `BattleState` with `Unit[]` |
-| `src/components/battle/BattleView.tsx` | Main battle UI | Uses legacy `Unit` type |
-| `src/components/battle/BattleCanvas.tsx` | Canvas rendering | Uses legacy `Unit` type |
+| `src/components/battle/BattleView.tsx` | Main battle UI | Uses render data `Unit` type |
+| `src/components/battle/BattleCanvas.tsx` | Canvas rendering | Uses render data `Unit` type |
 
-*Note: React layer intentionally uses legacy interface. Core entities are Godot-ready; React rendering doesn't need migration.*
+*Note: React layer intentionally uses render data interface. Core entities are Godot-ready; React rendering doesn't need migration.*
 
 ### Economy System (Dormant)
 

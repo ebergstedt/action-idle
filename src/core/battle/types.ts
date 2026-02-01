@@ -3,12 +3,12 @@
  *
  * This file contains:
  * 1. Re-exports of the new unit system types (UnitDefinition, UnitInstance, etc.)
- * 2. Legacy types (Unit, Projectile, BattleState) for React rendering compatibility
+ * 2. Render data types (UnitRenderData, ProjectileRenderData, etc.) - DTOs for React rendering
  *
- * The legacy types are used by React components for rendering. They are NOT
- * needed for the core battle logic, which uses the entity system directly.
+ * The render data types are snapshots of entity state for the React rendering layer.
+ * They are NOT needed for core battle logic, which uses the entity system directly.
  *
- * Godot migration: Ignore the legacy types - they only exist for React.
+ * Godot migration: Ignore the render data types - they only exist for React.
  */
 
 import { Vector2 } from '../physics/Vector2';
@@ -29,26 +29,26 @@ export type {
 export type { AttackModeStats, BaseStats, ComputedStats } from './units/types';
 
 // =============================================================================
-// LEGACY TYPES - For React rendering compatibility only
+// RENDER DATA TYPES - DTOs for React rendering layer
 // =============================================================================
 
 // Local alias for use in this file
 type UnitTeam = UnitTeamType;
 
 /**
- * Legacy unit type identifier.
+ * Render data unit type identifier.
  * @deprecated Use UnitDefinition.id instead
  */
 export type UnitType = 'warrior' | 'archer' | 'knight';
 
 /**
- * Legacy attack type.
+ * Render data attack type.
  * @deprecated Use 'melee' | 'ranged' directly
  */
 export type AttackType = 'melee' | 'ranged';
 
 /**
- * Legacy attack mode stats.
+ * Render data attack mode stats.
  * @deprecated Use AttackModeStats from './units/types' instead
  */
 export interface AttackMode {
@@ -58,7 +58,7 @@ export interface AttackMode {
 }
 
 /**
- * Legacy unit stats interface.
+ * Render data unit stats interface.
  * @deprecated Use BaseStats from './units/types' instead
  */
 export interface UnitStats {
@@ -69,45 +69,45 @@ export interface UnitStats {
 }
 
 /**
- * Legacy modifier interface for React rendering.
+ * Modifier render data for React rendering.
  * Simplified version of ActiveModifier for display purposes.
  */
-export interface LegacyModifier {
+export interface ModifierRenderData {
   id: string;
   sourceId: string;
   remainingDuration: number;
 }
 
 /**
- * Legacy unit interface for React rendering.
+ * Unit render data for React rendering.
  * This is a snapshot of a unit's state, NOT the live entity.
  *
  * @deprecated For new code, use UnitEntity from './entities' directly.
  * This type exists only for React components that render battle state.
  */
-export interface Unit {
+export interface UnitRenderData {
   id: string;
   type: UnitType;
   team: UnitTeam;
   position: Vector2;
   health: number;
   stats: UnitStats;
-  target: Unit | null;
+  target: UnitRenderData | null;
   attackCooldown: number;
   color: string;
   shape: 'circle' | 'square' | 'triangle';
   size: number;
   shuffleDirection: Vector2 | null;
   shuffleTimer: number;
-  activeModifiers: LegacyModifier[];
+  activeModifiers: ModifierRenderData[];
 }
 
 /**
- * Legacy projectile interface for React rendering.
+ * Projectile render data for React rendering.
  *
  * @deprecated For new code, use ProjectileEntity from './entities' directly.
  */
-export interface Projectile {
+export interface ProjectileRenderData {
   id: string;
   position: Vector2;
   target: Vector2;
@@ -118,9 +118,9 @@ export interface Projectile {
 }
 
 /**
- * Legacy castle interface for React rendering.
+ * Castle render data for React rendering.
  */
-export interface Castle {
+export interface CastleRenderData {
   id: string;
   team: UnitTeam;
   position: Vector2;
@@ -131,9 +131,9 @@ export interface Castle {
 }
 
 /**
- * Legacy shockwave interface for React rendering.
+ * Shockwave render data for React rendering.
  */
-export interface Shockwave {
+export interface ShockwaveRenderData {
   id: string;
   position: Vector2;
   currentRadius: number;
@@ -148,21 +148,50 @@ export interface Shockwave {
 export type BattleOutcome = 'pending' | 'player_victory' | 'enemy_victory' | 'draw';
 
 /**
- * Legacy battle state for React rendering.
+ * Battle state for React rendering.
  * Contains snapshots of all units and projectiles.
  *
  * @deprecated For new code, use BattleWorld from './entities' directly.
  */
 export interface BattleState {
-  units: Unit[];
-  projectiles: Projectile[];
-  castles: Castle[];
-  shockwaves: Shockwave[];
+  units: UnitRenderData[];
+  projectiles: ProjectileRenderData[];
+  castles: CastleRenderData[];
+  shockwaves: ShockwaveRenderData[];
   isRunning: boolean;
   hasStarted: boolean;
   waveNumber: number;
   outcome: BattleOutcome;
 }
+
+// =============================================================================
+// TYPE ALIASES FOR BACKWARD COMPATIBILITY
+// =============================================================================
+
+/**
+ * @deprecated Use UnitRenderData instead
+ */
+export type Unit = UnitRenderData;
+
+/**
+ * @deprecated Use ProjectileRenderData instead
+ */
+export type Projectile = ProjectileRenderData;
+
+/**
+ * @deprecated Use CastleRenderData instead
+ */
+export type Castle = CastleRenderData;
+
+/**
+ * @deprecated Use ShockwaveRenderData instead
+ */
+export type Shockwave = ShockwaveRenderData;
+
+/**
+ * @deprecated Use ModifierRenderData instead
+ */
+export type LegacyModifier = ModifierRenderData;
 
 // =============================================================================
 // UTILITY FUNCTIONS
