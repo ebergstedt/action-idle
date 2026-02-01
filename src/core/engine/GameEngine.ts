@@ -7,13 +7,16 @@ import {
   calculateCurrencyGain,
   canAffordUpgrade,
 } from './Formulas';
+import { IGameEngine } from './IGameEngine';
 
 /**
  * The core game engine.
  * Pure TypeScript with no framework dependencies.
  * All time-based calculations use explicit delta parameter.
+ *
+ * Godot equivalent: Autoload singleton managing economy state.
  */
-export class GameEngine {
+export class GameEngine implements IGameEngine {
   private state: GameState;
   private upgrades: UpgradeDefinition[];
 

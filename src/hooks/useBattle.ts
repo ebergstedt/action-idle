@@ -2,12 +2,16 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   BattleEngine,
   BattleState,
+  BattleStats,
+  BattleStatistics,
   CLASSIC_FORMATION,
   calculateAlliedSpawnPositions,
   calculateEnemySpawnPositions,
   getEnemyCompositionForWave,
+  UnitRegistry,
 } from '../core/battle';
 import { Vector2 } from '../core/physics/Vector2';
+import { unitDefinitions } from '../data/units';
 
 const ZONE_HEIGHT_PERCENT = 0.25; // Must match BattleCanvas
 
@@ -15,6 +19,7 @@ export type BattleSpeed = 0.5 | 1 | 5;
 
 export interface UseBattleReturn {
   state: BattleState;
+  stats: BattleStatistics;
   selectedUnitIds: string[];
   battleSpeed: BattleSpeed;
   start: () => void;
@@ -28,8 +33,25 @@ export interface UseBattleReturn {
   setBattleSpeed: (speed: BattleSpeed) => void;
 }
 
+/**
+ * Create and initialize the unit registry from JSON data.
+ */
+function createUnitRegistry(): UnitRegistry {
+  const registry = new UnitRegistry();
+  registry.registerAll(unitDefinitions);
+  return registry;
+}
+
+const EMPTY_STATS: BattleStatistics = {
+  player: { kills: 0, deaths: 0, damageDealt: 0, damageTaken: 0, unitsSpawned: 0 },
+  enemy: { kills: 0, deaths: 0, damageDealt: 0, damageTaken: 0, unitsSpawned: 0 },
+  battleDuration: 0,
+  totalKills: 0,
+};
+
 export function useBattle(): UseBattleReturn {
   const engineRef = useRef<BattleEngine | null>(null);
+  const statsRef = useRef<BattleStats | null>(null);
   const [state, setState] = useState<BattleState>({
     units: [],
     projectiles: [],
@@ -37,6 +59,7 @@ export function useBattle(): UseBattleReturn {
     hasStarted: false,
     waveNumber: 1,
   });
+  const [stats, setStats] = useState<BattleStatistics>(EMPTY_STATS);
   const [selectedUnitIds, setSelectedUnitIds] = useState<string[]>([]);
   const [battleSpeed, setBattleSpeed] = useState<BattleSpeed>(1);
   const battleSpeedRef = useRef<BattleSpeed>(1);
@@ -46,10 +69,14 @@ export function useBattle(): UseBattleReturn {
     battleSpeedRef.current = battleSpeed;
   }, [battleSpeed]);
 
-  // Initialize engine
+  // Initialize engine with registry
   useEffect(() => {
-    engineRef.current = new BattleEngine();
+    const registry = createUnitRegistry();
+    engineRef.current = new BattleEngine(registry);
+    statsRef.current = new BattleStats();
     return () => {
+      statsRef.current?.detach();
+      statsRef.current = null;
       engineRef.current = null;
     };
   }, []);
@@ -70,6 +97,12 @@ export function useBattle(): UseBattleReturn {
         const scaledDelta = delta * battleSpeedRef.current;
         engineRef.current.tick(scaledDelta);
         setState({ ...engineRef.current.getState() });
+
+        // Update stats
+        if (statsRef.current) {
+          statsRef.current.updateDuration(scaledDelta);
+          setStats({ ...statsRef.current.getStats() });
+        }
       }
 
       frameId = requestAnimationFrame(loop);
@@ -101,6 +134,13 @@ export function useBattle(): UseBattleReturn {
       engineRef.current.stop();
       engineRef.current.clear();
       setState({ ...engineRef.current.getState() });
+
+      // Reset stats
+      if (statsRef.current) {
+        statsRef.current.detach();
+        statsRef.current.reset();
+        setStats(EMPTY_STATS);
+      }
     }
   }, []);
 
@@ -114,10 +154,24 @@ export function useBattle(): UseBattleReturn {
       zoneHeightPercent: ZONE_HEIGHT_PERCENT,
     };
 
+    // Set arena bounds for boundary enforcement during gameplay
+    engine.setArenaBounds(arenaWidth, arenaHeight);
+
+    // Attach stats tracker to world before spawning
+    if (statsRef.current) {
+      statsRef.current.attach(engine.getWorld());
+    }
+
     // Spawn allied army using formation
     const alliedPositions = calculateAlliedSpawnPositions(CLASSIC_FORMATION, bounds);
     for (const spawn of alliedPositions) {
       engine.spawnUnit(spawn.type, 'player', spawn.position, arenaHeight);
+      // Subscribe stats to newly spawned unit
+      const units = engine.getWorld().getUnits();
+      const lastUnit = units[units.length - 1];
+      if (lastUnit && statsRef.current) {
+        statsRef.current.subscribeToUnit(lastUnit);
+      }
     }
 
     // Spawn enemy army
@@ -126,6 +180,12 @@ export function useBattle(): UseBattleReturn {
     const enemyPositions = calculateEnemySpawnPositions(enemyComposition, bounds);
     for (const spawn of enemyPositions) {
       engine.spawnUnit(spawn.type, 'enemy', spawn.position, arenaHeight);
+      // Subscribe stats to newly spawned unit
+      const units = engine.getWorld().getUnits();
+      const lastUnit = units[units.length - 1];
+      if (lastUnit && statsRef.current) {
+        statsRef.current.subscribeToUnit(lastUnit);
+      }
     }
 
     // Resolve any overlapping units after spawning
@@ -136,6 +196,9 @@ export function useBattle(): UseBattleReturn {
     });
 
     setState({ ...engine.getState() });
+    if (statsRef.current) {
+      setStats({ ...statsRef.current.getStats() });
+    }
   }, []);
 
   const moveUnit = useCallback((unitId: string, position: Vector2) => {
@@ -164,6 +227,7 @@ export function useBattle(): UseBattleReturn {
 
   return {
     state,
+    stats,
     selectedUnitIds,
     battleSpeed,
     start,

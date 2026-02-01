@@ -138,6 +138,207 @@ Game content lives in JSON, loaded by registries:
 
 This maps to Godot's Resource system - JSON becomes `.tres` files.
 
+### 7. Interface-First Design
+
+For platform-specific features (persistence, physics, rendering), define interfaces in core and implement outside:
+
+```
+/src/core/
+├── persistence/
+│   ├── IPersistenceAdapter.ts    # Interface - what Godot must implement
+│   └── SaveManager.ts            # Uses interface, not concrete class
+├── physics/
+│   └── IPhysicsEngine.ts         # Interface for physics operations
+```
+
+```typescript
+// ✅ Good - interface defines contract
+interface IPersistenceAdapter {
+  save(key: string, data: string): Promise<void>;
+  load(key: string): Promise<string | null>;
+}
+
+// ✅ Good - core depends on interface
+class SaveManager {
+  constructor(private adapter: IPersistenceAdapter) {}
+}
+
+// ❌ Bad - core depends on concrete implementation
+class SaveManager {
+  private adapter = new LocalStorageAdapter();  // Hardcoded!
+}
+```
+
+**Index files export interfaces, not implementations:**
+
+```typescript
+// ✅ Good - /src/core/persistence/index.ts
+export type { IPersistenceAdapter } from './IPersistenceAdapter';
+export { SaveManager } from './SaveManager';
+
+// ❌ Bad - exports platform-specific implementation
+export { LocalStorageAdapter } from './LocalStorageAdapter';  // Don't!
+```
+
+Platform implementations live OUTSIDE core:
+- `/src/adapters/LocalStorageAdapter.ts` - React/browser implementation
+- Godot implements same interface with `FileAccess`
+
+### 8. Dependency Injection
+
+Never instantiate platform-specific classes inside core. Pass dependencies in:
+
+```typescript
+// ✅ Good - dependency injected (in React hook or Godot scene)
+const adapter = new LocalStorageAdapter();  // Platform layer creates this
+const saveManager = new SaveManager(adapter);  // Core receives interface
+
+// ❌ Bad - hardcoded inside core module
+class GameManager {
+  private saveManager = new SaveManager(new LocalStorageAdapter());
+}
+```
+
+This lets Godot swap implementations without touching core:
+
+```gdscript
+# Godot implementation
+var adapter = GodotFileAdapter.new()
+var save_manager = SaveManager.new(adapter)
+```
+
+### 9. Entity Architecture (Scene/Node Pattern)
+
+**Current approach: Godot-style Scene/Node Pattern**
+
+The battle system uses a Godot-compatible entity architecture:
+
+- **Entities** (`UnitEntity`, `ProjectileEntity`) handle their own behavior
+- **BattleWorld** manages entity lifecycle and queries (like Godot's SceneTree)
+- **BattleEngine** orchestrates the battle, delegates to BattleWorld
+- **Events** map directly to Godot signals
+
+```typescript
+// Entity handles its own behavior
+class UnitEntity extends BaseEntity implements IEntity, IEventEmitter {
+  update(delta: number): void {
+    this.updateTargeting();
+    this.updateCombat(delta);
+    this.updateMovement(delta);
+  }
+}
+
+// World manages entities (like Godot main scene)
+class BattleWorld {
+  update(delta: number): void {
+    for (const entity of this.entities) {
+      entity.update(delta);  // Each entity updates itself
+    }
+  }
+}
+```
+
+**Godot mapping:**
+
+| TypeScript | GDScript Equivalent |
+|------------|---------------------|
+| `IEntity.init()` | `_ready()` |
+| `IEntity.update(delta)` | `_process(delta)` |
+| `IEntity.destroy()` | `queue_free()` |
+| `IEventEmitter.emit()` | `emit_signal()` |
+| `IEventEmitter.on()` | `connect()` |
+| `BattleWorld` | Main scene or autoload |
+
+**Key classes:**
+
+```
+/src/core/battle/entities/
+├── IEntity.ts           # Lifecycle interface
+├── EventEmitter.ts      # Signal system implementation
+├── BaseEntity.ts        # Abstract base with common functionality
+├── UnitEntity.ts        # Unit with targeting, combat, movement
+├── ProjectileEntity.ts  # Projectile with movement, hit detection
+├── BattleWorld.ts       # Entity manager (SceneTree equivalent)
+├── IBattleWorld.ts      # Query interface for entities
+└── index.ts
+```
+
+**Using the Event System (Godot Signals):**
+
+Entities emit events that map to Godot signals. Subscribe to react to game events:
+
+```typescript
+// Subscribe to entity events (like Godot's connect())
+const unit = engine.getWorld().getUnitById('unit_1');
+unit.on('damaged', (event) => {
+  console.log(`${event.source.id} took ${event.data?.amount} damage`);
+});
+unit.on('killed', (event) => {
+  console.log(`${event.source.id} was killed by ${event.target?.id}`);
+});
+unit.on('attacked', (event) => {
+  // Play attack animation, spawn particles, etc.
+});
+
+// Unsubscribe (like Godot's disconnect())
+unit.off('damaged', myHandler);
+```
+
+**Available events:**
+- `spawned` - Entity added to world
+- `destroyed` - Entity removed from world
+- `damaged` - Unit took damage (data: amount, previousHealth, currentHealth)
+- `killed` - Unit died (target = killer)
+- `attacked` - Unit performed attack (data: damage, attackMode)
+- `moved` - Unit moved (data: delta vector)
+
+**Creating New Entity Types:**
+
+To add a new entity (e.g., `TrapEntity`):
+
+```typescript
+// 1. Create entity class extending BaseEntity
+export class TrapEntity extends BaseEntity {
+  constructor(id: string, position: Vector2, public damage: number) {
+    super(id, position);
+  }
+
+  update(delta: number): void {
+    const world = this.world as IBattleWorld;
+    if (!world) return;
+
+    // Check for units stepping on trap
+    for (const unit of world.getUnits()) {
+      if (this.position.distanceTo(unit.position) < 20) {
+        unit.takeDamage(this.damage);
+        this.emit({ type: 'attacked', source: this, target: unit });
+        this.markDestroyed();
+        break;
+      }
+    }
+  }
+}
+
+// 2. Add to BattleWorld (or create method in BattleWorld)
+// 3. In Godot: becomes Trap.gd extending Area2D
+```
+
+**Migration Status: ✅ COMPLETE**
+
+The battle system is fully Godot-ready:
+
+| Layer | Status | Notes |
+|-------|--------|-------|
+| Core entities | ✅ Done | UnitEntity, ProjectileEntity, BattleWorld |
+| Event system | ✅ Done | IEventEmitter with BattleStats consumer |
+| Unit definitions | ✅ Done | JSON files in `/src/data/units/` |
+| Unit registry | ✅ Done | BattleEngine uses UnitRegistry |
+| Stats tracking | ✅ Done | BattleStats subscribes to entity events |
+| React rendering | ✅ Done | Uses legacy adapter (intentional) |
+
+**For new code:** Use `engine.getWorld()` to access entities directly.
+**For Godot port:** Translate entity classes to GDScript scenes. Ignore legacy types in `types.ts` - they only exist for React rendering.
+
 ## Key Files
 
 ### Battle System (Active)
@@ -146,12 +347,19 @@ This maps to Godot's Resource system - JSON becomes `.tres` files.
 
 | File | Purpose |
 |------|---------|
-| `src/core/battle/BattleEngine.ts` | Combat simulation - targeting, movement, attacks |
+| `src/core/battle/BattleEngine.ts` | Battle orchestrator - delegates to BattleWorld |
+| `src/core/battle/entities/` | **Entity system (Godot Scene/Node pattern)** |
+| `src/core/battle/entities/BattleWorld.ts` | Entity manager - lifecycle, queries, separation |
+| `src/core/battle/entities/UnitEntity.ts` | Unit entity - targeting, combat, movement AI |
+| `src/core/battle/entities/ProjectileEntity.ts` | Projectile entity - movement, hit detection |
+| `src/core/battle/entities/BaseEntity.ts` | Abstract base with lifecycle + events |
+| `src/core/battle/IEntity.ts` | Entity lifecycle interface (init/update/destroy) |
 | `src/core/battle/SelectionManager.ts` | Pure selection state - select, toggle, selectAllOfType |
 | `src/core/battle/DragController.ts` | Multi-unit drag with relative positioning, edge clamping |
 | `src/core/battle/FormationManager.ts` | Formation templates and spawn positioning |
 | `src/core/battle/InputAdapter.ts` | Platform-agnostic input - hit detection |
-| `src/core/battle/types.ts` | Unit stats, visual definitions |
+| `src/core/battle/types.ts` | Legacy types for React rendering only |
+| `src/core/battle/BattleStats.ts` | Battle statistics via entity events |
 | `src/core/battle/units/` | Unit definitions, instances, registry, factory |
 | `src/core/battle/modifiers/` | Stat modification system with stacking rules |
 | `src/core/battle/abilities/` | Trigger-based abilities (on_kill, on_hit, etc.) |
@@ -159,24 +367,37 @@ This maps to Godot's Resource system - JSON becomes `.tres` files.
 | `src/core/theme/colors.ts` | Centralized color palette (Medieval II factions) |
 | `src/core/physics/Vector2.ts` | 2D math utilities for positioning |
 
+**React Layer (Thin wrappers - uses legacy interface):**
+
+| File | Purpose | Migration |
+|------|---------|-----------|
+| `src/hooks/useBattle.ts` | React bridge - manages state | Uses `BattleState` with `Unit[]` |
+| `src/components/battle/BattleView.tsx` | Main battle UI | Uses legacy `Unit` type |
+| `src/components/battle/BattleCanvas.tsx` | Canvas rendering | Uses legacy `Unit` type |
+
+*Note: React layer intentionally uses legacy interface. Core entities are Godot-ready; React rendering doesn't need migration.*
+
+### Economy System (Dormant)
+
+**Core Modules (Godot-portable):**
+
+| File | Purpose |
+|------|---------|
+| `src/core/engine/IGameEngine.ts` | Interface - what Godot must implement |
+| `src/core/engine/GameEngine.ts` | Idle engine - `tick(delta)`, `purchaseUpgrade(id)` |
+| `src/core/engine/UpgradeRegistry.ts` | Registry pattern for loading upgrade definitions |
+| `src/core/engine/Formulas.ts` | Pure math: `calculateCost()`, `calculateProduction()` |
+| `src/core/persistence/IPersistenceAdapter.ts` | Interface for save/load (swap for Godot) |
+| `src/core/types/GameState.ts` | State interfaces (GameState, UpgradeState) |
+| `src/core/types/Upgrade.ts` | Upgrade definition interface |
+| `src/core/utils/BigNumber.ts` | break_infinity.js wrapper, `formatNumber()` |
+
 **React Layer (Thin wrappers):**
 
 | File | Purpose |
 |------|---------|
-| `src/hooks/useBattle.ts` | React bridge - calls core modules, manages state |
-| `src/components/battle/BattleView.tsx` | Main battle UI - controls, unit info panel |
-| `src/components/battle/BattleCanvas.tsx` | Canvas rendering - draws units, routes input to core |
-
-### Economy System (Dormant)
-
-| File | Purpose |
-|------|---------|
-| `src/core/engine/GameEngine.ts` | Idle engine - `tick(delta)`, `purchaseUpgrade(id)` |
-| `src/core/engine/Formulas.ts` | Pure math: `calculateCost()`, `calculateProduction()` |
-| `src/core/persistence/IPersistenceAdapter.ts` | Interface for save/load (swap for Godot) |
-| `src/core/utils/BigNumber.ts` | break_infinity.js wrapper, `formatNumber()` |
-| `src/hooks/useGameState.ts` | React hook that owns engine instance |
-| `src/data/upgrades.json` | All upgrade stats (baseCost, costMultiplier, baseProduction) |
+| `src/hooks/useGameState.ts` | React bridge - owns engine, handles save/load |
+| `src/data/upgrades.json` | Upgrade definitions (baseCost, costMultiplier, baseProduction) |
 
 ## Formulas
 

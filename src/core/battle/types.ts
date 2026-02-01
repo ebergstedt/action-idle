@@ -1,8 +1,23 @@
+/**
+ * Battle Types
+ *
+ * This file contains:
+ * 1. Re-exports of the new unit system types (UnitDefinition, UnitInstance, etc.)
+ * 2. Legacy types (Unit, Projectile, BattleState) for React rendering compatibility
+ *
+ * The legacy types are used by React components for rendering. They are NOT
+ * needed for the core battle logic, which uses the entity system directly.
+ *
+ * Godot migration: Ignore the legacy types - they only exist for React.
+ */
+
 import { Vector2 } from '../physics/Vector2';
-import { UNIT_TYPE_COLORS } from '../theme/colors';
 import type { UnitTeam as UnitTeamType } from './units/types';
 
-// Re-export new unit system types for consumers
+// =============================================================================
+// NEW UNIT SYSTEM TYPES - Use these for all new code
+// =============================================================================
+
 export type {
   UnitTeam,
   UnitCategory,
@@ -12,22 +27,33 @@ export type {
 } from './units/types';
 export type { AttackModeStats, BaseStats, ComputedStats } from './units/types';
 
+// =============================================================================
+// LEGACY TYPES - For React rendering compatibility only
+// =============================================================================
+
 // Local alias for use in this file
 type UnitTeam = UnitTeamType;
 
-// Legacy type aliases for backward compatibility
+/**
+ * Legacy unit type identifier.
+ * @deprecated Use UnitDefinition.id instead
+ */
 export type UnitType = 'warrior' | 'archer' | 'knight';
 
+/**
+ * Legacy attack type.
+ * @deprecated Use 'melee' | 'ranged' directly
+ */
 export type AttackType = 'melee' | 'ranged';
 
 /**
- * Individual attack mode stats.
+ * Legacy attack mode stats.
  * @deprecated Use AttackModeStats from './units/types' instead
  */
 export interface AttackMode {
   damage: number;
-  attackSpeed: number; // attacks per second
-  range: number; // pixels - melee ~35, ranged ~200
+  attackSpeed: number;
+  range: number;
 }
 
 /**
@@ -36,11 +62,18 @@ export interface AttackMode {
  */
 export interface UnitStats {
   maxHealth: number;
-  moveSpeed: number; // pixels per second
-  melee: AttackMode | null; // null = no melee attack
-  ranged: AttackMode | null; // null = no ranged attack
+  moveSpeed: number;
+  melee: AttackMode | null;
+  ranged: AttackMode | null;
 }
 
+/**
+ * Legacy unit interface for React rendering.
+ * This is a snapshot of a unit's state, NOT the live entity.
+ *
+ * @deprecated For new code, use UnitEntity from './entities' directly.
+ * This type exists only for React components that render battle state.
+ */
 export interface Unit {
   id: string;
   type: UnitType;
@@ -49,15 +82,19 @@ export interface Unit {
   health: number;
   stats: UnitStats;
   target: Unit | null;
-  attackCooldown: number; // seconds until next attack
+  attackCooldown: number;
   color: string;
   shape: 'circle' | 'square' | 'triangle';
-  size: number; // radius for circle, half-width for square
-  // Combat shuffle state
-  shuffleDirection: Vector2 | null; // current shuffle movement direction
-  shuffleTimer: number; // time remaining for current shuffle action (move or pause)
+  size: number;
+  shuffleDirection: Vector2 | null;
+  shuffleTimer: number;
 }
 
+/**
+ * Legacy projectile interface for React rendering.
+ *
+ * @deprecated For new code, use ProjectileEntity from './entities' directly.
+ */
 export interface Projectile {
   id: string;
   position: Vector2;
@@ -68,67 +105,29 @@ export interface Projectile {
   color: string;
 }
 
+/**
+ * Legacy battle state for React rendering.
+ * Contains snapshots of all units and projectiles.
+ *
+ * @deprecated For new code, use BattleWorld from './entities' directly.
+ */
 export interface BattleState {
   units: Unit[];
   projectiles: Projectile[];
   isRunning: boolean;
-  hasStarted: boolean; // True once battle has begun (disables unit placement)
+  hasStarted: boolean;
   waveNumber: number;
 }
 
-/**
- * Legacy unit stats constant.
- * @deprecated Use UnitRegistry with unit definitions from JSON instead.
- * This is kept for backward compatibility during migration.
- */
-export const UNIT_STATS: Record<UnitType, UnitStats> = {
-  warrior: {
-    maxHealth: 100,
-    moveSpeed: 80,
-    melee: { damage: 15, attackSpeed: 1.0, range: 35 },
-    ranged: null, // Pure melee unit
-  },
-  archer: {
-    maxHealth: 50,
-    moveSpeed: 60,
-    melee: { damage: 8, attackSpeed: 0.6, range: 35 }, // Weak melee fallback
-    ranged: { damage: 25, attackSpeed: 0.8, range: 200 },
-  },
-  knight: {
-    maxHealth: 80,
-    moveSpeed: 100,
-    melee: { damage: 20, attackSpeed: 1.2, range: 35 },
-    ranged: null, // Pure melee unit (can be upgraded later)
-  },
-};
+// =============================================================================
+// UTILITY FUNCTIONS
+// =============================================================================
 
 /**
- * Legacy unit visuals constant.
- * @deprecated Use UnitRegistry with unit definitions from JSON instead.
+ * Calculate scaled unit size based on arena dimensions.
+ * Used by both entity system and React rendering.
  */
-export const UNIT_VISUALS: Record<UnitType, { shape: Unit['shape']; baseSize: number }> = {
-  warrior: { shape: 'square', baseSize: 20 },
-  archer: { shape: 'triangle', baseSize: 16 },
-  knight: { shape: 'circle', baseSize: 18 },
-};
-
-// Calculate scaled unit size based on arena dimensions
 export function getScaledUnitSize(baseSize: number, arenaHeight: number): number {
-  // Scale relative to a reference height of 600px
   const scale = Math.max(0.8, Math.min(2, arenaHeight / 600));
   return Math.round(baseSize * scale);
 }
-
-// Re-export team colors from centralized theme
-export const TEAM_COLORS: Record<UnitTeam, Record<UnitType, string>> = {
-  player: {
-    warrior: UNIT_TYPE_COLORS.warrior.player,
-    archer: UNIT_TYPE_COLORS.archer.player,
-    knight: UNIT_TYPE_COLORS.knight.player,
-  },
-  enemy: {
-    warrior: UNIT_TYPE_COLORS.warrior.enemy,
-    archer: UNIT_TYPE_COLORS.archer.enemy,
-    knight: UNIT_TYPE_COLORS.knight.enemy,
-  },
-};
