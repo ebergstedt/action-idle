@@ -15,3 +15,4 @@ export { drawCastle, drawCastleHealthBar } from './drawCastle';
 export { drawShockwave, drawDamageNumber } from './drawEffects';
 export { drawSelectionBox } from './drawSelection';
 export type { SelectionBox } from './drawSelection';
+export { drawInkSplatters } from './drawInkSplatter';

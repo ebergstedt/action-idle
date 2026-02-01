@@ -10,3 +10,6 @@ export type { UseCanvasInputProps, UseCanvasInputResult } from './useCanvasInput
 export { useDustParticles } from './useDustParticles';
 
 export { useGhostHealth } from './useGhostHealth';
+
+export { useInkSplatter } from './useInkSplatter';
+export type { InkSplatter } from './useInkSplatter';

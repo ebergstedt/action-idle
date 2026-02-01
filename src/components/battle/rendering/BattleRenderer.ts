@@ -21,6 +21,8 @@ import { drawCastle, drawCastleHealthBar } from './drawCastle';
 import { drawShockwave, drawDamageNumber } from './drawEffects';
 import { drawSelectionBox } from './drawSelection';
 import { drawParchmentBackground, drawVignette } from './drawBackground';
+import { drawInkSplatters } from './drawInkSplatter';
+import type { InkSplatter } from '../hooks/useInkSplatter';
 
 /**
  * Dust particle for movement effects.
@@ -48,6 +50,7 @@ export interface RenderContext {
   boxSelectSession: BoxSelectSession | null;
   ghostHealthMap: Map<string, number>;
   dustParticles: DustParticle[];
+  inkSplatters: InkSplatter[];
 }
 
 /**
@@ -107,6 +110,7 @@ export function renderBattle(context: RenderContext): void {
     boxSelectSession,
     ghostHealthMap,
     dustParticles,
+    inkSplatters,
   } = context;
 
   // 1. Parchment background with noise texture and grid
@@ -115,7 +119,10 @@ export function renderBattle(context: RenderContext): void {
   // 2. Spawn zones
   drawSpawnZones(ctx, width, height);
 
-  // 3. Shockwaves (draw early so other elements appear on top)
+  // 3. Ink splatters (on the ground, behind everything else)
+  drawInkSplatters(ctx, inkSplatters);
+
+  // 4. Shockwaves (draw early so other elements appear on top)
   for (const shockwave of state.shockwaves) {
     drawShockwave(ctx, shockwave, width, height);
   }

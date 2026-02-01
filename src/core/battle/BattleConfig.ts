@@ -105,6 +105,63 @@ export const PARCHMENT_NOISE_OPACITY = 0.08;
 export const PARCHMENT_NOISE_SIZE_MIN = 1;
 export const PARCHMENT_NOISE_SIZE_MAX = 2.5;
 
+/**
+ * Number of ink splatter particles spawned on unit death.
+ */
+export const INK_SPLATTER_COUNT = 8;
+
+/**
+ * Ink splatter particle size range [min, max] in pixels.
+ */
+export const INK_SPLATTER_SIZE_MIN = 3;
+export const INK_SPLATTER_SIZE_MAX = 12;
+
+/**
+ * Ink splatter spread radius from death position.
+ */
+export const INK_SPLATTER_SPREAD = 25;
+
+/**
+ * Ink splatter lifetime in seconds before fading.
+ */
+export const INK_SPLATTER_LIFETIME = 3.0;
+
+/**
+ * Ink splatter maximum opacity (death splatters).
+ */
+export const INK_SPLATTER_OPACITY = 0.8;
+
+/**
+ * Number of ink splatter particles spawned on hit.
+ */
+export const INK_HIT_SPLATTER_COUNT = 3;
+
+/**
+ * Ink hit splatter size range [min, max] in pixels.
+ */
+export const INK_HIT_SPLATTER_SIZE_MIN = 2;
+export const INK_HIT_SPLATTER_SIZE_MAX = 6;
+
+/**
+ * Ink hit splatter spray distance from unit.
+ */
+export const INK_HIT_SPLATTER_DISTANCE = 20;
+
+/**
+ * Ink hit splatter spray angle spread (radians).
+ */
+export const INK_HIT_SPLATTER_SPREAD = 0.8;
+
+/**
+ * Ink hit splatter initial speed (pixels per second).
+ */
+export const INK_HIT_SPLATTER_SPEED = 140;
+
+/**
+ * Ink splatter gravity (pixels per second squared).
+ */
+export const INK_SPLATTER_GRAVITY = 350;
+
 // =============================================================================
 // PROJECTILE CONFIGURATION
 // =============================================================================

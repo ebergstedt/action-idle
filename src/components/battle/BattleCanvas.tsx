@@ -14,6 +14,7 @@ import { Vector2 } from '../../core/physics/Vector2';
 import { useCanvasInput } from './hooks/useCanvasInput';
 import { useDustParticles } from './hooks/useDustParticles';
 import { useGhostHealth } from './hooks/useGhostHealth';
+import { useInkSplatter } from './hooks/useInkSplatter';
 import { renderBattle } from './rendering';
 
 interface BattleCanvasProps {
@@ -56,6 +57,7 @@ export function BattleCanvas({
 
   const { updateParticles } = useDustParticles();
   const { updateGhostHealth } = useGhostHealth();
+  const { updateSplatters } = useInkSplatter();
 
   // Animation loop for selection pulse (runs when units are selected)
   useEffect(() => {
@@ -82,6 +84,7 @@ export function BattleCanvas({
     // Update particle and ghost health state
     const dustParticles = updateParticles(state.units, state.isRunning);
     const ghostHealthMap = updateGhostHealth(state.units);
+    const inkSplatters = updateSplatters(state.units, state.hasStarted, 0.016);
 
     // Render the battle scene
     renderBattle({
@@ -95,6 +98,7 @@ export function BattleCanvas({
       boxSelectSession,
       ghostHealthMap,
       dustParticles,
+      inkSplatters,
     });
   }, [
     state,
@@ -107,6 +111,7 @@ export function BattleCanvas({
     animationTime,
     updateParticles,
     updateGhostHealth,
+    updateSplatters,
   ]);
 
   return (
