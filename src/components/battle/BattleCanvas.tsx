@@ -225,19 +225,32 @@ function drawUnit(
   // Draw shape with optional drag opacity
   ctx.globalAlpha = isBeingDragged ? 0.8 : 1;
   ctx.fillStyle = color;
-  ctx.strokeStyle = ARENA_COLORS.unitOutline;
-  ctx.lineWidth = 4; // Thick black outline for visibility
 
+  // Draw unit with double outline (black outer, white inner) for visibility on any background
   switch (shape) {
     case 'circle':
       ctx.beginPath();
       ctx.arc(0, 0, size, 0, Math.PI * 2);
       ctx.fill();
+      // Black outer outline
+      ctx.strokeStyle = '#000000';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      // White inner outline
+      ctx.strokeStyle = '#FFFFFF';
+      ctx.lineWidth = 1;
       ctx.stroke();
       break;
 
     case 'square':
       ctx.fillRect(-size, -size, size * 2, size * 2);
+      // Black outer outline
+      ctx.strokeStyle = '#000000';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(-size, -size, size * 2, size * 2);
+      // White inner outline
+      ctx.strokeStyle = '#FFFFFF';
+      ctx.lineWidth = 1;
       ctx.strokeRect(-size, -size, size * 2, size * 2);
       break;
 
@@ -248,6 +261,18 @@ function drawUnit(
       ctx.lineTo(size, size);
       ctx.closePath();
       ctx.fill();
+      // Black outer outline
+      ctx.strokeStyle = '#000000';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      // White inner outline
+      ctx.beginPath();
+      ctx.moveTo(0, -size);
+      ctx.lineTo(-size, size);
+      ctx.lineTo(size, size);
+      ctx.closePath();
+      ctx.strokeStyle = '#FFFFFF';
+      ctx.lineWidth = 1;
       ctx.stroke();
       break;
   }
