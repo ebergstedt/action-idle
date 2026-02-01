@@ -6,7 +6,7 @@
   "tier": 1,
   "baseStats": {
     "maxHealth": 80,
-    "moveSpeed": 100,
+    "moveSpeed": 50,
     "armor": 0,
     "melee": {
       "damage": 20,

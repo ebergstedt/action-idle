@@ -114,7 +114,9 @@ export const ARENA_COLORS = {
   // Selection and indicators
   selectionRing: UI_COLORS.goldPrimary,
   moveIndicator: 'rgba(92, 64, 51, 0.3)', // Ink brown tint for allied units
-  unitOutline: UI_COLORS.inkBrown, // #5C4033 - dark ink outline
+  unitOutline: UI_COLORS.inkBlack, // #2C1810 - dark ink outline
+  boxSelectFill: 'rgba(0, 200, 255, 0.15)', // Cyan selection box fill
+  boxSelectBorder: 'rgba(0, 200, 255, 0.8)', // Cyan selection box border
 
   // Health bar
   healthBarBg: '#000000', // Black background for contrast
@@ -182,6 +184,7 @@ export const PROJECTILE_COLORS = {
 export const CASTLE_COLORS = {
   player: '#808080', // Grey for both teams
   enemy: '#808080',
+  door: '#4A3520', // Dark brown for castle door/gate
 } as const;
 
 /**

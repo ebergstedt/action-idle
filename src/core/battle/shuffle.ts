@@ -1,10 +1,20 @@
 import { Vector2 } from '../physics/Vector2';
 import { DEFAULT_SHUFFLE_CONFIG, ShuffleConfig } from './BattleConfig';
-import { Unit } from './types';
 
 // Re-export for backward compatibility
 export { DEFAULT_SHUFFLE_CONFIG } from './BattleConfig';
 export type { ShuffleConfig } from './BattleConfig';
+
+/**
+ * Interface for objects that can be shuffled.
+ * This is a minimal interface that both Unit and UnitEntity can satisfy.
+ */
+export interface Shuffleable {
+  position: Vector2;
+  stats: { moveSpeed: number };
+  shuffleDirection: Vector2 | null;
+  shuffleTimer: number;
+}
 
 // Generate a random time within a range
 const randomInRange = (min: number, max: number): number => min + Math.random() * (max - min);
@@ -18,7 +28,7 @@ export const generateShuffleDirection = (horizontalBias: number): Vector2 => {
 
 // Decide the next shuffle action (move or pause) and set timer
 export const decideNextShuffleAction = (
-  unit: Unit,
+  unit: Shuffleable,
   config: ShuffleConfig = DEFAULT_SHUFFLE_CONFIG
 ): void => {
   if (Math.random() < config.moveProbability) {
@@ -34,7 +44,7 @@ export const decideNextShuffleAction = (
 
 // Calculate shuffle movement for this frame
 export const calculateShuffleMovement = (
-  unit: Unit,
+  unit: Shuffleable,
   delta: number,
   config: ShuffleConfig = DEFAULT_SHUFFLE_CONFIG
 ): Vector2 => {
@@ -47,7 +57,7 @@ export const calculateShuffleMovement = (
 
 // Update shuffle state and return movement to apply
 export const updateShuffle = (
-  unit: Unit,
+  unit: Shuffleable,
   delta: number,
   config: ShuffleConfig = DEFAULT_SHUFFLE_CONFIG
 ): Vector2 => {
@@ -63,7 +73,7 @@ export const updateShuffle = (
 
 // Apply shuffle to unit position (convenience function)
 export const applyShuffle = (
-  unit: Unit,
+  unit: Shuffleable,
   delta: number,
   config: ShuffleConfig = DEFAULT_SHUFFLE_CONFIG
 ): void => {

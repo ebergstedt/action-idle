@@ -16,6 +16,7 @@ import { isOutOfBounds } from '../BoundsEnforcer';
 import { Projectile, UnitTeam } from '../types';
 import { BaseEntity } from './BaseEntity';
 import { IBattleWorld } from './IBattleWorld';
+import { UnitEntity } from './UnitEntity';
 
 /**
  * Projectile data.
@@ -25,6 +26,7 @@ export interface ProjectileData {
   speed: number;
   damage: number;
   sourceTeam: UnitTeam;
+  sourceUnit: UnitEntity | null;
   color: string;
 }
 
@@ -51,6 +53,9 @@ export class ProjectileEntity extends BaseEntity {
   }
   get sourceTeam(): UnitTeam {
     return this.data.sourceTeam;
+  }
+  get sourceUnit(): UnitEntity | null {
+    return this.data.sourceUnit;
   }
   get color(): string {
     return this.data.color;
@@ -122,7 +127,8 @@ export class ProjectileEntity extends BaseEntity {
 
       const dist = unit.position.distanceTo(this.target);
       if (dist < unit.size + PROJECTILE_SPLASH_RADIUS) {
-        unit.takeDamage(this.damage);
+        // Pass source unit for proper damage attribution
+        unit.takeDamage(this.damage, this.sourceUnit ?? undefined);
       }
     }
 
@@ -139,6 +145,7 @@ export function createProjectile(
   target: Vector2,
   damage: number,
   sourceTeam: UnitTeam,
+  sourceUnit: UnitEntity | null,
   color: string
 ): ProjectileEntity {
   return new ProjectileEntity(id, position, {
@@ -146,6 +153,7 @@ export function createProjectile(
     speed: PROJECTILE_SPEED,
     damage,
     sourceTeam,
+    sourceUnit,
     color,
   });
 }

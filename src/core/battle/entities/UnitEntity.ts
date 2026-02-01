@@ -509,9 +509,10 @@ export class UnitEntity extends BaseEntity {
       const dist = toAlly.magnitude();
       const minDist = (this.size + ally.size) * UNIT_SPACING;
 
-      if (dist < minDist * 2 && dist > 0) {
+      const avoidDist = minDist * ALLY_AVOIDANCE_DISTANCE_MULTIPLIER;
+      if (dist < avoidDist && dist > 0) {
         // Push away from nearby allies
-        const pushStrength = (minDist * 2 - dist) / (minDist * 2);
+        const pushStrength = (avoidDist - dist) / avoidDist;
         avoidance = avoidance.add(toAlly.normalize().multiply(pushStrength * ALLY_AVOIDANCE_FORCE));
       }
     }
@@ -546,7 +547,7 @@ export class UnitEntity extends BaseEntity {
 
   private getAttackMode(distanceToTarget: number): AttackMode | null {
     const { melee, ranged } = this.stats;
-    const meleeRange = melee ? melee.range + this.size * 2 : 0;
+    const meleeRange = melee ? melee.range + this.size * MELEE_SIZE_MULTIPLIER : 0;
 
     // If in melee range and has melee attack, use melee
     if (melee && distanceToTarget <= meleeRange + MELEE_RANGE_BUFFER) {
@@ -572,7 +573,7 @@ export class UnitEntity extends BaseEntity {
   private isInMeleeMode(distanceToTarget: number): boolean {
     const { melee } = this.stats;
     if (!melee) return false;
-    const meleeRange = melee.range + this.size * 2 + MELEE_RANGE_BUFFER;
+    const meleeRange = melee.range + this.size * MELEE_SIZE_MULTIPLIER + MELEE_RANGE_BUFFER;
     return distanceToTarget <= meleeRange;
   }
 
@@ -600,6 +601,7 @@ export class UnitEntity extends BaseEntity {
           target.position.clone(),
           attackMode.damage,
           this.team,
+          this, // Pass source unit for damage attribution
           getProjectileColor(this.team)
         );
       }
@@ -621,6 +623,7 @@ export class UnitEntity extends BaseEntity {
           castle.position.clone(),
           attackMode.damage,
           this.team,
+          this, // Pass source unit for damage attribution
           getProjectileColor(this.team)
         );
       }
@@ -649,7 +652,8 @@ export class UnitEntity extends BaseEntity {
       const dist = toAlly.magnitude();
       const minDist = (this.size + ally.size) * UNIT_SPACING;
 
-      if (dist < minDist * 2 && dist > 0) {
+      const avoidDist = minDist * ALLY_AVOIDANCE_DISTANCE_MULTIPLIER;
+      if (dist < avoidDist && dist > 0) {
         const dot = moveDirection.dot(toAlly.normalize().multiply(-1));
         if (dot > PATH_DOT_THRESHOLD) {
           const perpendicular = new Vector2(-moveDirection.y, moveDirection.x);
@@ -703,15 +707,15 @@ export class UnitEntity extends BaseEntity {
 
   private applyCombatShuffle(delta: number): void {
     // Use the existing shuffle module
-    // We need to create a temporary unit-like object for the shuffle function
+    // Create a Shuffleable object that the shuffle function can work with
     const shuffleUnit = {
       position: this.position,
-      stats: this.stats,
+      stats: { moveSpeed: this.stats.moveSpeed },
       shuffleDirection: this.shuffleDirection,
       shuffleTimer: this.shuffleTimer,
     };
 
-    applyShuffle(shuffleUnit as Unit, delta);
+    applyShuffle(shuffleUnit, delta);
 
     // Copy back the state
     this.position = shuffleUnit.position;

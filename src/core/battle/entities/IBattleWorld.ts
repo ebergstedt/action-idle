@@ -40,6 +40,7 @@ export interface IBattleWorld extends IEntityWorld {
     target: Vector2,
     damage: number,
     sourceTeam: UnitTeam,
+    sourceUnit: UnitEntity | null,
     color: string
   ): void;
 

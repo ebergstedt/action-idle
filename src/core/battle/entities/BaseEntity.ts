@@ -71,14 +71,24 @@ export abstract class BaseEntity implements IEntity, IEventEmitter {
 
   /**
    * Called when entity is removed from the world.
+   * Emits 'destroyed' event and clears all listeners.
+   *
+   * Note: This can be called on entities that were already marked destroyed
+   * via markDestroyed() (e.g., from takeDamage). In that case, we still need
+   * to emit the 'destroyed' event and clear listeners.
    */
   destroy(): void {
-    if (this._destroyed) return;
+    // Only emit 'destroyed' and clear listeners once
+    if (this._cleanedUp) return;
+    this._cleanedUp = true;
     this._destroyed = true;
     this.emit({ type: 'destroyed', entity: this });
     this.eventEmitter.clearAllListeners();
     this.world = null;
   }
+
+  /** Tracks whether cleanup (destroy event + listener clearing) has been done */
+  private _cleanedUp = false;
 
   /**
    * Whether this entity should be removed.

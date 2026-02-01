@@ -8,6 +8,11 @@
  */
 
 import { Vector2 } from '../../physics/Vector2';
+import {
+  DEFAULT_ABILITY_RANGE,
+  DEFAULT_HEALTH_ABOVE_THRESHOLD,
+  DEFAULT_HEALTH_BELOW_THRESHOLD,
+} from '../BattleConfig';
 import { UnitInstance } from '../units/types';
 import {
   AbilityDefinition,
@@ -124,12 +129,12 @@ export class AbilityProcessor {
 
     switch (trigger.type) {
       case 'health_below': {
-        const threshold = trigger.healthThreshold ?? 0.25;
+        const threshold = trigger.healthThreshold ?? DEFAULT_HEALTH_BELOW_THRESHOLD;
         const healthPercent = unit.currentHealth / unit.computedStats.maxHealth;
         return healthPercent <= threshold;
       }
       case 'health_above': {
-        const threshold = trigger.healthThreshold ?? 0.75;
+        const threshold = trigger.healthThreshold ?? DEFAULT_HEALTH_ABOVE_THRESHOLD;
         const healthPercent = unit.currentHealth / unit.computedStats.maxHealth;
         return healthPercent >= threshold;
       }
@@ -183,7 +188,7 @@ export class AbilityProcessor {
         return state.units.filter((u) => u.team !== sourceTeam).map((u) => u.id);
 
       case 'nearby_allies': {
-        const range = effect.range ?? 100;
+        const range = effect.range ?? DEFAULT_ABILITY_RANGE;
         return state.units
           .filter(
             (u) =>
@@ -193,7 +198,7 @@ export class AbilityProcessor {
       }
 
       case 'nearby_enemies': {
-        const range = effect.range ?? 100;
+        const range = effect.range ?? DEFAULT_ABILITY_RANGE;
         return state.units
           .filter(
             (u) =>

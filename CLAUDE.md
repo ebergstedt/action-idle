@@ -313,6 +313,85 @@ The battle system is fully Godot-ready:
 
 All game constants (spacing, speeds, combat values, etc.) are in `/src/core/battle/BattleConfig.ts`. **Never use magic numbers in code** - always import from BattleConfig.
 
+```typescript
+// ❌ Bad - magic numbers in code
+if (dist < 1) { ... }
+const checkDist = this.size * 3;
+if (dot > 0.3) { ... }
+
+// ✅ Good - constants from BattleConfig
+import { MIN_MOVE_DISTANCE, DIRECTION_CHECK_MULTIPLIER, PATH_DOT_THRESHOLD } from './BattleConfig';
+if (dist < MIN_MOVE_DISTANCE) { ... }
+const checkDist = this.size * DIRECTION_CHECK_MULTIPLIER;
+if (dot > PATH_DOT_THRESHOLD) { ... }
+```
+
+**When adding new gameplay values:**
+1. Add constant to `BattleConfig.ts` with descriptive name and JSDoc comment
+2. Import and use the constant in your code
+3. Never use literal numbers for gameplay-affecting values
+
+### 11. Event System Best Practices
+
+The event system maps to Godot signals. Follow these rules to avoid bugs:
+
+**Single Point of Event Emission:**
+```typescript
+// ❌ Bad - event emitted in multiple places
+class UnitEntity {
+  update(delta: number) {
+    if (this.health <= 0) this.emit('killed', {...});  // Duplicate!
+  }
+  takeDamage(amount: number) {
+    this.health -= amount;
+    if (this.health <= 0) this.emit('killed', {...});  // Original
+  }
+}
+
+// ✅ Good - event emitted in ONE place only
+class UnitEntity {
+  update(delta: number) {
+    if (this._destroyed) return;  // Skip if already dead
+  }
+  takeDamage(amount: number) {
+    this.health -= amount;
+    if (this.health <= 0) {
+      this.markDestroyed();
+      this.emit('killed', {...});  // Only place this event is emitted
+    }
+  }
+}
+```
+
+**Proper Entity Cleanup (Prevent Memory Leaks):**
+```typescript
+// ❌ Bad - removing entity without cleanup
+removeDestroyedEntities() {
+  this.entities = this.entities.filter(e => !e.isDestroyed());
+  // Memory leak! Listeners not cleared
+}
+
+// ✅ Good - call destroy() before removal
+removeDestroyedEntities() {
+  const destroyed = this.entities.filter(e => e.isDestroyed());
+  for (const entity of destroyed) {
+    entity.destroy();  // Emits 'destroyed', clears listeners
+  }
+  this.entities = this.entities.filter(e => !e.isDestroyed());
+}
+```
+
+**Destroy Method Pattern:**
+```typescript
+// ✅ Correct destroy() implementation
+destroy(): void {
+  if (this._cleanedUp) return;  // Prevent double cleanup
+  this._cleanedUp = true;
+  this.emit('destroyed', { entity: this });
+  this.clearAllListeners();  // Prevent memory leaks
+}
+```
+
 ## Key Files
 
 ### Battle System (Active)
@@ -468,6 +547,10 @@ describe('MyFunction', () => {
 6. **Minimum Font Size** - Never use `text-xs` in Tailwind. Minimum is `text-sm` for readability
 7. **Use Theme Colors** - Never use hardcoded hex colors. Always reference `UI_COLORS` or other theme constants from `src/core/theme/colors.ts`
 8. **No Gold/Yellow Text** - Never use gold or yellow colors (`UI_COLORS.goldPrimary`, `UI_COLORS.goldDark`, etc.) for text. They are hard to read on parchment backgrounds. Use `UI_COLORS.black` for text instead
+9. **No Magic Numbers** - All gameplay constants must be in `BattleConfig.ts`. Never use literal numbers like `0.3`, `100`, `2` for gameplay-affecting values
+10. **Single Event Emission** - Each event type (`killed`, `damaged`, etc.) must be emitted from exactly ONE place in the code. Never emit the same event from multiple methods
+11. **Always Call destroy()** - When removing entities, always call `destroy()` to emit the `destroyed` event and clear listeners. Never just filter entities out of arrays
+12. **Check Destroyed State** - In `update()` methods, check `if (this._destroyed) return;` early to skip processing dead entities
 
 ## Linting & Formatting
 

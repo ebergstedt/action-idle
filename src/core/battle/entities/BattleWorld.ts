@@ -182,10 +182,10 @@ export class BattleWorld implements IEntityWorld, IBattleWorld, IWorldEventEmitt
     // Remove destroyed units
     this.units = this.units.filter((unit) => {
       if (unit.isDestroyed()) {
-        // Emit world event first so subscribers can react before entity cleanup
-        this.worldEvents.emitWorld({ type: 'entity_removed', entity: unit });
         // destroy() emits 'destroyed' event and clears entity's listeners
         unit.destroy();
+        // Then emit world event so subscribers see entity after its final event
+        this.worldEvents.emitWorld({ type: 'entity_removed', entity: unit });
         unit.setWorld(null);
         return false;
       }
@@ -195,8 +195,8 @@ export class BattleWorld implements IEntityWorld, IBattleWorld, IWorldEventEmitt
     // Remove destroyed projectiles
     this.projectiles = this.projectiles.filter((proj) => {
       if (proj.isDestroyed()) {
-        this.worldEvents.emitWorld({ type: 'entity_removed', entity: proj });
         proj.destroy();
+        this.worldEvents.emitWorld({ type: 'entity_removed', entity: proj });
         proj.setWorld(null);
         return false;
       }
@@ -206,8 +206,8 @@ export class BattleWorld implements IEntityWorld, IBattleWorld, IWorldEventEmitt
     // Remove destroyed castles
     this.castles = this.castles.filter((castle) => {
       if (castle.isDestroyed()) {
-        this.worldEvents.emitWorld({ type: 'entity_removed', entity: castle });
         castle.destroy();
+        this.worldEvents.emitWorld({ type: 'entity_removed', entity: castle });
         castle.setWorld(null);
         return false;
       }
@@ -301,10 +301,19 @@ export class BattleWorld implements IEntityWorld, IBattleWorld, IWorldEventEmitt
     target: Vector2,
     damage: number,
     sourceTeam: UnitTeam,
+    sourceUnit: UnitEntity | null,
     color: string
   ): void {
     const id = `proj_${this.nextProjectileId++}`;
-    const projectile = createProjectile(id, position, target, damage, sourceTeam, color);
+    const projectile = createProjectile(
+      id,
+      position,
+      target,
+      damage,
+      sourceTeam,
+      sourceUnit,
+      color
+    );
     this.addProjectile(projectile);
   }
 

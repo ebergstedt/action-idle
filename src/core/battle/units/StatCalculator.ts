@@ -7,6 +7,7 @@
  * Godot-portable: No React/browser dependencies.
  */
 
+import { MIN_DAMAGE_AFTER_ARMOR } from '../BattleConfig';
 import { ActiveModifier, StatTarget } from '../modifiers/types';
 import { calculateModifiedStat, groupModifiersByTarget } from '../modifiers/ModifierCalculator';
 import { AttackModeStats, BaseStats, ComputedStats } from './types';
@@ -119,5 +120,5 @@ export function cloneBaseStats(stats: BaseStats): BaseStats {
  * Simple flat reduction for now, could be percentage-based later.
  */
 export function calculateDamageAfterArmor(damage: number, armor: number): number {
-  return Math.max(1, damage - armor);
+  return Math.max(MIN_DAMAGE_AFTER_ARMOR, damage - armor);
 }
