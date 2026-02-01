@@ -1,0 +1,12 @@
+/**
+ * Battle Canvas Hooks
+ *
+ * Custom hooks for managing battle canvas state.
+ */
+
+export { useCanvasInput } from './useCanvasInput';
+export type { UseCanvasInputProps, UseCanvasInputResult } from './useCanvasInput';
+
+export { useDustParticles } from './useDustParticles';
+
+export { useGhostHealth } from './useGhostHealth';

@@ -1,0 +1,88 @@
+/**
+ * Dust Particles Hook
+ *
+ * Manages dust particle spawning and updating for unit movement effects.
+ */
+
+import { useRef, useCallback } from 'react';
+import type { UnitRenderData } from '../../../core/battle';
+import { DUST_SPAWN_INTERVAL, DUST_PARTICLE_LIFETIME } from '../../../core/battle/BattleConfig';
+import type { DustParticle } from '../rendering';
+
+/**
+ * Hook to manage dust particles for moving units.
+ * Returns functions to update particles and get current particle list.
+ */
+export function useDustParticles(): {
+  particles: DustParticle[];
+  updateParticles: (units: UnitRenderData[], isRunning: boolean) => DustParticle[];
+} {
+  const dustParticlesRef = useRef<DustParticle[]>([]);
+  const lastDustSpawnRef = useRef<Map<string, number>>(new Map());
+  const prevPositionsRef = useRef<Map<string, { x: number; y: number }>>(new Map());
+
+  const updateParticles = useCallback(
+    (units: UnitRenderData[], isRunning: boolean): DustParticle[] => {
+      if (!isRunning) {
+        return dustParticlesRef.current;
+      }
+
+      const now = performance.now();
+
+      // Spawn dust for moving units
+      for (const unit of units) {
+        if (unit.deathFadeTimer >= 0) continue; // Skip dying units
+
+        // Check if unit moved since last frame
+        const prevPos = prevPositionsRef.current.get(unit.id);
+        const dx = prevPos ? Math.abs(unit.position.x - prevPos.x) : 0;
+        const dy = prevPos ? Math.abs(unit.position.y - prevPos.y) : 0;
+        const isMoving = dx > 0.1 || dy > 0.1;
+
+        // Update stored position
+        prevPositionsRef.current.set(unit.id, {
+          x: unit.position.x,
+          y: unit.position.y,
+        });
+
+        if (isMoving) {
+          const lastSpawn = lastDustSpawnRef.current.get(unit.id) ?? 0;
+          if (now - lastSpawn > DUST_SPAWN_INTERVAL * 1000) {
+            // Spawn 2-3 dust particles below and behind the unit
+            const particleCount = 2 + Math.floor(Math.random() * 2);
+            for (let i = 0; i < particleCount; i++) {
+              dustParticlesRef.current.push({
+                x: unit.position.x + (Math.random() - 0.5) * unit.size * 2,
+                y: unit.position.y + unit.size + 5, // Below the unit
+                vx: (Math.random() - 0.5) * 40,
+                vy: -Math.random() * 40 - 20, // Strong upward velocity
+                lifetime: DUST_PARTICLE_LIFETIME,
+                maxLifetime: DUST_PARTICLE_LIFETIME,
+              });
+            }
+            lastDustSpawnRef.current.set(unit.id, now);
+          }
+        }
+      }
+
+      // Update existing particles
+      dustParticlesRef.current = dustParticlesRef.current.filter((p) => {
+        p.lifetime -= 0.016;
+        p.x += p.vx * 0.016;
+        p.y += p.vy * 0.016;
+        p.vy += 50 * 0.016; // Gravity
+        return p.lifetime > 0;
+      });
+
+      return dustParticlesRef.current;
+    },
+    []
+  );
+
+  return {
+    get particles() {
+      return dustParticlesRef.current;
+    },
+    updateParticles,
+  };
+}
