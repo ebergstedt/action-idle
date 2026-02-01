@@ -1,0 +1,50 @@
+[
+  {
+    "id": "cursor",
+    "name": "Cursor",
+    "description": "Automatically clicks for you",
+    "baseCost": 15,
+    "costMultiplier": 1.15,
+    "baseProduction": 0.1
+  },
+  {
+    "id": "worker",
+    "name": "Worker",
+    "description": "A dedicated assistant who generates currency",
+    "baseCost": 100,
+    "costMultiplier": 1.15,
+    "baseProduction": 1
+  },
+  {
+    "id": "farm",
+    "name": "Farm",
+    "description": "Grows currency organically over time",
+    "baseCost": 1100,
+    "costMultiplier": 1.15,
+    "baseProduction": 8
+  },
+  {
+    "id": "mine",
+    "name": "Mine",
+    "description": "Extracts valuable resources from the ground",
+    "baseCost": 12000,
+    "costMultiplier": 1.15,
+    "baseProduction": 47
+  },
+  {
+    "id": "factory",
+    "name": "Factory",
+    "description": "Mass produces currency efficiently",
+    "baseCost": 130000,
+    "costMultiplier": 1.15,
+    "baseProduction": 260
+  },
+  {
+    "id": "bank",
+    "name": "Bank",
+    "description": "Generates interest on your investments",
+    "baseCost": 1400000,
+    "costMultiplier": 1.15,
+    "baseProduction": 1400
+  }
+]
