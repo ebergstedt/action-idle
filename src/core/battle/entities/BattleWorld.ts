@@ -21,6 +21,7 @@ import {
 import { EntityBounds } from '../BoundsEnforcer';
 import { UnitTeam } from '../units/types';
 import {
+  IDamageable,
   IEntity,
   IWorldEventEmitter,
   WorldEventType,
@@ -342,6 +343,18 @@ export class BattleWorld implements IEntityWorld, IBattleWorld, IWorldEventEmitt
 
   getEnemyCastlesOf(unit: UnitEntity): CastleEntity[] {
     return this.castles.filter((c) => c.team !== unit.team && !c.isDestroyed() && c.health > 0);
+  }
+
+  // === Damageable Queries (Units + Castles) ===
+
+  getDamageables(): readonly IDamageable[] {
+    return [...this.units, ...this.castles].filter((d) => !d.isDestroyed() && d.health > 0);
+  }
+
+  getEnemyDamageablesOf(entity: IDamageable): IDamageable[] {
+    return [...this.units, ...this.castles].filter(
+      (d) => d.team !== entity.team && !d.isDestroyed() && d.health > 0
+    );
   }
 
   isPathBlocked(from: Vector2, to: Vector2, excludeUnit: UnitEntity): boolean {

@@ -124,16 +124,14 @@ export class ProjectileEntity extends BaseEntity {
       return;
     }
 
-    // Damage units at target location
-    const units = world.getUnits();
-    for (const unit of units) {
-      if (unit.team === this.sourceTeam) continue;
-      if (unit.health <= 0) continue;
+    // Damage all enemy damageables (units and castles) at target location
+    const damageables = world.getDamageables();
+    for (const target of damageables) {
+      if (target.team === this.sourceTeam) continue;
 
-      const dist = unit.position.distanceTo(this.target);
-      if (dist < unit.size + PROJECTILE_SPLASH_RADIUS) {
-        // Pass source unit for proper damage attribution
-        unit.takeDamage(this.damage, this.sourceUnit ?? undefined);
+      const dist = target.position.distanceTo(this.target);
+      if (dist < target.size + PROJECTILE_SPLASH_RADIUS) {
+        target.takeDamage(this.damage, this.sourceUnit ?? undefined);
       }
     }
 

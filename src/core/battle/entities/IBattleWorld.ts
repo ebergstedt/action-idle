@@ -9,6 +9,7 @@
 
 import { Vector2 } from '../../physics/Vector2';
 import { EntityBounds } from '../BoundsEnforcer';
+import { IDamageable } from '../IEntity';
 import { UnitTeam } from '../units/types';
 import { IEntityWorld } from './BaseEntity';
 import { CastleEntity } from './CastleEntity';
@@ -19,6 +20,10 @@ import { UnitEntity } from './UnitEntity';
  * Extends IEntityWorld with battle-specific queries.
  */
 export interface IBattleWorld extends IEntityWorld {
+  // Damageable queries (units + castles combined)
+  getDamageables(): readonly IDamageable[];
+  getEnemyDamageablesOf(entity: IDamageable): IDamageable[];
+
   // Unit queries
   getUnits(): readonly UnitEntity[];
   getUnitById(id: string): UnitEntity | undefined;

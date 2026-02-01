@@ -568,6 +568,9 @@ function drawShockwave(
 ): void {
   const { position, currentRadius, color } = shockwave;
 
+  // Don't draw if radius is too small (prevents negative radius issues)
+  if (currentRadius < 10) return;
+
   ctx.save();
 
   // Clip to arena bounds so shockwave doesn't render outside

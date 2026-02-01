@@ -166,7 +166,6 @@ export class BattleEngine {
       shape: visuals.shape,
       size,
       target: null,
-      castleTarget: null,
       attackCooldown: 0,
       shuffleDirection: null,
       shuffleTimer: 0,

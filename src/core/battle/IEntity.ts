@@ -12,6 +12,41 @@
 
 import { Vector2 } from '../physics/Vector2';
 
+import { UnitTeam } from './units/types';
+
+/**
+ * Interface for entities that can take damage (units, castles, etc.).
+ * Allows projectiles and other damage sources to treat all targets uniformly.
+ *
+ * Godot equivalent: A shared interface/class for anything with health.
+ */
+export interface IDamageable {
+  /** Unique identifier */
+  readonly id: string;
+
+  /** Which team this entity belongs to */
+  readonly team: UnitTeam;
+
+  /** Current health */
+  readonly health: number;
+
+  /** Position in world space */
+  position: Vector2;
+
+  /** Size for collision detection */
+  readonly size: number;
+
+  /**
+   * Apply damage to this entity.
+   * @param amount - Damage to apply
+   * @param attacker - The entity that dealt the damage (optional)
+   */
+  takeDamage(amount: number, attacker?: IEntity): void;
+
+  /** Whether this entity is destroyed/dead */
+  isDestroyed(): boolean;
+}
+
 /**
  * Lifecycle interface for game entities.
  * Implement this for entities that need their own update logic.

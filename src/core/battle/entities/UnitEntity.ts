@@ -47,10 +47,10 @@ export interface TemporaryModifier {
   remainingDuration: number;
 }
 import { clampToArenaInPlace } from '../BoundsEnforcer';
+import { IDamageable } from '../IEntity';
 import { applyShuffle } from '../shuffle';
 import { AttackMode, Unit, UnitStats, UnitTeam, UnitType } from '../types';
 import { BaseEntity } from './BaseEntity';
-import { CastleEntity } from './CastleEntity';
 import { IBattleWorld } from './IBattleWorld';
 
 /**
@@ -65,9 +65,8 @@ export interface UnitData {
   color: string;
   shape: 'circle' | 'square' | 'triangle';
   size: number;
-  // Combat state
-  target: UnitEntity | null;
-  castleTarget: CastleEntity | null;
+  // Combat state - unified target (can be unit or castle)
+  target: IDamageable | null;
   attackCooldown: number;
   shuffleDirection: Vector2 | null;
   shuffleTimer: number;
@@ -115,17 +114,11 @@ export class UnitEntity extends BaseEntity {
   get shape(): 'circle' | 'square' | 'triangle' {
     return this.data.shape;
   }
-  get target(): UnitEntity | null {
+  get target(): IDamageable | null {
     return this.data.target;
   }
-  set target(value: UnitEntity | null) {
+  set target(value: IDamageable | null) {
     this.data.target = value;
-  }
-  get castleTarget(): CastleEntity | null {
-    return this.data.castleTarget;
-  }
-  set castleTarget(value: CastleEntity | null) {
-    this.data.castleTarget = value;
   }
   get attackCooldown(): number {
     return this.data.attackCooldown;
@@ -351,10 +344,6 @@ export class UnitEntity extends BaseEntity {
       this.target = null;
       this.retargetCooldown = 0; // Can immediately acquire new target
     }
-    if (this.castleTarget && (this.castleTarget.isDestroyed() || this.castleTarget.health <= 0)) {
-      this.castleTarget = null;
-      this.retargetCooldown = 0;
-    }
 
     // Check if unit should permanently enter seek mode
     if (!this.seekMode && this.isDeepInEnemyZone()) {
@@ -363,54 +352,47 @@ export class UnitEntity extends BaseEntity {
 
     // In seek mode, recheck for closer targets (with cooldown)
     if (this.seekMode) {
-      const nearestUnit = this.findNearestUnit();
-      const nearestCastle = this.findNearestCastle();
+      const nearestTarget = this.findNearestDamageable();
 
       // If we have a current target and cooldown expired, check for closer targets
-      if (this.target && nearestUnit && this.retargetCooldown <= 0) {
+      if (this.target && nearestTarget && this.retargetCooldown <= 0) {
         const currentDist = this.position.distanceTo(this.target.position);
-        const nearestDist = this.position.distanceTo(nearestUnit.position);
+        const nearestDist = this.position.distanceTo(nearestTarget.position);
         // Switch to closer target if it's significantly closer
         if (nearestDist < currentDist * TARGET_SWITCH_DISTANCE_RATIO) {
-          this.target = nearestUnit;
-          this.castleTarget = null;
+          this.target = nearestTarget;
           this.retargetCooldown = TARGET_SWITCH_COOLDOWN_SECONDS;
           return;
         }
       }
 
-      // If no unit target yet, acquire one
-      if (!this.target && (nearestUnit || nearestCastle)) {
-        this.setClosestTarget(nearestUnit, nearestCastle);
+      // If no target yet, acquire one
+      if (!this.target && nearestTarget) {
+        this.target = nearestTarget;
         this.retargetCooldown = TARGET_SWITCH_COOLDOWN_SECONDS;
         return;
       }
 
       // Keep existing valid target in seek mode
       if (this.target) {
-        this.castleTarget = null;
         return;
       }
     }
 
-    // If already have a valid unit target (not in seek mode), keep it
+    // If already have a valid target (not in seek mode), keep it
     if (this.target) {
-      this.castleTarget = null;
       return;
     }
 
     // Phase 1: Check for targets within aggro radius (always active)
-    const nearestUnitInRange = this.findTargetInAggroRadius();
-    const nearestCastleInRange = this.findCastleInAggroRadius();
+    const nearestInRange = this.findDamageableInAggroRadius();
 
-    if (nearestUnitInRange || nearestCastleInRange) {
-      // Something in aggro range - target the closest one
-      this.setClosestTarget(nearestUnitInRange, nearestCastleInRange);
+    if (nearestInRange) {
+      this.target = nearestInRange;
       return;
     }
 
     // Not in seek mode and nothing in aggro range - will march forward
-    this.castleTarget = null;
   }
 
   /**
@@ -437,41 +419,17 @@ export class UnitEntity extends BaseEntity {
   }
 
   /**
-   * Set the closest target from a unit and/or castle option.
+   * Find the nearest enemy damageable (unit or castle) within aggro radius.
    */
-  private setClosestTarget(unit: UnitEntity | null, castle: CastleEntity | null): void {
-    if (unit && castle) {
-      const unitDist = this.position.distanceTo(unit.position);
-      const castleDist = this.position.distanceTo(castle.position);
-      if (unitDist <= castleDist) {
-        this.target = unit;
-        this.castleTarget = null;
-      } else {
-        this.target = null;
-        this.castleTarget = castle;
-      }
-    } else if (unit) {
-      this.target = unit;
-      this.castleTarget = null;
-    } else if (castle) {
-      this.target = null;
-      this.castleTarget = castle;
-    }
-  }
-
-  /**
-   * Find any enemy unit within aggro radius.
-   */
-  private findTargetInAggroRadius(): UnitEntity | null {
+  private findDamageableInAggroRadius(): IDamageable | null {
     const world = this.getBattleWorld();
     if (!world) return null;
 
-    const enemies = world.getEnemiesOf(this);
-    let nearest: UnitEntity | null = null;
+    const enemies = world.getEnemyDamageablesOf(this);
+    let nearest: IDamageable | null = null;
     let nearestDist = this.getAggroRadius();
 
     for (const enemy of enemies) {
-      if (enemy.health <= 0) continue;
       const dist = this.position.distanceTo(enemy.position);
       if (dist < nearestDist) {
         nearestDist = dist;
@@ -483,68 +441,21 @@ export class UnitEntity extends BaseEntity {
   }
 
   /**
-   * Find any enemy castle within aggro radius.
+   * Find the nearest enemy damageable (unit or castle) with no distance limit.
    */
-  private findCastleInAggroRadius(): CastleEntity | null {
+  private findNearestDamageable(): IDamageable | null {
     const world = this.getBattleWorld();
     if (!world) return null;
 
-    const castles = world.getEnemyCastlesOf(this);
-    let nearest: CastleEntity | null = null;
-    let nearestDist = this.getAggroRadius();
-
-    for (const castle of castles) {
-      if (castle.health <= 0) continue;
-      const dist = this.position.distanceTo(castle.position);
-      if (dist < nearestDist) {
-        nearestDist = dist;
-        nearest = castle;
-      }
-    }
-
-    return nearest;
-  }
-
-  /**
-   * Find the nearest enemy unit (no distance limit).
-   */
-  private findNearestUnit(): UnitEntity | null {
-    const world = this.getBattleWorld();
-    if (!world) return null;
-
-    const enemies = world.getEnemiesOf(this);
-    let nearest: UnitEntity | null = null;
+    const enemies = world.getEnemyDamageablesOf(this);
+    let nearest: IDamageable | null = null;
     let nearestDist = Infinity;
 
     for (const enemy of enemies) {
-      if (enemy.health <= 0) continue;
       const dist = this.position.distanceTo(enemy.position);
       if (dist < nearestDist) {
         nearestDist = dist;
         nearest = enemy;
-      }
-    }
-
-    return nearest;
-  }
-
-  /**
-   * Find the nearest enemy castle (no distance limit).
-   */
-  private findNearestCastle(): CastleEntity | null {
-    const world = this.getBattleWorld();
-    if (!world) return null;
-
-    const castles = world.getEnemyCastlesOf(this);
-    let nearest: CastleEntity | null = null;
-    let nearestDist = Infinity;
-
-    for (const castle of castles) {
-      if (castle.health <= 0) continue;
-      const dist = this.position.distanceTo(castle.position);
-      if (dist < nearestDist) {
-        nearestDist = dist;
-        nearest = castle;
       }
     }
 
@@ -557,39 +468,18 @@ export class UnitEntity extends BaseEntity {
       this.attackCooldown -= delta;
     }
 
-    const world = this.getBattleWorld();
-    if (!world) return;
+    if (!this.target) return;
 
-    // Attack unit if we have a unit target
-    if (this.target) {
-      const distanceToTarget = this.position.distanceTo(this.target.position);
-      const attackMode = this.getAttackMode(distanceToTarget);
+    const distanceToTarget = this.position.distanceTo(this.target.position);
+    const attackMode = this.getAttackMode(distanceToTarget);
 
-      if (attackMode) {
-        const effectiveRange = attackMode.range + this.size + this.target.size;
-        const inRange = distanceToTarget <= effectiveRange;
+    if (attackMode) {
+      const effectiveRange = attackMode.range + this.size + this.target.size;
+      const inRange = distanceToTarget <= effectiveRange;
 
-        if (inRange && this.attackCooldown <= 0) {
-          this.performAttack(this.target, attackMode);
-          this.attackCooldown = 1 / attackMode.attackSpeed;
-        }
-      }
-      return;
-    }
-
-    // Attack castle if we have a castle target
-    if (this.castleTarget) {
-      const distanceToCastle = this.position.distanceTo(this.castleTarget.position);
-      const attackMode = this.getAttackMode(distanceToCastle);
-
-      if (attackMode) {
-        const effectiveRange = attackMode.range + this.size + this.castleTarget.size;
-        const inRange = distanceToCastle <= effectiveRange;
-
-        if (inRange && this.attackCooldown <= 0) {
-          this.performCastleAttack(this.castleTarget, attackMode);
-          this.attackCooldown = 1 / attackMode.attackSpeed;
-        }
+      if (inRange && this.attackCooldown <= 0) {
+        this.performAttack(this.target, attackMode);
+        this.attackCooldown = 1 / attackMode.attackSpeed;
       }
     }
   }
@@ -599,43 +489,32 @@ export class UnitEntity extends BaseEntity {
     if (!world) return;
 
     // No target - march straight forward toward enemy zone
-    if (!this.target && !this.castleTarget) {
+    if (!this.target) {
       this.marchForward(delta);
       return;
     }
 
-    // Movement toward unit target
-    if (this.target) {
-      const distanceToTarget = this.position.distanceTo(this.target.position);
-      const attackMode = this.getAttackMode(distanceToTarget);
-      const effectiveRange = attackMode
-        ? attackMode.range + this.size + this.target.size
-        : this.getMaxRange() + this.size + this.target.size;
+    const distanceToTarget = this.position.distanceTo(this.target.position);
+    const attackMode = this.getAttackMode(distanceToTarget);
+    const effectiveRange = attackMode
+      ? attackMode.range + this.size + this.target.size
+      : this.getMaxRange() + this.size + this.target.size;
 
-      if (distanceToTarget > effectiveRange) {
-        // Need to move closer
-        this.moveWithFormation(this.target.position, delta);
-      } else if (this.isInMeleeMode(distanceToTarget)) {
-        // In melee range - apply combat shuffle
-        this.applyCombatShuffle(delta);
-      }
-      return;
-    }
-
-    // Movement toward castle target
-    if (this.castleTarget) {
-      const distanceToCastle = this.position.distanceTo(this.castleTarget.position);
-      const attackMode = this.getAttackMode(distanceToCastle);
-      const effectiveRange = attackMode
-        ? attackMode.range + this.size + this.castleTarget.size
-        : this.getMaxRange() + this.size + this.castleTarget.size;
-
-      if (distanceToCastle > effectiveRange) {
-        // Need to move closer to castle
-        this.moveWithFormation(this.castleTarget.position, delta);
-      }
+    if (distanceToTarget > effectiveRange) {
+      // Need to move closer
+      this.moveWithFormation(this.target.position, delta);
+    } else if (this.isInMeleeMode(distanceToTarget) && this.isUnit(this.target)) {
+      // In melee range against a unit - apply combat shuffle
       // No shuffle when attacking castles - they don't attack back
+      this.applyCombatShuffle(delta);
     }
+  }
+
+  /**
+   * Type guard to check if a damageable is a unit (has stats).
+   */
+  private isUnit(target: IDamageable): target is UnitEntity {
+    return 'stats' in target;
   }
 
   /**
@@ -731,7 +610,7 @@ export class UnitEntity extends BaseEntity {
     return distanceToTarget <= meleeRange;
   }
 
-  private performAttack(target: UnitEntity, attackMode: AttackMode): void {
+  private performAttack(target: IDamageable, attackMode: AttackMode): void {
     const isMelee = attackMode.range <= MELEE_ATTACK_RANGE_THRESHOLD;
     // Apply damage modifier from buffs/debuffs
     const modifiedDamage = Math.round(attackMode.damage * this.getDamageMultiplier());
@@ -740,7 +619,7 @@ export class UnitEntity extends BaseEntity {
     this.emit({
       type: 'attacked',
       entity: this,
-      target,
+      target: target as UnitEntity, // Cast for event (works for IEntity)
       damage: modifiedDamage,
       attackMode: isMelee ? 'melee' : 'ranged',
     });
@@ -755,30 +634,6 @@ export class UnitEntity extends BaseEntity {
         world.spawnProjectile(
           this.position.clone(),
           target.position.clone(),
-          modifiedDamage,
-          this.team,
-          this, // Pass source unit for damage attribution
-          getProjectileColor(this.team)
-        );
-      }
-    }
-  }
-
-  private performCastleAttack(castle: CastleEntity, attackMode: AttackMode): void {
-    const isMelee = attackMode.range <= MELEE_ATTACK_RANGE_THRESHOLD;
-    // Apply damage modifier from buffs/debuffs
-    const modifiedDamage = Math.round(attackMode.damage * this.getDamageMultiplier());
-
-    if (isMelee) {
-      // Direct damage
-      castle.takeDamage(modifiedDamage, this);
-    } else {
-      // Spawn projectile at castle
-      const world = this.getBattleWorld();
-      if (world) {
-        world.spawnProjectile(
-          this.position.clone(),
-          castle.position.clone(),
           modifiedDamage,
           this.team,
           this, // Pass source unit for damage attribution
