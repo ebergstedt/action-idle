@@ -1,5 +1,6 @@
 import { Decimal, formatNumber } from '../../core/utils/BigNumber';
 import { UpgradeDefinition } from '../../core/types/Upgrade';
+import { DARK_THEME } from '../../core/theme/colors';
 
 interface UpgradeButtonProps {
   upgrade: UpgradeDefinition;
@@ -30,10 +31,15 @@ export function UpgradeButton({ upgrade, level, cost, canAfford, onPurchase }: U
             {level > 0 && <span className="ml-2 text-sm text-gray-400">Lv. {level}</span>}
           </div>
           <div className="text-sm text-gray-400 mt-1">{upgrade.description}</div>
-          <div className="text-xs text-green-400 mt-2">+{upgrade.baseProduction}/sec each</div>
+          <div className="text-xs mt-2" style={{ color: DARK_THEME.success }}>
+            +{upgrade.baseProduction}/sec each
+          </div>
         </div>
         <div className="text-right ml-4">
-          <div className={`font-bold ${canAfford ? 'text-yellow-400' : 'text-gray-500'}`}>
+          <div
+            className="font-bold"
+            style={{ color: canAfford ? DARK_THEME.accentGold : DARK_THEME.textDisabled }}
+          >
             {formatNumber(cost)}
           </div>
         </div>

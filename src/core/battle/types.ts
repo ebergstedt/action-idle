@@ -1,4 +1,5 @@
 import { Vector2 } from '../physics/Vector2';
+import { UNIT_TYPE_COLORS } from '../theme/colors';
 
 export type UnitTeam = 'player' | 'enemy';
 
@@ -6,13 +7,18 @@ export type UnitType = 'warrior' | 'archer' | 'knight';
 
 export type AttackType = 'melee' | 'ranged';
 
-export interface UnitStats {
-  maxHealth: number;
+// Individual attack mode stats
+export interface AttackMode {
   damage: number;
   attackSpeed: number; // attacks per second
-  range: number; // pixels - melee ~30, ranged ~200
+  range: number; // pixels - melee ~35, ranged ~200
+}
+
+export interface UnitStats {
+  maxHealth: number;
   moveSpeed: number; // pixels per second
-  attackType: AttackType;
+  melee: AttackMode | null; // null = no melee attack
+  ranged: AttackMode | null; // null = no ranged attack
 }
 
 export interface Unit {
@@ -27,6 +33,9 @@ export interface Unit {
   color: string;
   shape: 'circle' | 'square' | 'triangle';
   size: number; // radius for circle, half-width for square
+  // Combat shuffle state
+  shuffleDirection: Vector2 | null; // current shuffle movement direction
+  shuffleTimer: number; // time remaining for current shuffle action (move or pause)
 }
 
 export interface Projectile {
@@ -50,27 +59,21 @@ export interface BattleState {
 export const UNIT_STATS: Record<UnitType, UnitStats> = {
   warrior: {
     maxHealth: 100,
-    damage: 15,
-    attackSpeed: 1.0,
-    range: 35,
     moveSpeed: 80,
-    attackType: 'melee',
+    melee: { damage: 15, attackSpeed: 1.0, range: 35 },
+    ranged: null, // Pure melee unit
   },
   archer: {
     maxHealth: 50,
-    damage: 25,
-    attackSpeed: 0.8,
-    range: 200,
     moveSpeed: 60,
-    attackType: 'ranged',
+    melee: { damage: 8, attackSpeed: 0.6, range: 35 }, // Weak melee fallback
+    ranged: { damage: 25, attackSpeed: 0.8, range: 200 },
   },
   knight: {
     maxHealth: 80,
-    damage: 20,
-    attackSpeed: 1.2,
-    range: 35,
     moveSpeed: 100,
-    attackType: 'melee',
+    melee: { damage: 20, attackSpeed: 1.2, range: 35 },
+    ranged: null, // Pure melee unit (can be upgraded later)
   },
 };
 
@@ -88,15 +91,16 @@ export function getScaledUnitSize(baseSize: number, arenaHeight: number): number
   return Math.round(baseSize * scale);
 }
 
+// Re-export team colors from centralized theme
 export const TEAM_COLORS: Record<UnitTeam, Record<UnitType, string>> = {
   player: {
-    warrior: '#4A90D9', // blue
-    archer: '#50C878', // green
-    knight: '#9B59B6', // purple
+    warrior: UNIT_TYPE_COLORS.warrior.player,
+    archer: UNIT_TYPE_COLORS.archer.player,
+    knight: UNIT_TYPE_COLORS.knight.player,
   },
   enemy: {
-    warrior: '#E74C3C', // red
-    archer: '#C0392B', // dark red
-    knight: '#922B21', // darker red
+    warrior: UNIT_TYPE_COLORS.warrior.enemy,
+    archer: UNIT_TYPE_COLORS.archer.enemy,
+    knight: UNIT_TYPE_COLORS.knight.enemy,
   },
 };

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useCallback, useState } from 'react';
 import { BattleState, Unit, Projectile } from '../../core/battle';
 import { Vector2 } from '../../core/physics/Vector2';
+import { ARENA_COLORS } from '../../core/theme/colors';
 
 // Zone heights as percentage of arena height
 const ZONE_HEIGHT_PERCENT = 0.25; // 25% of arena height
@@ -104,11 +105,11 @@ export function BattleCanvas({
     if (!ctx) return;
 
     // Clear canvas
-    ctx.fillStyle = '#1a1a2e';
+    ctx.fillStyle = ARENA_COLORS.background;
     ctx.fillRect(0, 0, width, height);
 
     // Draw grid lines for depth
-    ctx.strokeStyle = '#2a2a4e';
+    ctx.strokeStyle = ARENA_COLORS.gridLine;
     ctx.lineWidth = 1;
     for (let y = 0; y < height; y += 40) {
       ctx.beginPath();
@@ -120,20 +121,20 @@ export function BattleCanvas({
     // Draw spawn zones
     const zoneHeight = height * ZONE_HEIGHT_PERCENT;
 
-    // Enemy zone (top) - red
-    ctx.fillStyle = 'rgba(239, 68, 68, 0.25)';
+    // Enemy zone (top)
+    ctx.fillStyle = ARENA_COLORS.enemyZoneFill;
     ctx.fillRect(0, 0, width, zoneHeight);
-    ctx.strokeStyle = 'rgba(239, 68, 68, 0.6)';
+    ctx.strokeStyle = ARENA_COLORS.enemyZoneBorder;
     ctx.lineWidth = 2;
     ctx.beginPath();
     ctx.moveTo(0, zoneHeight);
     ctx.lineTo(width, zoneHeight);
     ctx.stroke();
 
-    // Allied zone (bottom) - green
-    ctx.fillStyle = 'rgba(16, 185, 129, 0.25)';
+    // Allied zone (bottom)
+    ctx.fillStyle = ARENA_COLORS.allyZoneFill;
     ctx.fillRect(0, height - zoneHeight, width, zoneHeight);
-    ctx.strokeStyle = 'rgba(16, 185, 129, 0.6)';
+    ctx.strokeStyle = ARENA_COLORS.allyZoneBorder;
     ctx.lineWidth = 2;
     ctx.beginPath();
     ctx.moveTo(0, height - zoneHeight);
@@ -180,14 +181,14 @@ function drawUnit(
 
   // Draw selection ring for player units
   if (team === 'player' && (isSelected || isBeingDragged)) {
-    ctx.strokeStyle = '#FFD700';
+    ctx.strokeStyle = ARENA_COLORS.selectionRing;
     ctx.lineWidth = 3;
     ctx.beginPath();
     ctx.arc(0, 0, size + 8, 0, Math.PI * 2);
     ctx.stroke();
 
     // Glow effect
-    ctx.shadowColor = '#FFD700';
+    ctx.shadowColor = ARENA_COLORS.selectionRing;
     ctx.shadowBlur = 15;
     ctx.stroke();
     ctx.shadowBlur = 0;
@@ -195,7 +196,7 @@ function drawUnit(
 
   // Draw move indicator for player units (subtle ring)
   if (team === 'player' && !isSelected && !isBeingDragged) {
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+    ctx.strokeStyle = ARENA_COLORS.moveIndicator;
     ctx.lineWidth = 1;
     ctx.beginPath();
     ctx.arc(0, 0, size + 5, 0, Math.PI * 2);
@@ -205,18 +206,23 @@ function drawUnit(
   // Draw health bar background
   const healthBarWidth = size * 2;
   const healthBarHeight = 4;
-  ctx.fillStyle = '#333';
+  ctx.fillStyle = ARENA_COLORS.healthBarBg;
   ctx.fillRect(-healthBarWidth / 2, -size - 12, healthBarWidth, healthBarHeight);
 
   // Draw health bar
   const healthPercent = health / stats.maxHealth;
-  ctx.fillStyle = healthPercent > 0.5 ? '#4CAF50' : healthPercent > 0.25 ? '#FFC107' : '#F44336';
+  ctx.fillStyle =
+    healthPercent > 0.5
+      ? ARENA_COLORS.healthHigh
+      : healthPercent > 0.25
+        ? ARENA_COLORS.healthMedium
+        : ARENA_COLORS.healthLow;
   ctx.fillRect(-healthBarWidth / 2, -size - 12, healthBarWidth * healthPercent, healthBarHeight);
 
   // Draw shape with optional drag opacity
   ctx.globalAlpha = isBeingDragged ? 0.8 : 1;
   ctx.fillStyle = color;
-  ctx.strokeStyle = '#fff';
+  ctx.strokeStyle = ARENA_COLORS.unitOutline;
   ctx.lineWidth = 2;
 
   switch (shape) {

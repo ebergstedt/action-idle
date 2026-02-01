@@ -1,5 +1,8 @@
 import { Vector2 } from '../physics/Vector2';
+import { getProjectileColor } from '../theme/colors';
+import { applyShuffle } from './shuffle';
 import {
+  AttackMode,
   BattleState,
   getScaledUnitSize,
   Projectile,
@@ -70,6 +73,8 @@ export class BattleEngine {
       color,
       shape: visuals.shape,
       size,
+      shuffleDirection: null,
+      shuffleTimer: 0,
     };
 
     this.state.units.push(unit);
@@ -160,17 +165,18 @@ export class BattleEngine {
         unit.target = this.findBestTarget(unit);
       }
 
-      // Check if in range to attack
+      // Determine attack mode and check range
       if (unit.target) {
         const distanceToTarget = unit.position.distanceTo(unit.target.position);
-        const effectiveRange = unit.stats.range + unit.size + unit.target.size;
-        const inRange = distanceToTarget <= effectiveRange;
+        const attackMode = this.getAttackMode(unit, distanceToTarget);
 
-        if (inRange) {
-          // Attack if cooldown ready
-          if (unit.attackCooldown <= 0) {
-            this.performAttack(unit, unit.target);
-            unit.attackCooldown = 1 / unit.stats.attackSpeed;
+        if (attackMode) {
+          const effectiveRange = attackMode.range + unit.size + unit.target.size;
+          const inRange = distanceToTarget <= effectiveRange;
+
+          if (inRange && unit.attackCooldown <= 0) {
+            this.performAttack(unit, unit.target, attackMode);
+            unit.attackCooldown = 1 / attackMode.attackSpeed;
           }
         }
       }
@@ -187,11 +193,17 @@ export class BattleEngine {
 
       if (unit.target) {
         const distanceToTarget = unit.position.distanceTo(unit.target.position);
-        const effectiveRange = unit.stats.range + unit.size + unit.target.size;
+        const attackMode = this.getAttackMode(unit, distanceToTarget);
+        const effectiveRange = attackMode
+          ? attackMode.range + unit.size + unit.target.size
+          : this.getMaxRange(unit) + unit.size + unit.target.size;
 
         if (distanceToTarget > effectiveRange) {
           // Need to move closer - but respect formations
           this.moveWithFormation(unit, unit.target.position, delta);
+        } else if (this.isInMeleeMode(unit, distanceToTarget)) {
+          // In melee range - apply combat shuffle to show activity
+          applyShuffle(unit, delta);
         }
       }
     }
@@ -230,8 +242,8 @@ export class BattleEngine {
         score += 50; // Encourage focus fire but not too much stacking
       }
 
-      // For ranged units, prefer targets they have line of sight to
-      if (unit.stats.attackType === 'ranged') {
+      // For units with ranged attacks, prefer targets they have line of sight to
+      if (unit.stats.ranged) {
         const blocked = this.isPathBlocked(unit.position, enemy.position, unit);
         if (blocked) {
           score -= 100;
@@ -375,25 +387,63 @@ export class BattleEngine {
     }
   }
 
-  private performAttack(attacker: Unit, target: Unit): void {
-    if (attacker.stats.attackType === 'melee') {
+  // Determine which attack mode to use based on distance
+  private getAttackMode(unit: Unit, distanceToTarget: number): AttackMode | null {
+    const { melee, ranged } = unit.stats;
+    const meleeRange = melee ? melee.range + unit.size * 2 : 0;
+
+    // If in melee range and has melee attack, use melee
+    if (melee && distanceToTarget <= meleeRange + 20) {
+      return melee;
+    }
+
+    // If has ranged attack and not in melee range, use ranged
+    if (ranged) {
+      return ranged;
+    }
+
+    // Fall back to melee if that's all we have
+    return melee;
+  }
+
+  // Get the maximum attack range for a unit
+  private getMaxRange(unit: Unit): number {
+    const { melee, ranged } = unit.stats;
+    if (ranged) return ranged.range;
+    if (melee) return melee.range;
+    return 0;
+  }
+
+  // Check if unit is currently in melee combat mode
+  private isInMeleeMode(unit: Unit, distanceToTarget: number): boolean {
+    const { melee } = unit.stats;
+    if (!melee) return false;
+    const meleeRange = melee.range + unit.size * 2 + 20;
+    return distanceToTarget <= meleeRange;
+  }
+
+  private performAttack(attacker: Unit, target: Unit, attackMode: AttackMode): void {
+    // Check if this is a melee or ranged attack based on range
+    const isMelee = attackMode.range <= 50; // Melee attacks have short range
+
+    if (isMelee) {
       // Direct damage
-      target.health -= attacker.stats.damage;
+      target.health -= attackMode.damage;
     } else {
       // Spawn projectile
-      this.spawnProjectile(attacker, target);
+      this.spawnProjectile(attacker, target, attackMode);
     }
   }
 
-  private spawnProjectile(attacker: Unit, target: Unit): void {
+  private spawnProjectile(attacker: Unit, target: Unit, attackMode: AttackMode): void {
     const projectile: Projectile = {
       id: `proj_${this.nextProjectileId++}`,
       position: attacker.position.clone(),
       target: target.position.clone(),
       speed: PROJECTILE_SPEED,
-      damage: attacker.stats.damage,
+      damage: attackMode.damage,
       sourceTeam: attacker.team,
-      color: attacker.team === 'player' ? '#90EE90' : '#FF6B6B',
+      color: getProjectileColor(attacker.team),
     };
 
     this.state.projectiles.push(projectile);

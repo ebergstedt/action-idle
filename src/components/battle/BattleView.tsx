@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useBattle } from '../../hooks/useBattle';
 import { BattleCanvas } from './BattleCanvas';
 import { Unit } from '../../core/battle';
+import { UNIT_TYPE_COLORS, DARK_THEME, TEAM_COLORS } from '../../core/theme/colors';
 
 export function BattleView() {
   const { state, selectedUnitId, start, stop, reset, spawnWave, moveUnit, selectUnit } =
@@ -95,9 +96,9 @@ export function BattleView() {
           onSelectUnit={selectUnit}
         />
         <div className="flex gap-4 text-sm flex-shrink-0">
-          <span className="text-blue-400">Allies: {playerCount}</span>
-          <span className="text-gray-500">|</span>
-          <span className="text-red-400">Enemies: {enemyCount}</span>
+          <span style={{ color: TEAM_COLORS.player.primary }}>Allies: {playerCount}</span>
+          <span style={{ color: DARK_THEME.textTertiary }}>|</span>
+          <span style={{ color: TEAM_COLORS.enemy.primary }}>Enemies: {enemyCount}</span>
         </div>
       </div>
 
@@ -164,26 +165,52 @@ function UnitInfoPanel({ unit, onDeselect }: UnitInfoPanelProps) {
 
       {/* Stats */}
       <div className="space-y-2 text-sm">
-        <div className="flex justify-between">
-          <span className="text-gray-500">Damage</span>
-          <span className="text-gray-200">{unit.stats.damage}</span>
-        </div>
-        <div className="flex justify-between">
-          <span className="text-gray-500">Attack Speed</span>
-          <span className="text-gray-200">{unit.stats.attackSpeed}/s</span>
-        </div>
-        <div className="flex justify-between">
-          <span className="text-gray-500">DPS</span>
-          <span className="text-yellow-400">
-            {(unit.stats.damage * unit.stats.attackSpeed).toFixed(1)}
-          </span>
-        </div>
-        <div className="flex justify-between">
-          <span className="text-gray-500">Range</span>
-          <span className="text-gray-200">
-            {unit.stats.attackType === 'melee' ? 'Melee' : `${unit.stats.range}px`}
-          </span>
-        </div>
+        {/* Melee Attack */}
+        {unit.stats.melee && (
+          <div className="border-b border-gray-700 pb-2 mb-2">
+            <div className="text-xs text-gray-400 mb-1">Melee Attack</div>
+            <div className="flex justify-between">
+              <span className="text-gray-500">Damage</span>
+              <span className="text-gray-200">{unit.stats.melee.damage}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-500">Speed</span>
+              <span className="text-gray-200">{unit.stats.melee.attackSpeed}/s</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-500">DPS</span>
+              <span style={{ color: DARK_THEME.accentGold }}>
+                {(unit.stats.melee.damage * unit.stats.melee.attackSpeed).toFixed(1)}
+              </span>
+            </div>
+          </div>
+        )}
+
+        {/* Ranged Attack */}
+        {unit.stats.ranged && (
+          <div className="border-b border-gray-700 pb-2 mb-2">
+            <div className="text-xs text-gray-400 mb-1">Ranged Attack</div>
+            <div className="flex justify-between">
+              <span className="text-gray-500">Damage</span>
+              <span className="text-gray-200">{unit.stats.ranged.damage}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-500">Speed</span>
+              <span className="text-gray-200">{unit.stats.ranged.attackSpeed}/s</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-500">Range</span>
+              <span className="text-gray-200">{unit.stats.ranged.range}px</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-500">DPS</span>
+              <span style={{ color: DARK_THEME.accentGold }}>
+                {(unit.stats.ranged.damage * unit.stats.ranged.attackSpeed).toFixed(1)}
+              </span>
+            </div>
+          </div>
+        )}
+
         <div className="flex justify-between">
           <span className="text-gray-500">Move Speed</span>
           <span className="text-gray-200">{unit.stats.moveSpeed}</span>
@@ -240,22 +267,31 @@ function ControlsPanel({ isRunning, hasStarted, onStart, onStop, onReset }: Cont
         <h4 className="text-sm font-semibold text-gray-400 mb-2">Unit Types</h4>
         <div className="space-y-2 text-xs text-gray-500">
           <div className="flex items-center gap-2">
-            <span className="inline-block w-3 h-3 bg-blue-500"></span>
+            <span
+              className="inline-block w-3 h-3"
+              style={{ backgroundColor: UNIT_TYPE_COLORS.warrior.player }}
+            />
             <span>Warrior - Tanky melee</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="inline-block w-0 h-0 border-l-[6px] border-r-[6px] border-b-[10px] border-l-transparent border-r-transparent border-b-green-500"></span>
+            <span
+              className="inline-block w-0 h-0 border-l-[6px] border-r-[6px] border-b-[10px] border-l-transparent border-r-transparent"
+              style={{ borderBottomColor: UNIT_TYPE_COLORS.archer.player }}
+            />
             <span>Archer - Ranged DPS</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="inline-block w-3 h-3 bg-purple-500 rounded-full"></span>
+            <span
+              className="inline-block w-3 h-3 rounded-full"
+              style={{ backgroundColor: UNIT_TYPE_COLORS.knight.player }}
+            />
             <span>Knight - Fast melee</span>
           </div>
         </div>
       </div>
 
       {!hasStarted && (
-        <div className="text-xs text-yellow-600 mt-2">
+        <div className="text-xs mt-2" style={{ color: DARK_THEME.accentGoldDark }}>
           Tip: Drag allied units to reposition before starting
         </div>
       )}
