@@ -65,6 +65,7 @@ export const UI_COLORS = {
   inkBrown: '#5C4033',
   inkBlack: '#2C1810',
   inkFaded: '#8B7355',
+  black: '#000000',
 
   // Accents
   goldPrimary: '#FFD700',
@@ -148,20 +149,20 @@ export interface UnitTypeColors {
 }
 
 export const UNIT_TYPE_COLORS: Record<UnitType, UnitTypeColors> = {
-  // Warriors - core infantry, use primary team colors
+  // Warriors - core infantry
   warrior: {
-    player: FACTION_COLORS.england.primary, // England Red #C80000
-    enemy: FACTION_COLORS.france.primary, // France Blue #0000A0
-  },
-  // Archers - ranged support, use secondary colors for variety
-  archer: {
     player: FACTION_COLORS.milan.primary, // Milan Green #006400
-    enemy: FACTION_COLORS.turks.primary, // Turks Light Green #90EE90
+    enemy: FACTION_COLORS.england.primary, // England Red #C80000
   },
-  // Knights - elite cavalry, use purple/gold tones
+  // Archers - ranged support
+  archer: {
+    player: FACTION_COLORS.france.primary, // France Blue #0000A0
+    enemy: FACTION_COLORS.denmark.primary, // Denmark Dark Red #820000
+  },
+  // Knights - elite cavalry
   knight: {
     player: FACTION_COLORS.byzantium.primary, // Byzantium Purple #4B0082
-    enemy: FACTION_COLORS.mongols.primary, // Mongols Gold #B49632
+    enemy: FACTION_COLORS.hungary.primary, // Hungary Light Red #FF6464
   },
 } as const;
 

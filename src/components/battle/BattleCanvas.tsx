@@ -42,7 +42,8 @@ export function BattleCanvas({
         if (playerOnly && unit.team !== 'player') continue;
 
         const dist = pos.distanceTo(unit.position);
-        if (dist <= unit.size + 5) {
+        if (dist <= unit.size + 12) {
+          // Larger hitbox for easier clicking
           return unit;
         }
       }
@@ -54,12 +55,16 @@ export function BattleCanvas({
   const handleMouseDown = useCallback(
     (e: React.MouseEvent<HTMLCanvasElement>) => {
       const pos = getMousePos(e);
-      const unit = findUnitAtPosition(pos, true); // Only player units
+      // Check for any unit (for selection/viewing stats)
+      const anyUnit = findUnitAtPosition(pos, false);
 
-      if (unit) {
-        setIsDragging(true);
-        setDraggedUnitId(unit.id);
-        onSelectUnit?.(unit.id);
+      if (anyUnit) {
+        onSelectUnit?.(anyUnit.id);
+        // Only allow dragging player units
+        if (anyUnit.team === 'player') {
+          setIsDragging(true);
+          setDraggedUnitId(anyUnit.id);
+        }
       } else {
         onSelectUnit?.(null);
       }
@@ -146,11 +151,16 @@ export function BattleCanvas({
       drawProjectile(ctx, proj);
     }
 
-    // Draw units
+    // Draw units (bodies only first)
     for (const unit of state.units) {
       const isSelected = unit.id === selectedUnitId;
       const isBeingDragged = unit.id === draggedUnitId;
-      drawUnit(ctx, unit, isSelected, isBeingDragged);
+      drawUnitBody(ctx, unit, isSelected, isBeingDragged);
+    }
+
+    // Draw health bars on top of all units (separate pass so they're never obscured)
+    for (const unit of state.units) {
+      drawHealthBar(ctx, unit);
     }
   }, [state, width, height, selectedUnitId, draggedUnitId]);
 
@@ -168,19 +178,19 @@ export function BattleCanvas({
   );
 }
 
-function drawUnit(
+function drawUnitBody(
   ctx: CanvasRenderingContext2D,
   unit: Unit,
   isSelected: boolean,
   isBeingDragged: boolean
 ): void {
-  const { position, color, shape, size, health, stats, team } = unit;
+  const { position, color, shape, size, team } = unit;
 
   ctx.save();
   ctx.translate(position.x, position.y);
 
-  // Draw selection ring for player units
-  if (team === 'player' && (isSelected || isBeingDragged)) {
+  // Draw selection ring for any selected unit
+  if (isSelected || isBeingDragged) {
     ctx.strokeStyle = ARENA_COLORS.selectionRing;
     ctx.lineWidth = 3;
     ctx.beginPath();
@@ -203,12 +213,50 @@ function drawUnit(
     ctx.stroke();
   }
 
-  // Draw health bar with black outline - positioned well above unit
+  // Draw shape with optional drag opacity
+  ctx.globalAlpha = isBeingDragged ? 0.8 : 1;
+  ctx.fillStyle = color;
+  ctx.strokeStyle = '#000000';
+  ctx.lineWidth = 3;
+
+  switch (shape) {
+    case 'circle':
+      ctx.beginPath();
+      ctx.arc(0, 0, size, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+      break;
+
+    case 'square':
+      ctx.fillRect(-size, -size, size * 2, size * 2);
+      ctx.strokeRect(-size, -size, size * 2, size * 2);
+      break;
+
+    case 'triangle':
+      ctx.beginPath();
+      ctx.moveTo(0, -size);
+      ctx.lineTo(-size, size);
+      ctx.lineTo(size, size);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+      break;
+  }
+
+  ctx.restore();
+}
+
+function drawHealthBar(ctx: CanvasRenderingContext2D, unit: Unit): void {
+  const { position, size, health, stats } = unit;
+
+  ctx.save();
+  ctx.translate(position.x, position.y);
+
   const healthBarWidth = size * 2.5;
   const healthBarHeight = 6;
-  const healthBarY = -size - 20; // Extra spacing to prevent overlap
+  const healthBarY = -size - 20;
 
-  // Black outline (padding)
+  // Black background/outline
   ctx.fillStyle = ARENA_COLORS.healthBarBg;
   ctx.fillRect(-healthBarWidth / 2 - 1, healthBarY - 1, healthBarWidth + 2, healthBarHeight + 2);
 
@@ -221,61 +269,6 @@ function drawUnit(
         ? ARENA_COLORS.healthMedium
         : ARENA_COLORS.healthLow;
   ctx.fillRect(-healthBarWidth / 2, healthBarY, healthBarWidth * healthPercent, healthBarHeight);
-
-  // Draw shape with optional drag opacity
-  ctx.globalAlpha = isBeingDragged ? 0.8 : 1;
-  ctx.fillStyle = color;
-
-  // Draw unit with double outline (black outer, white inner) for visibility on any background
-  switch (shape) {
-    case 'circle':
-      ctx.beginPath();
-      ctx.arc(0, 0, size, 0, Math.PI * 2);
-      ctx.fill();
-      // Black outer outline
-      ctx.strokeStyle = '#000000';
-      ctx.lineWidth = 2;
-      ctx.stroke();
-      // White inner outline
-      ctx.strokeStyle = '#FFFFFF';
-      ctx.lineWidth = 1;
-      ctx.stroke();
-      break;
-
-    case 'square':
-      ctx.fillRect(-size, -size, size * 2, size * 2);
-      // Black outer outline
-      ctx.strokeStyle = '#000000';
-      ctx.lineWidth = 2;
-      ctx.strokeRect(-size, -size, size * 2, size * 2);
-      // White inner outline
-      ctx.strokeStyle = '#FFFFFF';
-      ctx.lineWidth = 1;
-      ctx.strokeRect(-size, -size, size * 2, size * 2);
-      break;
-
-    case 'triangle':
-      ctx.beginPath();
-      ctx.moveTo(0, -size);
-      ctx.lineTo(-size, size);
-      ctx.lineTo(size, size);
-      ctx.closePath();
-      ctx.fill();
-      // Black outer outline
-      ctx.strokeStyle = '#000000';
-      ctx.lineWidth = 2;
-      ctx.stroke();
-      // White inner outline
-      ctx.beginPath();
-      ctx.moveTo(0, -size);
-      ctx.lineTo(-size, size);
-      ctx.lineTo(size, size);
-      ctx.closePath();
-      ctx.strokeStyle = '#FFFFFF';
-      ctx.lineWidth = 1;
-      ctx.stroke();
-      break;
-  }
 
   ctx.restore();
 }

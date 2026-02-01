@@ -31,7 +31,7 @@ export function UpgradeButton({ upgrade, level, cost, canAfford, onPurchase }: U
             {level > 0 && <span className="ml-2 text-sm text-gray-400">Lv. {level}</span>}
           </div>
           <div className="text-sm text-gray-400 mt-1">{upgrade.description}</div>
-          <div className="text-xs mt-2" style={{ color: DARK_THEME.success }}>
+          <div className="text-sm mt-2" style={{ color: DARK_THEME.success }}>
             +{upgrade.baseProduction}/sec each
           </div>
         </div>

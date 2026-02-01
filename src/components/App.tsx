@@ -17,7 +17,7 @@ function App() {
           backgroundColor: UI_COLORS.parchmentDark,
         }}
       >
-        <h1 className="text-2xl font-bold" style={{ color: UI_COLORS.inkBrown }}>
+        <h1 className="text-2xl font-bold" style={{ color: UI_COLORS.black }}>
           Total Idle
         </h1>
       </header>

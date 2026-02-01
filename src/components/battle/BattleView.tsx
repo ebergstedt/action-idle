@@ -4,22 +4,22 @@ import { BattleCanvas } from './BattleCanvas';
 import { Unit } from '../../core/battle';
 import { UNIT_TYPE_COLORS, UI_COLORS, ARENA_COLORS } from '../../core/theme/colors';
 
-// Parchment theme styles - dark text on light background for readability
+// Parchment theme styles - all text black for readability
 const styles = {
-  text: { color: UI_COLORS.inkBlack }, // Primary text - black for readability
-  textFaded: { color: UI_COLORS.inkBrown }, // Secondary text - brown
-  textDark: { color: UI_COLORS.inkBlack }, // Emphasis text - black
+  text: { color: UI_COLORS.black },
+  textFaded: { color: UI_COLORS.black },
+  textDark: { color: UI_COLORS.black },
   border: { borderColor: UI_COLORS.parchmentDark },
   panelBg: { backgroundColor: UI_COLORS.parchmentShadow },
   buttonPrimary: {
     backgroundColor: UI_COLORS.goldPrimary,
-    color: UI_COLORS.inkBlack,
+    color: UI_COLORS.black,
   },
   buttonSecondary: {
     backgroundColor: UI_COLORS.parchmentDark,
-    color: UI_COLORS.inkBlack,
+    color: UI_COLORS.black,
   },
-  healthBarBg: { backgroundColor: UI_COLORS.inkBrown },
+  healthBarBg: { backgroundColor: UI_COLORS.black },
 };
 
 export function BattleView() {
@@ -159,7 +159,7 @@ function UnitInfoPanel({ unit, onDeselect }: UnitInfoPanelProps) {
 
       <div className="text-sm">
         <span
-          className="px-2 py-0.5 rounded text-xs"
+          className="px-2 py-0.5 rounded text-sm"
           style={{
             backgroundColor:
               unit.team === 'player' ? ARENA_COLORS.healthHigh : ARENA_COLORS.healthLow,
@@ -172,7 +172,7 @@ function UnitInfoPanel({ unit, onDeselect }: UnitInfoPanelProps) {
 
       {/* Health bar */}
       <div>
-        <div className="flex justify-between text-xs mb-1" style={styles.textFaded}>
+        <div className="flex justify-between text-sm mb-1" style={styles.textFaded}>
           <span>Health</span>
           <span>
             {Math.round(unit.health)} / {unit.stats.maxHealth}
@@ -202,7 +202,7 @@ function UnitInfoPanel({ unit, onDeselect }: UnitInfoPanelProps) {
             className="pb-2 mb-2"
             style={{ borderBottom: `1px solid ${UI_COLORS.parchmentDark}` }}
           >
-            <div className="text-xs mb-1" style={styles.textFaded}>
+            <div className="text-sm mb-1" style={styles.textFaded}>
               Melee Attack
             </div>
             <div className="flex justify-between">
@@ -228,7 +228,7 @@ function UnitInfoPanel({ unit, onDeselect }: UnitInfoPanelProps) {
             className="pb-2 mb-2"
             style={{ borderBottom: `1px solid ${UI_COLORS.parchmentDark}` }}
           >
-            <div className="text-xs mb-1" style={styles.textFaded}>
+            <div className="text-sm mb-1" style={styles.textFaded}>
               Ranged Attack
             </div>
             <div className="flex justify-between">
@@ -260,7 +260,7 @@ function UnitInfoPanel({ unit, onDeselect }: UnitInfoPanelProps) {
 
       {/* Position */}
       <div
-        className="text-xs pt-2"
+        className="text-sm pt-2"
         style={{ ...styles.textFaded, borderTop: `1px solid ${UI_COLORS.parchmentDark}` }}
       >
         Position: ({Math.round(unit.position.x)}, {Math.round(unit.position.y)})
@@ -322,7 +322,7 @@ function ControlsPanel({ isRunning, hasStarted, onStart, onStop, onReset }: Cont
         <h4 className="text-sm font-semibold mb-2" style={styles.textFaded}>
           Unit Types
         </h4>
-        <div className="space-y-2 text-xs" style={styles.text}>
+        <div className="space-y-2 text-sm" style={styles.text}>
           <div className="flex items-center gap-2">
             <span
               className="inline-block w-3 h-3"
@@ -348,7 +348,7 @@ function ControlsPanel({ isRunning, hasStarted, onStart, onStop, onReset }: Cont
       </div>
 
       {!hasStarted && (
-        <div className="text-xs mt-2" style={{ color: UI_COLORS.goldDark }}>
+        <div className="text-sm mt-2" style={{ color: UI_COLORS.black }}>
           Tip: Drag allied units to reposition before starting
         </div>
       )}

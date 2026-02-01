@@ -148,6 +148,8 @@ describe('MyFunction', () => {
 3. **Decimal Everywhere** - Use `Decimal` from break_infinity.js for all game numbers
 4. **JSON-Driven Content** - Upgrade stats stay in JSON files, not code
 5. **Interface-Based Persistence** - `SaveManager` depends on `IPersistenceAdapter`
+6. **Minimum Font Size** - Never use `text-xs` in Tailwind. Minimum is `text-sm` for readability
+7. **Use Theme Colors** - Never use hardcoded hex colors. Always reference `UI_COLORS` or other theme constants from `src/core/theme/colors.ts`
 
 ## Linting & Formatting
 
