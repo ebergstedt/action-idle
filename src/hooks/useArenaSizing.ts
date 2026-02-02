@@ -44,6 +44,7 @@ export interface UseArenaSizingReturn {
 export function useArenaSizing(): UseArenaSizingReturn {
   const containerRef = useRef<HTMLDivElement>(null);
   const sizeStableTimeoutRef = useRef<number | null>(null);
+  const initialTimeoutRef = useRef<number | null>(null);
 
   const [arenaSize, setArenaSize] = useState<ArenaSize>({
     width: DEFAULT_ARENA_WIDTH,
@@ -83,12 +84,15 @@ export function useArenaSizing(): UseArenaSizingReturn {
     }
 
     // Initial size calculation
-    setTimeout(updateSize, 0);
+    initialTimeoutRef.current = window.setTimeout(updateSize, 0);
 
     return () => {
       observer.disconnect();
       if (sizeStableTimeoutRef.current) {
         clearTimeout(sizeStableTimeoutRef.current);
+      }
+      if (initialTimeoutRef.current) {
+        clearTimeout(initialTimeoutRef.current);
       }
     };
   }, []);

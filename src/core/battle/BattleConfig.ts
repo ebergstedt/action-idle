@@ -60,6 +60,13 @@ export const DEFAULT_ARENA_MARGIN = 10;
  */
 export const ZONE_HEIGHT_PERCENT = 0.375;
 
+/**
+ * Divisor for zone midway calculation.
+ * Used to determine when a unit is "deep" in the enemy zone (past midway).
+ * 2 = midway point (zoneHeight / 2).
+ */
+export const ZONE_MIDWAY_DIVISOR = 2;
+
 // =============================================================================
 // FRAME TIMING
 // =============================================================================

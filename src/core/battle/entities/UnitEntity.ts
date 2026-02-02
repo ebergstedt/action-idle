@@ -35,6 +35,7 @@ import {
   UNIT_SPACING,
   WALK_ANIMATION_WRAP_TIME,
   ZONE_HEIGHT_PERCENT,
+  ZONE_MIDWAY_DIVISOR,
   scaleValue,
 } from '../BattleConfig';
 
@@ -572,10 +573,10 @@ export class UnitEntity extends BaseEntity {
 
     if (this.team === 'player') {
       // Player advances upward - deep when past midway of enemy zone
-      return this.position.y < zoneHeight / 2;
+      return this.position.y < zoneHeight / ZONE_MIDWAY_DIVISOR;
     } else {
       // Enemy advances downward - deep when past midway of player zone
-      return this.position.y > bounds.height - zoneHeight / 2;
+      return this.position.y > bounds.height - zoneHeight / ZONE_MIDWAY_DIVISOR;
     }
   }
 

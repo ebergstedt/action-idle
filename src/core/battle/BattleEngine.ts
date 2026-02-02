@@ -28,6 +28,7 @@ import {
   UNIT_SPACING,
   ZONE_CLAMP_MARGIN,
   ZONE_HEIGHT_PERCENT,
+  ZONE_MIDWAY_DIVISOR,
   scaleValue,
   MIN_WAVE,
   MAX_WAVE,
@@ -425,12 +426,12 @@ export class BattleEngine {
     const rightX = width - castleMargin;
 
     // Player castles (bottom zone) - vertically centered in zone
-    const playerY = height - zoneHeight / 2;
+    const playerY = height - zoneHeight / ZONE_MIDWAY_DIVISOR;
     this.spawnCastle('player', new Vector2(leftX, playerY), height);
     this.spawnCastle('player', new Vector2(rightX, playerY), height);
 
     // Enemy castles (top zone) - vertically centered in zone
-    const enemyY = zoneHeight / 2;
+    const enemyY = zoneHeight / ZONE_MIDWAY_DIVISOR;
     this.spawnCastle('enemy', new Vector2(leftX, enemyY), height);
     this.spawnCastle('enemy', new Vector2(rightX, enemyY), height);
   }
