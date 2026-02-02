@@ -29,6 +29,7 @@ import {
   WorldEventMap,
   EventListener,
   KilledEvent,
+  EntityEventMap,
 } from '../IEntity';
 import { IEntityWorld } from './BaseEntity';
 import { IBattleWorld } from './IBattleWorld';
@@ -58,6 +59,8 @@ export class BattleWorld implements IEntityWorld, IBattleWorld, IWorldEventEmitt
   private worldEvents = new WorldEventEmitter();
   /** Track initial castle counts per team to detect when castles are destroyed */
   private initialCastleCounts = new Map<UnitTeam, number>();
+  /** Store event listeners for proper cleanup (prevents memory leaks) */
+  private entityListeners = new Map<string, EventListener<EntityEventMap['killed']>>();
 
   // === Entity Management ===
 
@@ -73,9 +76,12 @@ export class BattleWorld implements IEntityWorld, IBattleWorld, IWorldEventEmitt
     this.worldEvents.emitWorld({ type: 'entity_added', entity: unit });
 
     // Subscribe to unit death to clear linked modifiers (melee engagement debuffs)
-    unit.on('killed', (event: KilledEvent) => {
+    // Store listener reference for proper cleanup (prevents memory leaks)
+    const killedListener: EventListener<KilledEvent> = (event: KilledEvent) => {
       this.clearModifiersLinkedToUnit(event.entity.id);
-    });
+    };
+    this.entityListeners.set(unit.id, killedListener);
+    unit.on('killed', killedListener);
   }
 
   /**
@@ -105,9 +111,12 @@ export class BattleWorld implements IEntityWorld, IBattleWorld, IWorldEventEmitt
     this.initialCastleCounts.set(castle.team, currentCount + 1);
 
     // Subscribe to castle death to spawn shockwave
-    castle.on('killed', (event: KilledEvent) => {
+    // Store listener reference for proper cleanup (prevents memory leaks)
+    const killedListener: EventListener<KilledEvent> = (event: KilledEvent) => {
       this.spawnShockwave(event.entity.position.clone(), castle.team);
-    });
+    };
+    this.entityListeners.set(castle.id, killedListener);
+    castle.on('killed', killedListener);
   }
 
   /**
@@ -181,12 +190,25 @@ export class BattleWorld implements IEntityWorld, IBattleWorld, IWorldEventEmitt
   }
 
   /**
+   * Unsubscribe from an entity's events and clean up listener reference.
+   * Prevents memory leaks from retained event listeners.
+   */
+  private cleanupEntityListener(entity: UnitEntity | CastleEntity): void {
+    const listener = this.entityListeners.get(entity.id);
+    if (listener) {
+      entity.off('killed', listener);
+      this.entityListeners.delete(entity.id);
+    }
+  }
+
+  /**
    * Remove a unit from the world.
    * Emits 'entity_removed' world event.
    */
   removeUnit(unit: UnitEntity): void {
     const index = this.units.indexOf(unit);
     if (index !== -1) {
+      this.cleanupEntityListener(unit);
       this.worldEvents.emitWorld({ type: 'entity_removed', entity: unit });
       unit.destroy();
       unit.setWorld(null);
@@ -200,6 +222,7 @@ export class BattleWorld implements IEntityWorld, IBattleWorld, IWorldEventEmitt
    */
   clear(): void {
     for (const unit of this.units) {
+      this.cleanupEntityListener(unit);
       this.worldEvents.emitWorld({ type: 'entity_removed', entity: unit });
       unit.destroy();
       unit.setWorld(null);
@@ -210,6 +233,7 @@ export class BattleWorld implements IEntityWorld, IBattleWorld, IWorldEventEmitt
       proj.setWorld(null);
     }
     for (const castle of this.castles) {
+      this.cleanupEntityListener(castle);
       this.worldEvents.emitWorld({ type: 'entity_removed', entity: castle });
       castle.destroy();
       castle.setWorld(null);
@@ -233,6 +257,7 @@ export class BattleWorld implements IEntityWorld, IBattleWorld, IWorldEventEmitt
     this.nextDamageNumberId = 1;
     this.nextModifierId = 1;
     this.initialCastleCounts.clear();
+    this.entityListeners.clear();
   }
 
   // === Main Update Loop ===
@@ -310,6 +335,8 @@ export class BattleWorld implements IEntityWorld, IBattleWorld, IWorldEventEmitt
     // Remove destroyed units
     this.units = this.units.filter((unit) => {
       if (unit.isDestroyed()) {
+        // Clean up our listener before destroying entity
+        this.cleanupEntityListener(unit);
         // destroy() emits 'destroyed' event and clears entity's listeners
         unit.destroy();
         // Then emit world event so subscribers see entity after its final event
@@ -334,6 +361,8 @@ export class BattleWorld implements IEntityWorld, IBattleWorld, IWorldEventEmitt
     // Remove destroyed castles
     this.castles = this.castles.filter((castle) => {
       if (castle.isDestroyed()) {
+        // Clean up our listener before destroying entity
+        this.cleanupEntityListener(castle);
         castle.destroy();
         this.worldEvents.emitWorld({ type: 'entity_removed', entity: castle });
         castle.setWorld(null);

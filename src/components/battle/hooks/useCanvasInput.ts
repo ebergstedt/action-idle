@@ -50,9 +50,9 @@ export interface CanvasConfig {
   zoomState?: ZoomState;
 }
 
-/** Current selection state */
-export interface SelectionState {
-  units: ISelectable[];
+/** Current selection state - generic to support different unit types */
+export interface SelectionState<T extends ISelectable = ISelectable> {
+  units: T[];
   selectedUnitIds: string[];
 }
 
@@ -64,7 +64,8 @@ export interface CanvasInputCallbacks {
   onSelectUnits?: (unitIds: string[]) => void;
 }
 
-export interface UseCanvasInputProps extends CanvasConfig, SelectionState, CanvasInputCallbacks {}
+export interface UseCanvasInputProps<T extends ISelectable = ISelectable>
+  extends CanvasConfig, SelectionState<T>, CanvasInputCallbacks {}
 
 export interface UseCanvasInputResult {
   isDragging: boolean;
@@ -81,7 +82,7 @@ export interface UseCanvasInputResult {
 /**
  * Hook for handling canvas input (selection, drag, box-select).
  */
-export function useCanvasInput({
+export function useCanvasInput<T extends ISelectable = ISelectable>({
   canvasRef,
   units,
   selectedUnitIds,
@@ -92,7 +93,7 @@ export function useCanvasInput({
   onUnitsMove,
   onSelectUnit,
   onSelectUnits,
-}: UseCanvasInputProps): UseCanvasInputResult {
+}: UseCanvasInputProps<T>): UseCanvasInputResult {
   // ─────────────────────────────────────────────────────────────────────────────
   // State
   // ─────────────────────────────────────────────────────────────────────────────

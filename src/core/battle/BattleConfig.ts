@@ -346,6 +346,13 @@ export const BASE_CASTLE_HORIZONTAL_MARGIN = 300;
 // =============================================================================
 
 /**
+ * Minimum collision size as fraction of base unit size.
+ * Prevents collision size from shrinking too much due to modifiers.
+ * 0.1 = collision size is at least 10% of visual size.
+ */
+export const MIN_COLLISION_SIZE_MULTIPLIER = 0.1;
+
+/**
  * Push multiplier when allied units overlap.
  * Higher value = stronger push.
  */

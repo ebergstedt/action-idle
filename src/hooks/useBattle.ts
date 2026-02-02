@@ -94,8 +94,26 @@ function createUnitRegistry(): UnitRegistry {
 }
 
 const EMPTY_STATS: BattleStatistics = {
-  player: { kills: 0, deaths: 0, damageDealt: 0, damageTaken: 0, unitsSpawned: 0 },
-  enemy: { kills: 0, deaths: 0, damageDealt: 0, damageTaken: 0, unitsSpawned: 0 },
+  player: {
+    kills: 0,
+    deaths: 0,
+    damageDealt: 0,
+    damageTaken: 0,
+    unitsSpawned: 0,
+    attacksPerformed: 0,
+    meleeAttacks: 0,
+    rangedAttacks: 0,
+  },
+  enemy: {
+    kills: 0,
+    deaths: 0,
+    damageDealt: 0,
+    damageTaken: 0,
+    unitsSpawned: 0,
+    attacksPerformed: 0,
+    meleeAttacks: 0,
+    rangedAttacks: 0,
+  },
   battleDuration: 0,
   totalKills: 0,
 };

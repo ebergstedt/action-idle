@@ -48,6 +48,29 @@ export interface IDamageable {
 }
 
 /**
+ * Extended interface for damageable entities that can be melee targets.
+ * Includes knockback and modifier support for melee combat.
+ *
+ * Godot equivalent: Interface for units (not castles/structures).
+ */
+export interface IMeleeTarget extends IDamageable {
+  /**
+   * Apply a knockback offset (visual effect from melee hit).
+   * @param direction - Direction of knockback
+   * @param distance - Distance to knock back
+   */
+  applyKnockback(direction: Vector2, distance: number): void;
+
+  /**
+   * Queue a modifier to be applied after a delay.
+   * Used for delayed effects like defender's melee engagement debuff.
+   * @param modifier - The modifier to apply
+   * @param delay - Delay in seconds before applying
+   */
+  queueModifier(modifier: unknown, delay: number): void;
+}
+
+/**
  * Lifecycle interface for game entities.
  * Implement this for entities that need their own update logic.
  */

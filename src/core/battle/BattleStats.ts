@@ -9,6 +9,7 @@
  */
 
 import {
+  AttackedEvent,
   DamagedEvent,
   KilledEvent,
   EntityAddedEvent,
@@ -28,6 +29,12 @@ export interface TeamStats {
   damageDealt: number;
   damageTaken: number;
   unitsSpawned: number;
+  /** Total number of attacks performed (melee + ranged) */
+  attacksPerformed: number;
+  /** Number of melee attacks performed */
+  meleeAttacks: number;
+  /** Number of ranged attacks performed */
+  rangedAttacks: number;
 }
 
 /**
@@ -50,6 +57,9 @@ function createEmptyTeamStats(): TeamStats {
     damageDealt: 0,
     damageTaken: 0,
     unitsSpawned: 0,
+    attacksPerformed: 0,
+    meleeAttacks: 0,
+    rangedAttacks: 0,
   };
 }
 
@@ -71,6 +81,7 @@ export class BattleStats {
   private world: BattleWorld | null = null;
 
   // Typed event listeners (bound for proper unsubscription)
+  private onAttackedListener: EventListener<AttackedEvent>;
   private onDamagedListener: EventListener<DamagedEvent>;
   private onKilledListener: EventListener<KilledEvent>;
 
@@ -87,6 +98,7 @@ export class BattleStats {
     };
 
     // Bind entity event listeners
+    this.onAttackedListener = this.handleAttacked.bind(this);
     this.onDamagedListener = this.handleDamaged.bind(this);
     this.onKilledListener = this.handleKilled.bind(this);
 
@@ -137,6 +149,7 @@ export class BattleStats {
   private subscribeToUnit(unit: UnitEntity): void {
     if (this.subscribedUnits.has(unit.id)) return;
 
+    unit.on('attacked', this.onAttackedListener);
     unit.on('damaged', this.onDamagedListener);
     unit.on('killed', this.onKilledListener);
 
@@ -152,6 +165,7 @@ export class BattleStats {
   private unsubscribeFromUnit(unit: UnitEntity): void {
     if (!this.subscribedUnits.has(unit.id)) return;
 
+    unit.off('attacked', this.onAttackedListener);
     unit.off('damaged', this.onDamagedListener);
     unit.off('killed', this.onKilledListener);
 
@@ -202,6 +216,21 @@ export class BattleStats {
   }
 
   // === Entity Event Handlers ===
+
+  private handleAttacked(event: AttackedEvent): void {
+    const attacker = event.entity as UnitEntity;
+    const teamStats = this.getTeamStats(attacker.team);
+
+    // Track total attacks
+    teamStats.attacksPerformed++;
+
+    // Track attack type
+    if (event.attackMode === 'melee') {
+      teamStats.meleeAttacks++;
+    } else {
+      teamStats.rangedAttacks++;
+    }
+  }
 
   private handleDamaged(event: DamagedEvent): void {
     const damaged = event.entity as UnitEntity;

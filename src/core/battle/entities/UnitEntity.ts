@@ -25,6 +25,7 @@ import {
   MELEE_OFFSET_DECAY_RATE,
   MELEE_RANGE_BUFFER,
   MELEE_SIZE_MULTIPLIER,
+  MIN_COLLISION_SIZE_MULTIPLIER,
   MIN_MOVE_DISTANCE,
   MIN_NORMALIZE_THRESHOLD,
   MIN_VISUAL_OFFSET_THRESHOLD,
@@ -46,7 +47,7 @@ import {
   createDefenderDebuff,
 } from '../modifiers/MeleeEngagementDebuff';
 import { clampToArenaInPlace } from '../BoundsEnforcer';
-import { IDamageable } from '../IEntity';
+import { IDamageable, IMeleeTarget } from '../IEntity';
 import { applyShuffle } from '../shuffle';
 import { AttackMode, UnitRenderData, UnitStats, UnitTeam, UnitType } from '../types';
 import { BaseEntity } from './BaseEntity';
@@ -296,7 +297,7 @@ export class UnitEntity extends BaseEntity {
     for (const mod of this.data.activeModifiers) {
       mult *= 1 + mod.collisionSizeMod;
     }
-    return Math.max(this.size * 0.1, this.size * mult); // Minimum 10% of base size
+    return Math.max(this.size * MIN_COLLISION_SIZE_MULTIPLIER, this.size * mult);
   }
 
   /**
@@ -803,6 +804,14 @@ export class UnitEntity extends BaseEntity {
   }
 
   /**
+   * Type guard to check if a damageable can receive melee combat effects.
+   * IMeleeTarget entities support knockback and modifier queueing.
+   */
+  private isMeleeTarget(target: IDamageable): target is IMeleeTarget {
+    return 'applyKnockback' in target && 'queueModifier' in target;
+  }
+
+  /**
    * March toward enemy territory.
    * - Before any castle destroyed: march straight forward (team-based direction)
    * - After a castle destroyed: march toward closest remaining castle
@@ -947,23 +956,21 @@ export class UnitEntity extends BaseEntity {
       const lungeDistance = scaleValue(BASE_MELEE_LUNGE_DISTANCE, arenaHeight);
       this.visualOffset = this.visualOffset.add(direction.multiply(lungeDistance));
 
-      // Target gets knocked back (if it's a unit with applyKnockback)
-      if ('applyKnockback' in target && typeof target.applyKnockback === 'function') {
+      // Apply melee-specific effects if target supports them (units, not castles)
+      if (this.isMeleeTarget(target)) {
+        // Target gets knocked back
         const knockbackDistance = scaleValue(BASE_MELEE_KNOCKBACK_DISTANCE, arenaHeight);
         target.applyKnockback(direction, knockbackDistance);
-      }
 
-      // Apply melee engagement debuffs
-      const targetUnit = target as UnitEntity;
-      const defenderTeam = targetUnit.team ?? (this.team === 'player' ? 'enemy' : 'player');
+        // Apply melee engagement debuffs
+        const defenderTeam = target.team;
 
-      // Attacker debuff (immediate) - linked to defender for death cleanup
-      this.applyModifier(createAttackerDebuff(this.id, targetUnit.id, defenderTeam));
+        // Attacker debuff (immediate) - linked to defender for death cleanup
+        this.applyModifier(createAttackerDebuff(this.id, target.id, defenderTeam));
 
-      // Defender debuff (delayed)
-      if ('queueModifier' in target && typeof target.queueModifier === 'function') {
-        targetUnit.queueModifier(
-          createDefenderDebuff(targetUnit.id, this.team),
+        // Defender debuff (delayed)
+        target.queueModifier(
+          createDefenderDebuff(target.id, this.team),
           MELEE_ENGAGEMENT_DEBUFF.defenderDelay
         );
       }
