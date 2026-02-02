@@ -327,7 +327,7 @@ describe('FormationManager', () => {
           expect(config.yPosition).toBeLessThanOrEqual(1);
           expect(config.widthFraction).toBeGreaterThan(0);
           expect(config.widthFraction).toBeLessThanOrEqual(1);
-          expect(['line', 'wedge', 'scattered', 'clustered', 'wide']).toContain(config.spread);
+          expect(['line', 'wedge', 'scattered', 'wide', 'left', 'right']).toContain(config.spread);
         }
       }
     });

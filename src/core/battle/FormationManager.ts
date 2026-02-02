@@ -19,10 +19,11 @@ import {
   ENEMY_SPAWN_MAX_COLS,
   ENEMY_SPAWN_JITTER,
   calculateEnemyCount,
-  FORMATION_JITTER_X,
-  FORMATION_JITTER_Y,
-  FORMATION_MAX_UNITS_PER_ROW,
-  FORMATION_ROW_SPACING,
+  BASE_SQUAD_UNIT_SPACING,
+  SQUAD_MAX_COLUMNS,
+  BASE_SQUAD_PADDING_H,
+  BASE_SQUAD_PADDING_V,
+  scaleValue,
 } from './BattleConfig';
 
 export type UnitType = 'warrior' | 'archer' | 'knight';
@@ -58,8 +59,19 @@ export interface SquadFootprint {
 }
 
 /**
+ * Exact boundaries of a placed squad (top-left corner + dimensions).
+ */
+export interface SquadBounds {
+  x: number; // Left edge
+  y: number; // Top edge
+  width: number;
+  height: number;
+}
+
+/**
  * Calculates the footprint (bounding box) of a squad based on unit definition.
- * Used to determine proper spacing between squads in formations.
+ * This is the exact space the squad occupies plus padding for spacing between squads.
+ * The padding is built into the footprint so collision detection automatically maintains spacing.
  */
 export function calculateSquadFootprint(
   definition: UnitDefinition,
@@ -67,20 +79,122 @@ export function calculateSquadFootprint(
 ): SquadFootprint {
   const squadSize = definition.baseStats.squadSize ?? 1;
   const spacing = scaleValue(BASE_SQUAD_UNIT_SPACING, arenaHeight);
-  const unitSize = scaleValue(definition.baseStats.size, arenaHeight);
+  const unitSize = scaleValue(definition.visuals.baseSize, arenaHeight);
+  const paddingH = scaleValue(BASE_SQUAD_PADDING_H, arenaHeight);
+  const paddingV = scaleValue(BASE_SQUAD_PADDING_V, arenaHeight);
 
   if (squadSize <= 1) {
-    return { width: unitSize, height: unitSize };
+    // Single unit: just unit size plus padding on all sides
+    return {
+      width: unitSize + paddingH * 2,
+      height: unitSize + paddingV * 2,
+    };
   }
 
   const cols = Math.min(squadSize, SQUAD_MAX_COLUMNS);
   const rows = Math.ceil(squadSize / cols);
 
-  // Grid dimensions plus unit size on edges
-  const width = (cols - 1) * spacing + unitSize;
-  const height = (rows - 1) * spacing + unitSize;
+  // Squad bounds: from center of top-left unit to center of bottom-right unit, plus unit radius
+  // Then add padding on all sides for spacing between squads
+  const baseWidth = (cols - 1) * spacing + unitSize;
+  const baseHeight = (rows - 1) * spacing + unitSize;
 
-  return { width, height };
+  return {
+    width: baseWidth + paddingH * 2,
+    height: baseHeight + paddingV * 2,
+  };
+}
+
+/**
+ * Check if two squad bounds overlap (with optional padding).
+ */
+function boundsOverlap(a: SquadBounds, b: SquadBounds, padding: number = 0): boolean {
+  return !(
+    a.x + a.width + padding <= b.x ||
+    b.x + b.width + padding <= a.x ||
+    a.y + a.height + padding <= b.y ||
+    b.y + b.height + padding <= a.y
+  );
+}
+
+/**
+ * Generate all valid grid positions within a zone, sorted by distance from target.
+ * This ensures we always find the closest valid position.
+ */
+function generateSortedGridPositions(
+  targetX: number,
+  targetY: number,
+  zoneLeft: number,
+  zoneRight: number,
+  zoneTop: number,
+  zoneBottom: number,
+  gridStep: number
+): { x: number; y: number }[] {
+  const positions: { x: number; y: number; dist: number }[] = [];
+
+  // Generate all grid positions within the zone
+  for (let x = zoneLeft; x <= zoneRight; x += gridStep) {
+    for (let y = zoneTop; y <= zoneBottom; y += gridStep) {
+      const dx = x - targetX;
+      const dy = y - targetY;
+      positions.push({ x, y, dist: dx * dx + dy * dy });
+    }
+  }
+
+  // Sort by distance from target (closest first)
+  positions.sort((a, b) => a.dist - b.dist);
+
+  return positions.map(({ x, y }) => ({ x, y }));
+}
+
+/**
+ * Find a valid position for a squad that doesn't overlap with existing placements.
+ * Uses a grid-based search, starting from the target position and expanding outward.
+ */
+function findNonOverlappingPosition(
+  footprint: SquadFootprint,
+  targetX: number,
+  targetY: number,
+  placedSquads: SquadBounds[],
+  zoneLeft: number,
+  zoneRight: number,
+  zoneTop: number,
+  zoneBottom: number,
+  padding: number
+): { x: number; y: number } {
+  // Grid step size - smaller = more precision but slower
+  const gridStep = 15;
+
+  // Generate grid positions sorted by distance from target
+  const gridPositions = generateSortedGridPositions(
+    targetX,
+    targetY,
+    zoneLeft + footprint.width / 2,
+    zoneRight - footprint.width / 2,
+    zoneTop + footprint.height / 2,
+    zoneBottom - footprint.height / 2,
+    gridStep
+  );
+
+  // Try each grid position in order of distance
+  for (const pos of gridPositions) {
+    const candidate: SquadBounds = {
+      x: pos.x - footprint.width / 2,
+      y: pos.y - footprint.height / 2,
+      width: footprint.width,
+      height: footprint.height,
+    };
+
+    // Check for overlap with all placed squads
+    const hasOverlap = placedSquads.some((placed) => boundsOverlap(candidate, placed, padding));
+
+    if (!hasOverlap) {
+      return { x: pos.x, y: pos.y };
+    }
+  }
+
+  // Fallback: return target position (shouldn't happen with proper zone sizing)
+  return { x: targetX, y: targetY };
 }
 
 // =============================================================================
@@ -89,8 +203,14 @@ export function calculateSquadFootprint(
 
 /**
  * Spread type for positioning units within a formation area.
+ * - line: Even horizontal spread
+ * - wedge: V-shape with edges pushed back
+ * - scattered: Randomized positions
+ * - wide: Split between left and right flanks
+ * - left: Grouped on the left side
+ * - right: Grouped on the right side
  */
-export type SpreadType = 'line' | 'wedge' | 'scattered' | 'clustered' | 'wide';
+export type SpreadType = 'line' | 'wedge' | 'scattered' | 'wide' | 'left' | 'right';
 
 /**
  * Configuration for how each role is positioned within a pattern.
@@ -129,42 +249,42 @@ export const DEFAULT_ENEMY_PATTERNS: EnemyFormationPattern[] = [
   {
     id: 'battle_line',
     name: 'Battle Line',
-    // Classic formation: melee front, ranged back, flankers on sides
-    front: { yPosition: 0.15, spread: 'line', widthFraction: 0.65 },
-    back: { yPosition: 0.55, spread: 'line', widthFraction: 0.55 },
-    flank: { yPosition: 0.35, spread: 'wide', widthFraction: 0.95 },
+    // Classic wide formation using full arena width
+    front: { yPosition: 0.15, spread: 'line', widthFraction: 0.9 },
+    back: { yPosition: 0.5, spread: 'line', widthFraction: 0.95 },
+    flank: { yPosition: 0.32, spread: 'wide', widthFraction: 0.98 },
   },
   {
-    id: 'defensive',
-    name: 'Defensive',
-    // Pulled back, ranged clustered and protected
-    front: { yPosition: 0.3, spread: 'line', widthFraction: 0.7 },
-    back: { yPosition: 0.65, spread: 'clustered', widthFraction: 0.45 },
-    flank: { yPosition: 0.45, spread: 'wide', widthFraction: 0.9 },
+    id: 'left_hammer',
+    name: 'Left Hammer',
+    // Heavy left flank - all knights on left, archers spread wide
+    front: { yPosition: 0.2, spread: 'line', widthFraction: 0.95 },
+    back: { yPosition: 0.55, spread: 'wide', widthFraction: 0.9 },
+    flank: { yPosition: 0.12, spread: 'left', widthFraction: 0.45 },
   },
   {
-    id: 'aggressive',
-    name: 'Aggressive',
-    // Wedge formation pushing forward
-    front: { yPosition: 0.1, spread: 'wedge', widthFraction: 0.55 },
-    back: { yPosition: 0.4, spread: 'line', widthFraction: 0.5 },
-    flank: { yPosition: 0.2, spread: 'wide', widthFraction: 0.85 },
+    id: 'right_hammer',
+    name: 'Right Hammer',
+    // Heavy right flank - all knights on right, archers spread wide
+    front: { yPosition: 0.2, spread: 'line', widthFraction: 0.95 },
+    back: { yPosition: 0.55, spread: 'wide', widthFraction: 0.9 },
+    flank: { yPosition: 0.12, spread: 'right', widthFraction: 0.45 },
   },
   {
-    id: 'pincer',
-    name: 'Pincer',
-    // Strong flanks with center held back
-    front: { yPosition: 0.35, spread: 'clustered', widthFraction: 0.4 },
-    back: { yPosition: 0.6, spread: 'line', widthFraction: 0.5 },
-    flank: { yPosition: 0.15, spread: 'wide', widthFraction: 0.98 },
+    id: 'refused_flank',
+    name: 'Refused Flank',
+    // Strong left, weak right - diagonal formation
+    front: { yPosition: 0.1, spread: 'left', widthFraction: 0.6 },
+    back: { yPosition: 0.4, spread: 'line', widthFraction: 0.9 },
+    flank: { yPosition: 0.25, spread: 'right', widthFraction: 0.35 },
   },
   {
-    id: 'echelon',
-    name: 'Echelon',
-    // Staggered diagonal formation
-    front: { yPosition: 0.2, spread: 'wedge', widthFraction: 0.7 },
-    back: { yPosition: 0.5, spread: 'wedge', widthFraction: 0.6 },
-    flank: { yPosition: 0.35, spread: 'wide', widthFraction: 0.92 },
+    id: 'wide_envelopment',
+    name: 'Wide Envelopment',
+    // Spread across entire width, flanks pushed forward
+    front: { yPosition: 0.25, spread: 'line', widthFraction: 0.7 },
+    back: { yPosition: 0.55, spread: 'line', widthFraction: 0.95 },
+    flank: { yPosition: 0.08, spread: 'wide', widthFraction: 0.98 },
   },
 ];
 
@@ -424,178 +544,6 @@ export function selectPatternForWave(
 /**
  * Position with both X and Y offsets for formation placement.
  */
-interface FormationPosition {
-  x: number;
-  yOffset: number; // Offset from base Y (positive = deeper into zone)
-}
-
-/**
- * Calculates positions for a group of units using the specified spread type.
- * Returns X positions and Y offsets for multi-row/depth formations.
- */
-function calculateSpreadPositions(
-  count: number,
-  centerX: number,
-  availableWidth: number,
-  availableDepth: number,
-  spread: SpreadType,
-  random: () => number
-): FormationPosition[] {
-  if (count === 0) return [];
-  if (count === 1) return [{ x: centerX, yOffset: 0 }];
-
-  const positions: FormationPosition[] = [];
-  const halfWidth = availableWidth / 2;
-
-  switch (spread) {
-    case 'line': {
-      // Multi-row line formation
-      const unitsPerRow = Math.min(count, FORMATION_MAX_UNITS_PER_ROW);
-      const numRows = Math.ceil(count / unitsPerRow);
-      const rowDepth = availableDepth * FORMATION_ROW_SPACING;
-
-      let unitIndex = 0;
-      for (let row = 0; row < numRows; row++) {
-        const unitsInThisRow = Math.min(unitsPerRow, count - unitIndex);
-        const rowSpacing = availableWidth / (unitsInThisRow + 1);
-        const yOffset = row * rowDepth;
-
-        for (let i = 0; i < unitsInThisRow; i++) {
-          positions.push({
-            x: centerX - halfWidth + rowSpacing * (i + 1),
-            yOffset,
-          });
-          unitIndex++;
-        }
-      }
-      break;
-    }
-
-    case 'wedge': {
-      // V-shape pointing forward: center units at front, edges pushed back
-      const unitsPerRow = Math.min(count, FORMATION_MAX_UNITS_PER_ROW);
-      const numRows = Math.ceil(count / unitsPerRow);
-      const rowDepth = availableDepth * FORMATION_ROW_SPACING;
-
-      let unitIndex = 0;
-      for (let row = 0; row < numRows; row++) {
-        const unitsInThisRow = Math.min(unitsPerRow, count - unitIndex);
-        const rowSpacing = availableWidth / (unitsInThisRow + 1);
-        const baseYOffset = row * rowDepth;
-
-        for (let i = 0; i < unitsInThisRow; i++) {
-          const x = centerX - halfWidth + rowSpacing * (i + 1);
-          // Distance from center determines depth (edges pushed back)
-          const distFromCenter = Math.abs(x - centerX) / halfWidth;
-          const wedgeOffset = distFromCenter * availableDepth * 0.15;
-          positions.push({
-            x,
-            yOffset: baseYOffset + wedgeOffset,
-          });
-          unitIndex++;
-        }
-      }
-      break;
-    }
-
-    case 'scattered': {
-      // Grid with controlled randomness
-      const unitsPerRow = Math.min(count, FORMATION_MAX_UNITS_PER_ROW);
-      const numRows = Math.ceil(count / unitsPerRow);
-      const rowDepth = availableDepth * FORMATION_ROW_SPACING * 1.5;
-
-      let unitIndex = 0;
-      for (let row = 0; row < numRows; row++) {
-        const unitsInThisRow = Math.min(unitsPerRow, count - unitIndex);
-        const rowSpacing = availableWidth / (unitsInThisRow + 1);
-
-        for (let i = 0; i < unitsInThisRow; i++) {
-          const baseX = centerX - halfWidth + rowSpacing * (i + 1);
-          const jitterX = (random() - 0.5) * rowSpacing * 0.5;
-          const jitterY = (random() - 0.5) * rowDepth * 0.4;
-          positions.push({
-            x: baseX + jitterX,
-            yOffset: row * rowDepth + jitterY,
-          });
-          unitIndex++;
-        }
-      }
-      break;
-    }
-
-    case 'clustered': {
-      // Tight rectangular block
-      const clusterWidth = availableWidth * 0.4;
-      const clusterHalf = clusterWidth / 2;
-      const unitsPerRow = Math.min(count, 4);
-      const numRows = Math.ceil(count / unitsPerRow);
-      const rowDepth = availableDepth * 0.08;
-
-      let unitIndex = 0;
-      for (let row = 0; row < numRows; row++) {
-        const unitsInThisRow = Math.min(unitsPerRow, count - unitIndex);
-        const rowSpacing = clusterWidth / (unitsInThisRow + 1);
-
-        for (let i = 0; i < unitsInThisRow; i++) {
-          positions.push({
-            x: centerX - clusterHalf + rowSpacing * (i + 1),
-            yOffset: row * rowDepth,
-          });
-          unitIndex++;
-        }
-      }
-      break;
-    }
-
-    case 'wide': {
-      // Split units between left and right flanks
-      const leftCount = Math.ceil(count / 2);
-      const rightCount = count - leftCount;
-
-      // Left flank
-      const leftRows = Math.ceil(leftCount / 3);
-      const leftRowDepth = availableDepth * FORMATION_ROW_SPACING;
-      let leftIndex = 0;
-      for (let row = 0; row < leftRows; row++) {
-        const unitsInRow = Math.min(3, leftCount - leftIndex);
-        const flankWidth = halfWidth * 0.35;
-        const rowSpacing = flankWidth / (unitsInRow + 1);
-        const leftEdge = centerX - halfWidth * 0.9;
-
-        for (let i = 0; i < unitsInRow; i++) {
-          positions.push({
-            x: leftEdge + rowSpacing * (i + 1),
-            yOffset: row * leftRowDepth,
-          });
-          leftIndex++;
-        }
-      }
-
-      // Right flank
-      const rightRows = Math.ceil(rightCount / 3);
-      const rightRowDepth = availableDepth * FORMATION_ROW_SPACING;
-      let rightIndex = 0;
-      for (let row = 0; row < rightRows; row++) {
-        const unitsInRow = Math.min(3, rightCount - rightIndex);
-        const flankWidth = halfWidth * 0.35;
-        const rowSpacing = flankWidth / (unitsInRow + 1);
-        const rightEdge = centerX + halfWidth * 0.55;
-
-        for (let i = 0; i < unitsInRow; i++) {
-          positions.push({
-            x: rightEdge + rowSpacing * (i + 1),
-            yOffset: row * rightRowDepth,
-          });
-          rightIndex++;
-        }
-      }
-      break;
-    }
-  }
-
-  return positions;
-}
-
 /**
  * Calculates deterministic enemy spawn positions based on wave number.
  * Same wave number always produces the same formation.
@@ -642,8 +590,18 @@ export function calculateDeterministicEnemyPositions(
   shuffle(grouped.flank, random);
 
   const positions: SpawnPosition[] = [];
+  const placedSquads: SquadBounds[] = []; // Track all placed squad boundaries
 
-  // Position each role group according to the pattern
+  // Zone boundaries for collision detection
+  const zoneLeft = FORMATION_SPAWN_MARGIN;
+  const zoneRight = bounds.width - FORMATION_SPAWN_MARGIN;
+  const zoneTop = enemyZoneTop;
+  const zoneBottom = enemyZoneBottom;
+
+  // No extra padding needed - padding is built into squad footprints
+  const minPadding = 0;
+
+  // Position each role group using grid-based placement with collision detection
   const roles: FormationRole[] = ['front', 'back', 'flank'];
 
   for (const role of roles) {
@@ -651,32 +609,132 @@ export function calculateDeterministicEnemyPositions(
     const units = grouped[role];
     if (units.length === 0) continue;
 
-    // Calculate base Y position for this role
-    const baseY = enemyZoneTop + availableHeight * config.yPosition;
+    // Calculate target Y position for this role
+    const targetY = enemyZoneTop + availableHeight * config.yPosition;
 
-    // Calculate positions using spread algorithm (now includes Y offsets)
-    const roleWidth = availableWidth * config.widthFraction;
-    const roleDepth = availableHeight * 0.3; // Depth available for multi-row formations
-    const spreadPositions = calculateSpreadPositions(
-      units.length,
-      centerX,
-      roleWidth,
-      roleDepth,
-      config.spread,
-      random
-    );
+    // Calculate footprints for all units in this role (padding already included)
+    const footprints = units.map((u) => calculateSquadFootprint(u.def, bounds.height));
 
-    // Create spawn positions with reduced jitter
+    // Calculate total width needed - footprints already include padding
+    let totalWidth = 0;
+    for (const fp of footprints) {
+      totalWidth += fp.width;
+    }
+
+    // Handle 'wide' spread specially - split units between left and right flanks
+    if (config.spread === 'wide') {
+      const leftCount = Math.ceil(units.length / 2);
+      const rightCount = units.length - leftCount;
+
+      // Place left flank units
+      let leftX = zoneLeft + footprints[0].width / 2;
+      for (let i = 0; i < leftCount; i++) {
+        const fp = footprints[i];
+        const validPos = findNonOverlappingPosition(
+          fp,
+          leftX,
+          targetY,
+          placedSquads,
+          zoneLeft,
+          zoneRight,
+          zoneTop,
+          zoneBottom,
+          minPadding
+        );
+        placedSquads.push({
+          x: validPos.x - fp.width / 2,
+          y: validPos.y - fp.height / 2,
+          width: fp.width,
+          height: fp.height,
+        });
+        positions.push({ type: units[i].type, position: new Vector2(validPos.x, validPos.y) });
+        leftX += fp.width + minPadding;
+      }
+
+      // Place right flank units
+      let rightX = zoneRight - footprints[leftCount]?.width / 2 || 0;
+      for (let i = 0; i < rightCount; i++) {
+        const idx = leftCount + i;
+        const fp = footprints[idx];
+        const validPos = findNonOverlappingPosition(
+          fp,
+          rightX,
+          targetY,
+          placedSquads,
+          zoneLeft,
+          zoneRight,
+          zoneTop,
+          zoneBottom,
+          minPadding
+        );
+        placedSquads.push({
+          x: validPos.x - fp.width / 2,
+          y: validPos.y - fp.height / 2,
+          width: fp.width,
+          height: fp.height,
+        });
+        positions.push({ type: units[idx].type, position: new Vector2(validPos.x, validPos.y) });
+        rightX -= fp.width + minPadding;
+      }
+      continue; // Skip normal placement for 'wide'
+    }
+
+    // Determine starting X based on spread type
+    let startX: number;
+    if (config.spread === 'left') {
+      startX = zoneLeft + footprints[0].width / 2;
+    } else if (config.spread === 'right') {
+      startX = zoneRight - totalWidth + footprints[0].width / 2;
+    } else {
+      // Center
+      startX = centerX - totalWidth / 2 + footprints[0].width / 2;
+    }
+
+    // Place each unit with collision detection
+    let currentX = startX;
+
     for (let i = 0; i < units.length; i++) {
-      const pos = spreadPositions[i];
-      const unitSpacing = roleWidth / Math.max(units.length, 1);
-      const jitterX = (random() - 0.5) * unitSpacing * FORMATION_JITTER_X;
-      const jitterY = (random() - 0.5) * roleDepth * 0.1 * FORMATION_JITTER_Y;
+      const fp = footprints[i];
 
+      // Calculate target position
+      const targetCenterX = currentX;
+      let targetCenterY = targetY;
+
+      // Apply spread-specific Y modifications
+      if (config.spread === 'wedge') {
+        const distFromCenter = Math.abs(targetCenterX - centerX) / (availableWidth / 2);
+        targetCenterY += distFromCenter * availableHeight * 0.1;
+      }
+
+      // Find non-overlapping position using grid system
+      const validPos = findNonOverlappingPosition(
+        fp,
+        targetCenterX,
+        targetCenterY,
+        placedSquads,
+        zoneLeft,
+        zoneRight,
+        zoneTop,
+        zoneBottom,
+        minPadding
+      );
+
+      // Record this squad's bounds
+      placedSquads.push({
+        x: validPos.x - fp.width / 2,
+        y: validPos.y - fp.height / 2,
+        width: fp.width,
+        height: fp.height,
+      });
+
+      // Add to positions
       positions.push({
         type: units[i].type,
-        position: new Vector2(pos.x + jitterX, baseY + pos.yOffset + jitterY),
+        position: new Vector2(validPos.x, validPos.y),
       });
+
+      // Move to next position (using actual footprint width)
+      currentX += fp.width + minPadding;
     }
   }
 

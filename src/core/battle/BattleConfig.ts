@@ -56,9 +56,10 @@ export const DEFAULT_ARENA_MARGIN = 10;
 
 /**
  * Percentage of arena height used for each deployment zone.
- * 0.375 = 37.5% for allied zone (bottom), 37.5% for enemy zone (top).
+ * 0.41 = 41% for allied zone (bottom), 41% for enemy zone (top).
+ * Increased by 10% from original 37.5% for more vertical space.
  */
-export const ZONE_HEIGHT_PERCENT = 0.375;
+export const ZONE_HEIGHT_PERCENT = 0.41;
 
 /**
  * Divisor for zone midway calculation.
@@ -490,6 +491,20 @@ export const BASE_SQUAD_UNIT_SPACING = 18;
  */
 export const SQUAD_MAX_COLUMNS = 6;
 
+/**
+ * Horizontal padding around squad footprint (pixels).
+ * Added to both left and right sides of the squad bounds.
+ * Scaled by arena size at runtime.
+ */
+export const BASE_SQUAD_PADDING_H = 12;
+
+/**
+ * Vertical padding around squad footprint (pixels).
+ * Added to both top and bottom of the squad bounds.
+ * Scaled by arena size at runtime.
+ */
+export const BASE_SQUAD_PADDING_V = 10;
+
 // =============================================================================
 // FORMATION CONFIGURATION
 // =============================================================================
@@ -820,8 +835,9 @@ export const ENEMIES_PER_WAVE = 1;
 
 /**
  * Maximum enemy squad count cap.
+ * Capped at 15 squads per team for performance and visual clarity.
  */
-export const MAX_ENEMY_COUNT = 20;
+export const MAX_ENEMY_COUNT = 15;
 
 /**
  * Calculate enemy count for a wave.
