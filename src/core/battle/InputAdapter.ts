@@ -9,7 +9,7 @@
  */
 
 import { Vector2 } from '../physics/Vector2';
-import { HITBOX_PADDING } from './BattleConfig';
+import { SELECTION_RADIUS_MULTIPLIER } from './BattleConfig';
 
 /**
  * Input events that the battle system can receive.
@@ -54,17 +54,19 @@ export interface IBattleInputAdapter {
 /**
  * Finds a unit at the given position.
  * Shared utility for input hit-testing.
+ * Selection radius is unit.size * SELECTION_RADIUS_MULTIPLIER (default 1.5x).
  */
 export function findUnitAtPosition<T extends { position: Vector2; size: number; id: string }>(
   position: Vector2,
   units: T[],
-  hitboxPadding: number = HITBOX_PADDING
+  radiusMultiplier: number = SELECTION_RADIUS_MULTIPLIER
 ): T | null {
   // Check in reverse order (top-most first)
   for (let i = units.length - 1; i >= 0; i--) {
     const unit = units[i];
     const dist = position.distanceTo(unit.position);
-    if (dist <= unit.size + hitboxPadding) {
+    const selectionRadius = unit.size * radiusMultiplier;
+    if (dist <= selectionRadius) {
       return unit;
     }
   }

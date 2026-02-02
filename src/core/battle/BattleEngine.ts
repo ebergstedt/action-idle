@@ -615,50 +615,10 @@ export class BattleEngine {
   tick(delta: number): void {
     if (!this.isRunning) return;
 
-    // Track total battle time
     this.battleTime += delta;
+    this.updateAutoSpeedUp(delta);
 
-    // Update time since last damage (always track for stalemate detection)
-    if (this.hasDamageTaken) {
-      this.timeSinceLastDamage += delta;
-    }
-
-    // Three conditions for unconditional speed-up (Phase 2 behavior):
-    // 1. Battle time exceeds threshold (20s)
-    // 2. Stalemate detected (no damage for 5s after first damage)
-    // Phase 1: Speed up when no damage for 3s, resets on damage
-    const isPhase2 =
-      this.battleTime >= BATTLE_TIME_THRESHOLD ||
-      (this.hasDamageTaken && this.timeSinceLastDamage >= STALEMATE_TIMEOUT);
-
-    if (isPhase2) {
-      // Phase 2 / Stalemate: Unconditional speed-up every IDLE_DAMAGE_TIMEOUT seconds
-      while (
-        this.timeSinceLastDamage >= IDLE_DAMAGE_TIMEOUT &&
-        this.idleSpeedBonus < MAX_IDLE_SPEED_BONUS
-      ) {
-        this.timeSinceLastDamage -= IDLE_DAMAGE_TIMEOUT;
-        this.idleSpeedBonus = Math.min(
-          this.idleSpeedBonus + IDLE_SPEED_INCREMENT,
-          MAX_IDLE_SPEED_BONUS
-        );
-      }
-    } else if (this.hasDamageTaken) {
-      // Phase 1: Speed up when no damage taken for IDLE_DAMAGE_TIMEOUT seconds
-      while (
-        this.timeSinceLastDamage >= IDLE_DAMAGE_TIMEOUT &&
-        this.idleSpeedBonus < MAX_IDLE_SPEED_BONUS
-      ) {
-        this.timeSinceLastDamage -= IDLE_DAMAGE_TIMEOUT;
-        this.idleSpeedBonus = Math.min(
-          this.idleSpeedBonus + IDLE_SPEED_INCREMENT,
-          MAX_IDLE_SPEED_BONUS
-        );
-      }
-    }
-
-    // Apply combined time scale (additive: userSpeed + idleBonus)
-    const timeScale = this.userBattleSpeed + this.idleSpeedBonus;
+    const timeScale = this.userBattleSpeed + this.speedBonus;
     this.world.update(delta * timeScale);
 
     // Check for battle end
@@ -676,10 +636,37 @@ export class BattleEngine {
   }
 
   /**
-   * Get current time scale (combined user speed + idle bonus).
+   * Update auto speed-up system.
+   * - After first damage, idle timer starts counting
+   * - Every 3s idle, speed increases by 40%
+   * - After 20s battle time OR 5s stalemate, speed-up becomes unconditional
+   */
+  private updateAutoSpeedUp(delta: number): void {
+    if (!this.speedUpEnabled) return;
+
+    this.idleTimer += delta;
+
+    // Check if we should enter unconditional mode (stays forever once triggered)
+    if (!this.unconditionalMode) {
+      const battleTimeExceeded = this.battleTime >= BATTLE_TIME_THRESHOLD;
+      const stalemateDetected = this.idleTimer >= STALEMATE_TIMEOUT;
+      if (battleTimeExceeded || stalemateDetected) {
+        this.unconditionalMode = true;
+      }
+    }
+
+    // Apply speed increases for every 3s on the idle timer
+    while (this.idleTimer >= IDLE_DAMAGE_TIMEOUT && this.speedBonus < MAX_IDLE_SPEED_BONUS) {
+      this.idleTimer -= IDLE_DAMAGE_TIMEOUT;
+      this.speedBonus = Math.min(this.speedBonus + IDLE_SPEED_INCREMENT, MAX_IDLE_SPEED_BONUS);
+    }
+  }
+
+  /**
+   * Get current time scale (user speed + auto speed bonus).
    */
   getTimeScale(): number {
-    return this.userBattleSpeed + this.idleSpeedBonus;
+    return this.userBattleSpeed + this.speedBonus;
   }
 
   /**

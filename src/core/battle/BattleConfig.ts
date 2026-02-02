@@ -83,11 +83,10 @@ export const MAX_FRAME_DELTA = 0.1;
 // =============================================================================
 
 /**
- * Time in seconds without damage before game speed increases (Phase 1).
- * Only active after the first damage has been dealt and before BATTLE_TIME_THRESHOLD.
- * Timer resets on each damage event, but speed bonus persists.
+ * Time in seconds without damage before game speed increases.
+ * Timer resets on each damage event (unless in unconditional mode).
  */
-export const IDLE_DAMAGE_TIMEOUT = 3;
+export const IDLE_DAMAGE_TIMEOUT = 2;
 
 /**
  * Speed increase per timeout period (0.4 = 40% faster).
@@ -96,10 +95,10 @@ export const IDLE_DAMAGE_TIMEOUT = 3;
 export const IDLE_SPEED_INCREMENT = 0.4;
 
 /**
- * Maximum speed bonus from idle speed-up (5.0 = 500% bonus).
+ * Maximum speed bonus from idle speed-up (10.0 = 1000% bonus).
  * Resets at the start of each battle.
  */
-export const MAX_IDLE_SPEED_BONUS = 5.0;
+export const MAX_IDLE_SPEED_BONUS = 10.0;
 
 /**
  * Battle duration threshold in seconds for Phase 2 speed-up.
@@ -463,9 +462,10 @@ export const MIN_DRAG_DISTANCE_SQUARED = 25;
 export const MIN_BOX_SELECT_SIZE = 10;
 
 /**
- * Padding added to unit hitbox for click detection (pixels).
+ * Multiplier for unit selection radius.
+ * 1.5 = selectable area is 50% larger than unit size.
  */
-export const HITBOX_PADDING = 3;
+export const SELECTION_RADIUS_MULTIPLIER = 1.5;
 
 // =============================================================================
 // SQUAD CONFIGURATION

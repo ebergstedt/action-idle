@@ -9,7 +9,6 @@ import { BattleSpeed } from '../../hooks/useBattle';
 import { UI_COLORS, ARENA_COLORS, hexToRgba } from '../../core/theme/colors';
 import { formatNumber } from '../../core/utils/BigNumber';
 import { Decimal } from '../../core/utils/BigNumber';
-import { MapLegend } from './MapLegend';
 
 // Parchment theme styles
 const styles = {
@@ -187,15 +186,6 @@ export function ControlsPanel({
           ))}
         </div>
       </div>
-
-      {/* Map Legend */}
-      <MapLegend className="mt-4" />
-
-      {!hasStarted && (
-        <div className="text-sm mt-2" style={{ color: UI_COLORS.black }}>
-          Tip: Drag allied units to reposition before starting
-        </div>
-      )}
     </div>
   );
 }

@@ -28,11 +28,11 @@ export interface OutcomeText {
 const OUTCOME_TEXT_MAP: Record<Exclude<BattleOutcome, 'pending'>, Omit<OutcomeText, 'waveInfo'>> = {
   player_victory: {
     title: 'Victory',
-    subtitle: 'The enemy has been vanquished!',
+    subtitle: '',
   },
   enemy_victory: {
     title: 'Defeat',
-    subtitle: 'Your forces have fallen...',
+    subtitle: '',
   },
   draw: {
     title: 'Draw',
