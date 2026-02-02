@@ -7,7 +7,7 @@
 
 import { INK_SPLATTER_OPACITY } from '../../../core/battle/BattleConfig';
 import { UI_COLORS } from '../../../core/theme/colors';
-import type { InkSplatter } from '../hooks/useInkSplatter';
+import type { InkSplatter } from '../../../core/battle/particles';
 
 /**
  * Draw a single ink splatter blob.

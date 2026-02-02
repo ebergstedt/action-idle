@@ -22,19 +22,7 @@ import { drawShockwave } from './drawEffects';
 import { drawSelectionBox } from './drawSelection';
 import { drawParchmentBackground, drawVignette } from './drawBackground';
 import { drawInkSplatters } from './drawInkSplatter';
-import type { InkSplatter } from '../hooks/useInkSplatter';
-
-/**
- * Dust particle for movement effects.
- */
-export interface DustParticle {
-  x: number;
-  y: number;
-  vx: number;
-  vy: number;
-  lifetime: number;
-  maxLifetime: number;
-}
+import type { DustParticle, InkSplatter } from '../../../core/battle/particles';
 
 /**
  * Render context passed to the main render function.

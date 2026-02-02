@@ -1,10 +1,191 @@
 /**
  * Formation Manager
  *
- * Handles unit formation templates and spawn positioning.
+ * Handles unit formation templates and spawn positioning for both allied and enemy armies.
  * Pure game logic - no React/browser dependencies.
  *
  * Godot equivalent: Resource files for formations, spawner node.
+ *
+ * =============================================================================
+ * DESIGN DECISIONS & REASONING
+ * =============================================================================
+ *
+ * 1. WHY DETERMINISTIC FORMATIONS?
+ *    -----------------------------------------------------------------
+ *    Decision: Use seeded random (wave number as seed) instead of true random.
+ *
+ *    Reasoning:
+ *    - Reproducibility: Same wave always produces same formation for debugging
+ *    - Fairness: Players can't "reroll" to get easier formations
+ *    - Testing: Unit tests can verify exact expected positions
+ *    - Replay: Could support replays or sharing formations
+ *
+ *    Implementation: createSeededRandom(waveNumber) produces consistent
+ *    pseudo-random sequence. Enemy/allied seeds are offset to differ.
+ *
+ * 2. WHY GRID-BASED COLLISION DETECTION?
+ *    -----------------------------------------------------------------
+ *    Decision: Place squads on a discrete grid and check for overlap.
+ *
+ *    Reasoning:
+ *    - Squads vary in size (1-unit vs 9-unit squads have different footprints)
+ *    - Simple percentage-based spacing doesn't account for actual sizes
+ *    - Need guaranteed non-overlap regardless of squad composition
+ *
+ *    Alternative considered: Physics-based separation (push overlapping squads apart)
+ *    Rejected because: Results in unpredictable final positions, harder to control
+ *
+ *    Implementation: generateSortedGridPositions() creates candidate positions,
+ *    sorted by distance from target. findNonOverlappingPosition() tries each
+ *    until finding one that doesn't collide with placed squads.
+ *
+ * 3. WHY BUILD PADDING INTO FOOTPRINTS?
+ *    -----------------------------------------------------------------
+ *    Decision: Include spacing padding in the squad footprint calculation itself.
+ *
+ *    Reasoning:
+ *    - Simpler collision detection (no separate padding parameter needed)
+ *    - Padding is visually part of the squad's "claimed space"
+ *    - Easier to adjust - change one constant (BASE_SQUAD_PADDING_H/V)
+ *
+ *    Alternative considered: Add padding during collision checks
+ *    Rejected because: Easy to forget, leads to inconsistent spacing
+ *
+ *    Implementation: calculateSquadFootprint() adds paddingH*2 and paddingV*2
+ *    to the base dimensions.
+ *
+ * 4. WHY ROLE-BASED FORMATION PATTERNS?
+ *    -----------------------------------------------------------------
+ *    Decision: Group units by role (front/back/flank), then position by pattern.
+ *
+ *    Reasoning:
+ *    - Decouples unit types from positions (warrior doesn't know where it goes)
+ *    - Patterns can be designed independently of unit composition
+ *    - Easy to add new units without changing formation logic
+ *    - Supports role swapping for variety
+ *
+ *    Alternative considered: Hard-coded positions per unit type
+ *    Rejected because: Inflexible, doesn't scale with new unit types
+ *
+ *    Implementation: Units have formationRole in their definition.
+ *    Patterns define RoleConfig for each role. Units are grouped by role,
+ *    then each group is positioned according to its RoleConfig.
+ *
+ * 5. WHY ROLE SWAPPING?
+ *    -----------------------------------------------------------------
+ *    Decision: 35% chance to swap roles (e.g., front↔back) for enemy formations.
+ *
+ *    Reasoning:
+ *    - Prevents predictable "warriors always in front" pattern
+ *    - Creates tactical variety (sometimes archers lead, sometimes hang back)
+ *    - More interesting for the player to face varied challenges
+ *    - Still deterministic (same wave = same swap decision)
+ *
+ *    Implementation: createRoleMapper() produces a mapping function.
+ *    When grouping units, we apply: groupedRole = roleMapper(unit.formationRole)
+ *
+ * 6. WHY FIXED ALLIED FORMATIONS?
+ *    -----------------------------------------------------------------
+ *    Decision: Allied formation is always CLASSIC_FORMATION, not varied.
+ *
+ *    Reasoning:
+ *    - Player expects consistent starting position for their army
+ *    - Allows player to develop strategies around known formation
+ *    - Variety comes from enemy formations, not own army
+ *    - Player can manually reposition before battle starts
+ *
+ *    Note: calculateDeterministicAlliedPositions() exists if varied allied
+ *    formations are desired in the future.
+ *
+ * 7. WHY SPREAD TYPES (line, wide, left, right)?
+ *    -----------------------------------------------------------------
+ *    Decision: Define horizontal distribution algorithms as SpreadType enum.
+ *
+ *    Reasoning:
+ *    - Different tactical formations need different spreads
+ *    - 'wide' creates pincer formations (units on both edges)
+ *    - 'left'/'right' creates hammer formations (concentrated on one side)
+ *    - 'line' is the standard even distribution
+ *
+ *    Implementation: Each SpreadType has specific placement logic in the
+ *    position calculation functions.
+ *
+ * =============================================================================
+ * COORDINATE SYSTEM
+ * =============================================================================
+ *
+ * The arena uses standard screen coordinates (Y increases downward):
+ *
+ *     Y = 0  ┌─────────────────────────────┐  ← Top of screen
+ *            │     ENEMY DEPLOYMENT ZONE    │
+ *            │   (zoneHeightPercent of H)   │
+ *            │                              │
+ *            │  yPosition 0 = enemy front   │  ← Closest to player
+ *            │  yPosition 1 = enemy back    │  ← Furthest from player
+ *            ├──────────────────────────────┤
+ *            │       NEUTRAL ZONE           │
+ *            ├──────────────────────────────┤
+ *            │     ALLIED DEPLOYMENT ZONE   │
+ *            │                              │
+ *            │  yPosition 0 = allied front  │  ← Closest to enemy
+ *            │  yPosition 1 = allied back   │  ← Furthest from enemy
+ *     Y = H  └─────────────────────────────┘  ← Bottom of screen
+ *
+ * Key: yPosition is a fraction (0-1) within the deployment zone, where 0 is
+ * the "front" (toward the enemy) and 1 is the "back" (away from enemy).
+ *
+ * =============================================================================
+ * FORMATION ROLES (from units/types.ts)
+ * =============================================================================
+ *
+ * - FRONT: Melee units (warriors) - naturally positioned closest to enemy
+ * - BACK:  Ranged units (archers) - naturally positioned behind for protection
+ * - FLANK: Mobile units (knights) - naturally positioned on sides for maneuvers
+ *
+ * Note: Role swapping can override these natural positions for variety.
+ *
+ * =============================================================================
+ * ALGORITHM OVERVIEW
+ * =============================================================================
+ *
+ * calculateDeterministicEnemyPositions():
+ *
+ * 1. Create seeded RNG from wave number
+ * 2. Select formation pattern (cycles with 20% variation chance)
+ * 3. Determine role swap (35% chance)
+ * 4. Group units by (potentially swapped) role
+ * 5. Shuffle each group for variety
+ * 6. For each role group:
+ *    a. Calculate target Y from pattern's yPosition
+ *    b. Calculate footprints for all squads
+ *    c. Determine starting X from spread type
+ *    d. For each squad:
+ *       - Find non-overlapping position via grid search
+ *       - Record placed bounds
+ *       - Add to result positions
+ * 7. Return all spawn positions
+ *
+ * =============================================================================
+ * USAGE
+ * =============================================================================
+ *
+ * Enemy (varies by wave):
+ *   const composition = getEnemyCompositionForWave(waveNumber, registry);
+ *   const positions = calculateDeterministicEnemyPositions(
+ *     composition, registry, bounds, waveNumber
+ *   );
+ *
+ * Allied (fixed classic formation):
+ *   const positions = calculateAlliedSpawnPositions(CLASSIC_FORMATION, bounds);
+ *
+ * =============================================================================
+ * GODOT MIGRATION
+ * =============================================================================
+ *
+ * - Patterns → Resource files (.tres)
+ * - Seeded RNG → RandomNumberGenerator with seed
+ * - Grid search → Same algorithm, GDScript syntax
+ * - FormationRole → String enum or StringName
  */
 
 import { Vector2 } from '../physics/Vector2';
@@ -23,55 +204,115 @@ import {
   SQUAD_MAX_COLUMNS,
   BASE_SQUAD_PADDING_H,
   BASE_SQUAD_PADDING_V,
+  FORMATION_GRID_STEP,
+  FORMATION_WEDGE_Y_FACTOR,
   scaleValue,
 } from './BattleConfig';
 
+// =============================================================================
+// TYPE DEFINITIONS
+// =============================================================================
+
+/**
+ * Unit types currently supported in formations.
+ * Matches the unit IDs in /src/data/units/*.json
+ */
 export type UnitType = 'warrior' | 'archer' | 'knight';
 
+/**
+ * A unit placement within a legacy FormationTemplate.
+ * Uses normalized coordinates relative to formation center.
+ * @deprecated New formations use role-based patterns instead.
+ */
 export interface UnitPlacement {
   type: UnitType;
-  relativePosition: Vector2; // Position relative to formation center (0-1 normalized)
+  /** Position relative to formation center. X: -1 to 1 (left to right), Y: 0 to 1 (front to back) */
+  relativePosition: Vector2;
 }
 
+/**
+ * Legacy formation template with fixed unit positions.
+ * @deprecated Use EnemyFormationPattern with calculateDeterministicEnemyPositions instead.
+ */
 export interface FormationTemplate {
   id: string;
   name: string;
   placements: UnitPlacement[];
 }
 
+/**
+ * Final calculated spawn position for a unit.
+ * This is the output of all formation calculations.
+ */
 export interface SpawnPosition {
   type: UnitType;
+  /** Absolute position in arena coordinates (pixels) */
   position: Vector2;
 }
 
+/**
+ * Arena dimensions needed for formation calculations.
+ */
 export interface ArenaBounds {
   width: number;
   height: number;
+  /** Fraction of arena height for each deployment zone (0-1) */
   zoneHeightPercent: number;
 }
 
 /**
- * Dimensions of a squad's footprint for spacing calculations.
+ * Dimensions of a squad's footprint for collision detection.
+ * INCLUDES padding for spacing between squads.
+ *
+ * Why padding is included:
+ * - Simplifies collision detection (no separate padding parameter)
+ * - Ensures consistent spacing regardless of where collision check happens
+ * - Footprint represents the "claimed space" of the squad
  */
 export interface SquadFootprint {
+  /** Total width including padding on both sides */
   width: number;
+  /** Total height including padding on top and bottom */
   height: number;
 }
 
 /**
- * Exact boundaries of a placed squad (top-left corner + dimensions).
+ * Axis-aligned bounding box for a placed squad.
+ * Used for collision detection during placement.
  */
 export interface SquadBounds {
-  x: number; // Left edge
-  y: number; // Top edge
+  x: number; // Left edge (absolute pixel coordinate)
+  y: number; // Top edge (absolute pixel coordinate)
   width: number;
   height: number;
 }
 
+// =============================================================================
+// FOOTPRINT & COLLISION DETECTION
+// =============================================================================
+// These functions implement the grid-based placement system that ensures
+// squads never overlap, regardless of their sizes.
+
 /**
- * Calculates the footprint (bounding box) of a squad based on unit definition.
- * This is the exact space the squad occupies plus padding for spacing between squads.
- * The padding is built into the footprint so collision detection automatically maintains spacing.
+ * Calculates the footprint (bounding box) of a squad.
+ *
+ * The footprint includes:
+ * 1. Base dimensions: (cols-1)*spacing + unitSize for each axis
+ * 2. Padding: Added to all sides for spacing between squads
+ *
+ * Example for 6-unit squad (3 cols × 2 rows, unitSize=10, spacing=18, padding=12):
+ *   Base width  = (3-1)*18 + 10 = 46px
+ *   Base height = (2-1)*18 + 10 = 28px
+ *   With padding: width=46+24=70px, height=28+20=48px
+ *
+ * Why padding is built-in:
+ * - Collision detection doesn't need separate padding logic
+ * - Guaranteed consistent spacing across all placement code
+ * - Single source of truth for squad spacing
+ *
+ * @param definition - Unit definition containing squadSize and visuals.baseSize
+ * @param arenaHeight - Current arena height for scaling calculations
+ * @returns Footprint with padding included
  */
 export function calculateSquadFootprint(
   definition: UnitDefinition,
@@ -106,7 +347,16 @@ export function calculateSquadFootprint(
 }
 
 /**
- * Check if two squad bounds overlap (with optional padding).
+ * Check if two axis-aligned bounding boxes overlap.
+ *
+ * Uses the separating axis theorem simplified for AABBs:
+ * Two boxes DON'T overlap if there's a gap on any axis.
+ * They DO overlap if there's no gap on both axes.
+ *
+ * @param a - First bounding box
+ * @param b - Second bounding box
+ * @param padding - Extra spacing to enforce between boxes (usually 0 since padding is in footprint)
+ * @returns true if boxes overlap (collision), false if no overlap
  */
 function boundsOverlap(a: SquadBounds, b: SquadBounds, padding: number = 0): boolean {
   return !(
@@ -119,7 +369,26 @@ function boundsOverlap(a: SquadBounds, b: SquadBounds, padding: number = 0): boo
 
 /**
  * Generate all valid grid positions within a zone, sorted by distance from target.
- * This ensures we always find the closest valid position.
+ *
+ * Why a grid instead of continuous positions?
+ * - Discrete positions make collision detection predictable
+ * - 15px grid step balances precision vs performance
+ * - Sorted by distance ensures we find closest valid position first
+ *
+ * Algorithm:
+ * 1. Generate all (x,y) positions on the grid within zone bounds
+ * 2. Calculate squared distance from target for each
+ * 3. Sort by distance (ascending)
+ * 4. Return positions without distances
+ *
+ * @param targetX - Desired X position (we want to be as close as possible)
+ * @param targetY - Desired Y position
+ * @param zoneLeft - Left boundary of valid placement area
+ * @param zoneRight - Right boundary
+ * @param zoneTop - Top boundary
+ * @param zoneBottom - Bottom boundary
+ * @param gridStep - Distance between grid points (15px default)
+ * @returns Array of positions sorted by distance from target
  */
 function generateSortedGridPositions(
   targetX: number,
@@ -149,7 +418,28 @@ function generateSortedGridPositions(
 
 /**
  * Find a valid position for a squad that doesn't overlap with existing placements.
- * Uses a grid-based search, starting from the target position and expanding outward.
+ *
+ * This is the core of the collision detection system:
+ * 1. Get all grid positions sorted by distance from target
+ * 2. Try each position in order (closest first)
+ * 3. Check if placing the squad here would collide with any placed squad
+ * 4. Return the first non-colliding position
+ *
+ * Why "closest first"?
+ * - Maintains formation shape as much as possible
+ * - Only deviates from target when necessary
+ * - Produces visually coherent results
+ *
+ * Performance note: For typical formations (10-15 squads), this is fast enough.
+ * For larger formations, consider spatial partitioning (quadtree).
+ *
+ * @param footprint - Size of the squad to place (with padding)
+ * @param targetX - Ideal X position (center of squad)
+ * @param targetY - Ideal Y position (center of squad)
+ * @param placedSquads - Already-placed squads to avoid
+ * @param zoneLeft/Right/Top/Bottom - Valid placement boundaries
+ * @param padding - Extra padding (usually 0, padding is in footprint)
+ * @returns Valid position as close to target as possible
  */
 function findNonOverlappingPosition(
   footprint: SquadFootprint,
@@ -163,7 +453,7 @@ function findNonOverlappingPosition(
   padding: number
 ): { x: number; y: number } {
   // Grid step size - smaller = more precision but slower
-  const gridStep = 15;
+  const gridStep = FORMATION_GRID_STEP;
 
   // Generate grid positions sorted by distance from target
   const gridPositions = generateSortedGridPositions(
@@ -288,32 +578,70 @@ export const DEFAULT_ENEMY_PATTERNS: EnemyFormationPattern[] = [
   },
 ];
 
+// =============================================================================
+// FORMATION VARIETY SYSTEM
+// =============================================================================
+// These constants and functions control how formations vary between waves.
+// The goal is unpredictability while maintaining tactical coherence.
+
 /**
- * Chance to pick a different pattern than the cycle (for variety).
+ * Chance to pick a different pattern than the normal cycle (20%).
+ *
+ * Why 20%?
+ * - High enough to be noticeable (roughly 1 in 5 waves)
+ * - Low enough that the cycle is still recognizable
+ * - Prevents players from perfectly predicting patterns
  */
 const PATTERN_VARIATION_CHANCE = 0.2;
 
 /**
- * Chance to swap front/back roles in enemy formation (for variety).
- * This makes warriors sometimes appear in the back and archers in front.
+ * Chance to swap formation roles for enemy variety (35%).
+ *
+ * Why 35%?
+ * - Creates noticeable variety (roughly 1 in 3 waves)
+ * - Not so high that "normal" formations feel rare
+ * - Combined with pattern variation, creates rich variety
+ *
+ * Effect: When active, unit roles are remapped. For example, if front↔back:
+ * - Warriors (naturally 'front') → positioned where 'back' role goes
+ * - Archers (naturally 'back') → positioned where 'front' role goes
+ *
+ * This means archers might lead the charge while warriors hang back!
  */
 const ROLE_SWAP_CHANCE = 0.35;
 
 /**
- * Role swap configurations for enemy variety.
- * Each swap defines which roles to exchange.
+ * Available role swap configurations.
+ *
+ * Design rationale:
+ * - Empty swap (no change) is included for 25% "normal" chance when swap triggers
+ * - front↔back: Most impactful - melee/ranged positions swap
+ * - front↔flank: Warriors go to sides, knights go center
+ * - back↔flank: Archers spread to flanks, knights group behind
+ *
+ * Not included: All three roles swapping (too chaotic, loses formation identity)
  */
 type RoleSwap = { from: FormationRole; to: FormationRole };
 const ROLE_SWAPS: RoleSwap[][] = [
-  [], // No swap
+  [], // No swap (identity mapping)
   [{ from: 'front', to: 'back' }], // Swap front and back
   [{ from: 'front', to: 'flank' }], // Swap front and flank
   [{ from: 'back', to: 'flank' }], // Swap back and flank
 ];
 
 /**
- * Applies role swaps to create a modified role mapping.
- * Returns a function that maps original roles to swapped roles.
+ * Creates a role mapping function from a swap configuration.
+ *
+ * How it works:
+ * 1. Start with identity mapping (front→front, back→back, flank→flank)
+ * 2. For each swap in the config, exchange the mappings
+ * 3. Return a function that applies the final mapping
+ *
+ * Example: [{from: 'front', to: 'back'}]
+ * Result: front→back, back→front, flank→flank
+ *
+ * @param swaps - Array of role exchanges to apply
+ * @returns Function that maps original role to (possibly swapped) role
  */
 function createRoleMapper(swaps: RoleSwap[]): (originalRole: FormationRole) => FormationRole {
   if (swaps.length === 0) {
@@ -643,7 +971,7 @@ export function calculateDeterministicAlliedPositions(
       // Apply spread-specific Y modifications
       if (config.spread === 'wedge') {
         const distFromCenter = Math.abs(targetCenterX - centerX) / (availableWidth / 2);
-        targetCenterY += distFromCenter * availableHeight * 0.1;
+        targetCenterY += distFromCenter * availableHeight * FORMATION_WEDGE_Y_FACTOR;
       }
 
       // Find non-overlapping position using grid system
@@ -1044,7 +1372,7 @@ export function calculateDeterministicEnemyPositions(
       // Apply spread-specific Y modifications
       if (config.spread === 'wedge') {
         const distFromCenter = Math.abs(targetCenterX - centerX) / (availableWidth / 2);
-        targetCenterY += distFromCenter * availableHeight * 0.1;
+        targetCenterY += distFromCenter * availableHeight * FORMATION_WEDGE_Y_FACTOR;
       }
 
       // Find non-overlapping position using grid system

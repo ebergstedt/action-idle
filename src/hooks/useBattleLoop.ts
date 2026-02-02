@@ -7,7 +7,7 @@
  * SRP: Only responsible for frame timing and update dispatch.
  */
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 
 export interface UseBattleLoopProps {
   /** Whether the loop should be running */
@@ -19,9 +19,19 @@ export interface UseBattleLoopProps {
 /**
  * Hook for managing the battle game loop.
  *
+ * Uses a ref to store the callback to avoid recreating the loop
+ * when the callback reference changes (same pattern as useGameLoop).
+ *
  * @param props - Loop configuration
  */
 export function useBattleLoop({ isRunning, onTick }: UseBattleLoopProps): void {
+  const onTickRef = useRef(onTick);
+
+  // Keep callback ref updated without triggering effect
+  useEffect(() => {
+    onTickRef.current = onTick;
+  }, [onTick]);
+
   useEffect(() => {
     if (!isRunning) return;
 
@@ -32,7 +42,7 @@ export function useBattleLoop({ isRunning, onTick }: UseBattleLoopProps): void {
       const delta = (currentTime - lastTime) / 1000; // Convert to seconds
       lastTime = currentTime;
 
-      onTick(delta);
+      onTickRef.current(delta);
 
       frameId = requestAnimationFrame(loop);
     };
@@ -42,5 +52,5 @@ export function useBattleLoop({ isRunning, onTick }: UseBattleLoopProps): void {
     return () => {
       cancelAnimationFrame(frameId);
     };
-  }, [isRunning, onTick]);
+  }, [isRunning]);
 }

@@ -8,7 +8,7 @@
  */
 
 import { Vector2 } from '../physics/Vector2';
-import { MIN_BOX_SELECT_SIZE } from './BattleConfig';
+import { MIN_BOX_SELECT_SIZE, BOX_SELECT_SIZE_MULTIPLIER } from './BattleConfig';
 
 export interface BoxSelectSession {
   /** Position where box selection started */
@@ -73,10 +73,10 @@ export function getUnitsInBox<
     if (team !== null && unit.team !== team) continue;
 
     // Check if unit center is inside the box (with some tolerance for unit size)
-    const unitLeft = unit.position.x - unit.size * 0.5;
-    const unitRight = unit.position.x + unit.size * 0.5;
-    const unitTop = unit.position.y - unit.size * 0.5;
-    const unitBottom = unit.position.y + unit.size * 0.5;
+    const unitLeft = unit.position.x - unit.size * BOX_SELECT_SIZE_MULTIPLIER;
+    const unitRight = unit.position.x + unit.size * BOX_SELECT_SIZE_MULTIPLIER;
+    const unitTop = unit.position.y - unit.size * BOX_SELECT_SIZE_MULTIPLIER;
+    const unitBottom = unit.position.y + unit.size * BOX_SELECT_SIZE_MULTIPLIER;
 
     // Unit is selected if any part of it overlaps with the box
     const overlapsX = unitRight >= box.minX && unitLeft <= box.maxX;

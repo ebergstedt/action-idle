@@ -24,6 +24,12 @@ export * from './BattleStats';
 // Presentation helpers (Godot-portable)
 export * from './OutcomePresentation';
 
+// Particle systems (Godot-portable)
+export * from './particles';
+
+// Visual feedback systems (Godot-portable)
+export * from './visuals';
+
 // Input and interaction (Godot-portable)
 export * from './ISelectable';
 export * from './SelectionManager';

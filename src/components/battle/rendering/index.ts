@@ -6,7 +6,8 @@
  */
 
 export { renderBattle } from './BattleRenderer';
-export type { DustParticle, RenderContext } from './BattleRenderer';
+export type { RenderContext } from './BattleRenderer';
+export type { DustParticle } from '../../../core/battle/particles';
 
 export { drawParchmentBackground, drawVignette, drawParchmentNoise } from './drawBackground';
 export { drawUnitShadow, drawUnitBody, drawHealthBar, drawDebuffIndicator } from './drawUnit';

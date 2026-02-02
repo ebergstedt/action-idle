@@ -475,6 +475,12 @@ export const MIN_BOX_SELECT_SIZE = 10;
  */
 export const SELECTION_RADIUS_MULTIPLIER = 1.5;
 
+/**
+ * Multiplier for calculating unit half-size in box selection.
+ * 0.5 = unit bounds extend to half the unit size in each direction.
+ */
+export const BOX_SELECT_SIZE_MULTIPLIER = 0.5;
+
 // =============================================================================
 // SQUAD CONFIGURATION
 // =============================================================================
@@ -562,6 +568,18 @@ export const FORMATION_MAX_UNITS_PER_ROW = 6;
  * Row spacing as fraction of available height for multi-row formations.
  */
 export const FORMATION_ROW_SPACING = 0.12;
+
+/**
+ * Grid step size for formation placement collision detection (pixels).
+ * Smaller values give more precision but slower performance.
+ */
+export const FORMATION_GRID_STEP = 15;
+
+/**
+ * Wedge spread Y modification factor.
+ * Units on edges are pushed back by this fraction of available height.
+ */
+export const FORMATION_WEDGE_Y_FACTOR = 0.1;
 
 // =============================================================================
 // OVERLAP RESOLUTION
