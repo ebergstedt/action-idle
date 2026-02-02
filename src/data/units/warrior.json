@@ -7,9 +7,9 @@
   "formationRole": "front",
   "wavePermit": 1,
   "reference": {
-    "source": "Mechabellum",
+    "source": "Custom",
     "unit": "Hound",
-    "wiki": "https://mechabellum.wiki/index.php/Unit_Overview"
+    "wiki": ""
   },
   "baseStats": {
     "maxHealth": 897,
