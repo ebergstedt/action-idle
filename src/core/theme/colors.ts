@@ -217,17 +217,17 @@ export interface UnitTypeColors {
 export const UNIT_TYPE_COLORS: Record<UnitType, UnitTypeColors> = {
   // Warriors - core infantry, uses base team color
   warrior: {
-    player: '#006400', // Base green
+    player: '#00AA00', // Bright green
     enemy: '#C80000', // Base red
   },
   // Archers - ranged support, lighter shade
   archer: {
-    player: '#228B22', // Forest green (lighter)
+    player: '#32CD32', // Lime green (lighter)
     enemy: '#FF6464', // Coral red (lighter)
   },
   // Knights - elite cavalry, darker shade
   knight: {
-    player: '#004D00', // Deep forest (darker)
+    player: '#008000', // Medium green (darker but still visible)
     enemy: '#820000', // Maroon (darker)
   },
 } as const;

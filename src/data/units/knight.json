@@ -18,13 +18,13 @@
     "melee": {
       "damage": 79,
       "attackSpeed": 1.67,
-      "range": 35
+      "range": 15
     },
     "ranged": null
   },
   "visuals": {
     "shape": "circle",
-    "baseSize": 9,
+    "baseSize": 6,
     "colorKey": "knight",
     "walkAnimation": "bounce"
   },

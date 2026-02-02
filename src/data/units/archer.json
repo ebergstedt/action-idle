@@ -18,7 +18,7 @@
     "melee": {
       "damage": 20,
       "attackSpeed": 0.67,
-      "range": 35
+      "range": 15
     },
     "ranged": {
       "damage": 63,
@@ -28,7 +28,7 @@
   },
   "visuals": {
     "shape": "triangle",
-    "baseSize": 8,
+    "baseSize": 6,
     "colorKey": "archer",
     "walkAnimation": "bounce"
   },

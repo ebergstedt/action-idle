@@ -47,34 +47,25 @@ export interface ArenaBounds {
 
 /**
  * Classic battle formation: Warriors front, Archers back, Knights on flanks.
+ * 10 squads total: 4 Hounds, 4 Fangs, 2 Crawlers
  */
 export const CLASSIC_FORMATION: FormationTemplate = {
   id: 'classic',
   name: 'Classic Battle Line',
   placements: [
-    // Front line - 8 Warriors (y = 0 is front)
-    { type: 'warrior', relativePosition: new Vector2(-0.35, 0) },
-    { type: 'warrior', relativePosition: new Vector2(-0.25, 0) },
-    { type: 'warrior', relativePosition: new Vector2(-0.15, 0) },
-    { type: 'warrior', relativePosition: new Vector2(-0.05, 0) },
-    { type: 'warrior', relativePosition: new Vector2(0.05, 0) },
-    { type: 'warrior', relativePosition: new Vector2(0.15, 0) },
-    { type: 'warrior', relativePosition: new Vector2(0.25, 0) },
-    { type: 'warrior', relativePosition: new Vector2(0.35, 0) },
-    // Back line - 8 Archers
-    { type: 'archer', relativePosition: new Vector2(-0.35, 0.5) },
-    { type: 'archer', relativePosition: new Vector2(-0.25, 0.5) },
-    { type: 'archer', relativePosition: new Vector2(-0.15, 0.5) },
-    { type: 'archer', relativePosition: new Vector2(-0.05, 0.5) },
-    { type: 'archer', relativePosition: new Vector2(0.05, 0.5) },
-    { type: 'archer', relativePosition: new Vector2(0.15, 0.5) },
-    { type: 'archer', relativePosition: new Vector2(0.25, 0.5) },
-    { type: 'archer', relativePosition: new Vector2(0.35, 0.5) },
-    // Flanks - 4 Knights
-    { type: 'knight', relativePosition: new Vector2(-0.5, 0.15) },
-    { type: 'knight', relativePosition: new Vector2(-0.5, 0.35) },
-    { type: 'knight', relativePosition: new Vector2(0.5, 0.15) },
-    { type: 'knight', relativePosition: new Vector2(0.5, 0.35) },
+    // Front line - 4 Hounds (warriors)
+    { type: 'warrior', relativePosition: new Vector2(-0.3, 0) },
+    { type: 'warrior', relativePosition: new Vector2(-0.1, 0) },
+    { type: 'warrior', relativePosition: new Vector2(0.1, 0) },
+    { type: 'warrior', relativePosition: new Vector2(0.3, 0) },
+    // Back line - 4 Fangs (archers)
+    { type: 'archer', relativePosition: new Vector2(-0.3, 0.5) },
+    { type: 'archer', relativePosition: new Vector2(-0.1, 0.5) },
+    { type: 'archer', relativePosition: new Vector2(0.1, 0.5) },
+    { type: 'archer', relativePosition: new Vector2(0.3, 0.5) },
+    // Flanks - 2 Crawlers (knights)
+    { type: 'knight', relativePosition: new Vector2(-0.5, 0.25) },
+    { type: 'knight', relativePosition: new Vector2(0.5, 0.25) },
   ],
 };
 
@@ -152,6 +143,7 @@ export function calculateEnemySpawnPositions(
 
 /**
  * Default enemy composition for wave 1.
+ * 10 squads: 4 Hounds, 4 Fangs, 2 Crawlers
  */
 export function getDefaultEnemyComposition(): UnitType[] {
   return [
@@ -159,20 +151,10 @@ export function getDefaultEnemyComposition(): UnitType[] {
     'warrior',
     'warrior',
     'warrior',
-    'warrior',
-    'warrior',
-    'warrior',
-    'warrior',
     'archer',
     'archer',
     'archer',
     'archer',
-    'archer',
-    'archer',
-    'knight',
-    'knight',
-    'knight',
-    'knight',
     'knight',
     'knight',
   ];

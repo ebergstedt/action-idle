@@ -88,7 +88,6 @@ export function drawUnitBody(
     color,
     shape,
     size,
-    team,
     visualOffset,
     deathFadeTimer,
     walkAnimation,
@@ -140,21 +139,12 @@ export function drawUnitBody(
     ctx.shadowBlur = 0;
   }
 
-  // Move indicator for unselected player units (skip for dying units)
-  if (team === 'player' && !isSelected && !isBeingDragged && !isDying) {
-    ctx.strokeStyle = ARENA_COLORS.moveIndicator;
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.arc(0, 0, size + 5, 0, Math.PI * 2);
-    ctx.stroke();
-  }
-
   // Unit shape
   const baseAlpha = isBeingDragged ? 0.8 : 1;
   ctx.globalAlpha = baseAlpha * deathOpacity;
   ctx.fillStyle = color;
   ctx.strokeStyle = UI_COLORS.black;
-  ctx.lineWidth = 3;
+  ctx.lineWidth = 1.5;
 
   switch (shape) {
     case 'circle':

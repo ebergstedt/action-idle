@@ -18,7 +18,7 @@ import {
 import { drawUnitShadow, drawUnitBody, drawHealthBar, drawDebuffIndicator } from './drawUnit';
 import { drawProjectile } from './drawProjectile';
 import { drawCastle, drawCastleHealthBar } from './drawCastle';
-import { drawShockwave, drawDamageNumber } from './drawEffects';
+import { drawShockwave } from './drawEffects';
 import { drawSelectionBox } from './drawSelection';
 import { drawParchmentBackground, drawVignette } from './drawBackground';
 import { drawInkSplatters } from './drawInkSplatter';
@@ -152,9 +152,9 @@ export function renderBattle(context: RenderContext): void {
   // 9. Dust particles (after units so they're visible)
   drawDustParticles(ctx, dustParticles);
 
-  // 10. Health bars for units (skip dying units)
+  // 10. Health bars for units (only show if damaged, skip dying units)
   for (const unit of state.units) {
-    if (unit.deathFadeTimer < 0) {
+    if (unit.deathFadeTimer < 0 && unit.health < unit.stats.maxHealth) {
       const ghostHealth = ghostHealthMap.get(unit.id) ?? unit.health;
       drawHealthBar(ctx, unit, ghostHealth);
     }
@@ -167,15 +167,17 @@ export function renderBattle(context: RenderContext): void {
     }
   }
 
-  // 12. Health bars for castles
+  // 12. Health bars for castles (only show if damaged)
   for (const castle of state.castles) {
-    drawCastleHealthBar(ctx, castle);
+    if (castle.health < castle.maxHealth) {
+      drawCastleHealthBar(ctx, castle);
+    }
   }
 
-  // 13. Damage numbers (above most elements)
-  for (const damageNumber of state.damageNumbers) {
-    drawDamageNumber(ctx, damageNumber, height);
-  }
+  // 13. Damage numbers (disabled - too noisy with many units)
+  // for (const damageNumber of state.damageNumbers) {
+  //   drawDamageNumber(ctx, damageNumber, height);
+  // }
 
   // 14. Vignette effect (darkens edges, drawn over everything)
   drawVignette(ctx, width, height);

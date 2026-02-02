@@ -15,19 +15,19 @@
  * Multiplier for minimum distance between units.
  * minDist = (unitA.size + unitB.size) * UNIT_SPACING
  */
-export const UNIT_SPACING = 1.2;
+export const UNIT_SPACING = 0.8;
 
 /**
  * Base force applied to separate overlapping allied units during movement.
  * Scaled by arena size at runtime.
  */
-export const BASE_ALLY_AVOIDANCE_FORCE = 80;
+export const BASE_ALLY_AVOIDANCE_FORCE = 40;
 
 /**
  * Base force applied to separate overlapping units in BattleWorld.
  * Scaled by arena size at runtime.
  */
-export const BASE_SEPARATION_FORCE = 150;
+export const BASE_SEPARATION_FORCE = 60;
 
 // =============================================================================
 // ARENA CONFIGURATION
@@ -175,7 +175,7 @@ export const BASE_PROJECTILE_SPEED = 300;
 /**
  * Distance from target at which projectile is considered to have hit.
  */
-export const PROJECTILE_HIT_RADIUS = 5;
+export const PROJECTILE_HIT_RADIUS = 3;
 
 /**
  * Radius around impact point that receives splash damage.
@@ -269,9 +269,8 @@ export const MELEE_RANGE_BUFFER = 20;
 /**
  * Attack range threshold to classify as melee (vs ranged).
  * Attacks with range <= this value are considered melee.
- * Set to 80 to accommodate Mechabellum "short range" units like Hound (70m).
  */
-export const MELEE_ATTACK_RANGE_THRESHOLD = 80;
+export const MELEE_ATTACK_RANGE_THRESHOLD = 25;
 
 // =============================================================================
 // CASTLE CONFIGURATION
@@ -417,7 +416,7 @@ export const MIN_BOX_SELECT_SIZE = 10;
 /**
  * Padding added to unit hitbox for click detection (pixels).
  */
-export const HITBOX_PADDING = 6;
+export const HITBOX_PADDING = 3;
 
 // =============================================================================
 // SQUAD CONFIGURATION
@@ -427,7 +426,7 @@ export const HITBOX_PADDING = 6;
  * Spacing between units in a squad formation (pixels).
  * Scaled by arena size at runtime.
  */
-export const BASE_SQUAD_UNIT_SPACING = 20;
+export const BASE_SQUAD_UNIT_SPACING = 18;
 
 /**
  * Maximum columns in a squad grid formation.
@@ -447,12 +446,12 @@ export const FORMATION_SPAWN_MARGIN = 30;
 /**
  * Width scale factor for formation spread (fraction of available width).
  */
-export const FORMATION_WIDTH_SCALE = 0.4;
+export const FORMATION_WIDTH_SCALE = 0.7;
 
 /**
  * Height scale factor for formation spread (fraction of zone height).
  */
-export const FORMATION_HEIGHT_SCALE = 0.6;
+export const FORMATION_HEIGHT_SCALE = 0.8;
 
 /**
  * Position of formation center within ally zone (0 = top, 1 = bottom).
@@ -463,7 +462,7 @@ export const FORMATION_CENTER_OFFSET = 0.3;
 /**
  * Maximum columns for enemy grid spawn layout.
  */
-export const ENEMY_SPAWN_MAX_COLS = 4;
+export const ENEMY_SPAWN_MAX_COLS = 5;
 
 /**
  * Jitter factor for enemy spawn positions (fraction of cell size).
@@ -600,17 +599,17 @@ export const BASE_DAMAGE_NUMBER_FONT_SIZE = 16;
  * Base length of projectile trail in pixels.
  * Scaled by arena size at runtime.
  */
-export const BASE_PROJECTILE_TRAIL_LENGTH = 25;
+export const BASE_PROJECTILE_TRAIL_LENGTH = 15;
 
 /**
  * Width of projectile trail at its widest point (near projectile).
  */
-export const PROJECTILE_TRAIL_WIDTH = 4;
+export const PROJECTILE_TRAIL_WIDTH = 2;
 
 /**
  * Unit shadow offset (pixels down and right from unit center).
  */
-export const UNIT_SHADOW_OFFSET = 4;
+export const UNIT_SHADOW_OFFSET = 2;
 
 /**
  * Unit shadow opacity (0-1).
@@ -648,7 +647,7 @@ export const DUST_PARTICLE_SIZE = 3;
  * Multiplier for ally avoidance distance check during movement.
  * Units avoid allies within (minDist * this value).
  */
-export const ALLY_AVOIDANCE_DISTANCE_MULTIPLIER = 2;
+export const ALLY_AVOIDANCE_DISTANCE_MULTIPLIER = 1.2;
 
 // =============================================================================
 // BOUNCE ANIMATION
@@ -827,7 +826,7 @@ export const PARCHMENT_LINE_SPACING = 40;
 /**
  * Projectile head radius (pixels).
  */
-export const PROJECTILE_HEAD_RADIUS = 5;
+export const PROJECTILE_HEAD_RADIUS = 3;
 
 /**
  * Shockwave ring thickness (pixels).
