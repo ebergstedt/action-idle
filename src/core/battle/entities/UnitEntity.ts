@@ -39,29 +39,12 @@ import {
   scaleValue,
 } from '../BattleConfig';
 
-/**
- * Temporary modifier (buff/debuff) applied to a unit.
- * Modifiers have a duration and modify stats multiplicatively.
- * This is simpler than the upgrade system's ActiveModifier - just for runtime effects.
- *
- * Buff vs Debuff is determined by sourceTeam:
- * - If sourceTeam matches unit's team → buff (friendly effect)
- * - If sourceTeam differs from unit's team → debuff (enemy effect)
- */
-export interface TemporaryModifier {
-  /** Unique ID for this modifier instance */
-  id: string;
-  /** Source identifier (e.g., 'castle_death_shockwave') */
-  sourceId: string;
-  /** Team that applied this modifier (determines buff vs debuff) */
-  sourceTeam: UnitTeam;
-  /** Movement speed modifier (-0.9 = -90% speed) */
-  moveSpeedMod: number;
-  /** Damage modifier (-0.9 = -90% damage) */
-  damageMod: number;
-  /** Remaining duration in seconds */
-  remainingDuration: number;
-}
+import { TemporaryModifier, PendingModifier } from '../modifiers/TemporaryModifier';
+import {
+  MELEE_ENGAGEMENT_DEBUFF,
+  createAttackerDebuff,
+  createDefenderDebuff,
+} from '../modifiers/MeleeEngagementDebuff';
 import { clampToArenaInPlace } from '../BoundsEnforcer';
 import { IDamageable } from '../IEntity';
 import { applyShuffle } from '../shuffle';
@@ -94,6 +77,8 @@ export interface UnitData {
   retargetCooldown: number;
   // Active modifiers (buffs/debuffs)
   activeModifiers: TemporaryModifier[];
+  // Pending modifiers waiting to be applied after a delay
+  pendingModifiers: PendingModifier[];
   // Visual offset for melee lunge/knockback effects (decays over time)
   visualOffset: Vector2;
   // Timer for hit flash effect (counts down from HIT_FLASH_DURATION)
@@ -185,6 +170,9 @@ export class UnitEntity extends BaseEntity {
   }
   get activeModifiers(): TemporaryModifier[] {
     return this.data.activeModifiers;
+  }
+  get pendingModifiers(): PendingModifier[] {
+    return this.data.pendingModifiers;
   }
   get visualOffset(): Vector2 {
     return this.data.visualOffset;
@@ -300,6 +288,18 @@ export class UnitEntity extends BaseEntity {
   }
 
   /**
+   * Get collision size after applying all active modifiers.
+   * Used for separation and collision calculations (not visual rendering).
+   */
+  getCollisionSize(): number {
+    let mult = 1;
+    for (const mod of this.data.activeModifiers) {
+      mult *= 1 + mod.collisionSizeMod;
+    }
+    return Math.max(this.size * 0.1, this.size * mult); // Minimum 10% of base size
+  }
+
+  /**
    * Check if unit has a modifier from a specific source.
    */
   hasModifierFromSource(sourceId: string): boolean {
@@ -327,6 +327,60 @@ export class UnitEntity extends BaseEntity {
   }
 
   /**
+   * Queue a modifier to be applied after a delay.
+   * Used for delayed effects like defender's melee engagement debuff.
+   */
+  queueModifier(modifier: TemporaryModifier, delay: number): void {
+    this.data.pendingModifiers.push({ modifier, delay });
+  }
+
+  /**
+   * Tick pending modifiers, applying those whose delay has expired.
+   */
+  tickPendingModifiers(delta: number): void {
+    for (let i = this.data.pendingModifiers.length - 1; i >= 0; i--) {
+      const pending = this.data.pendingModifiers[i];
+      pending.delay -= delta;
+      if (pending.delay <= 0) {
+        // Apply the modifier
+        this.applyModifier(pending.modifier);
+        // Remove from pending queue
+        this.data.pendingModifiers.splice(i, 1);
+      }
+    }
+  }
+
+  /**
+   * Remove all modifiers (active and pending) linked to a specific unit.
+   * Called when the linked unit dies (e.g., attacker's debuff is cleared when defender dies).
+   * @returns true if any modifiers were removed
+   */
+  removeModifiersLinkedToUnit(unitId: string): boolean {
+    const initialActiveCount = this.data.activeModifiers.length;
+    const initialPendingCount = this.data.pendingModifiers.length;
+
+    // Remove active modifiers linked to this unit
+    this.data.activeModifiers = this.data.activeModifiers.filter((m) => m.linkedUnitId !== unitId);
+
+    // Remove pending modifiers linked to this unit
+    this.data.pendingModifiers = this.data.pendingModifiers.filter(
+      (p) => p.modifier.linkedUnitId !== unitId
+    );
+
+    return (
+      this.data.activeModifiers.length < initialActiveCount ||
+      this.data.pendingModifiers.length < initialPendingCount
+    );
+  }
+
+  /**
+   * Cancel all pending modifiers (e.g., when unit dies before modifiers apply).
+   */
+  clearPendingModifiers(): void {
+    this.data.pendingModifiers = [];
+  }
+
+  /**
    * Main update loop - called every frame.
    * Godot: _process(delta)
    *
@@ -350,6 +404,9 @@ export class UnitEntity extends BaseEntity {
 
     // Tick active modifiers (buffs/debuffs)
     this.tickModifiers(delta);
+
+    // Tick pending modifiers (apply delayed modifiers)
+    this.tickPendingModifiers(delta);
 
     // Decay visual offset (lunge/knockback effect)
     this.decayVisualOffset(delta);
@@ -791,7 +848,7 @@ export class UnitEntity extends BaseEntity {
 
       const toAlly = this.position.subtract(ally.position);
       const dist = toAlly.magnitude();
-      const minDist = (this.size + ally.size) * UNIT_SPACING;
+      const minDist = (this.getCollisionSize() + ally.getCollisionSize()) * UNIT_SPACING;
 
       const avoidDist = minDist * ALLY_AVOIDANCE_DISTANCE_MULTIPLIER;
       if (dist < avoidDist && dist > 0) {
@@ -896,6 +953,21 @@ export class UnitEntity extends BaseEntity {
         target.applyKnockback(direction, knockbackDistance);
       }
 
+      // Apply melee engagement debuffs
+      const targetUnit = target as UnitEntity;
+      const defenderTeam = targetUnit.team ?? (this.team === 'player' ? 'enemy' : 'player');
+
+      // Attacker debuff (immediate) - linked to defender for death cleanup
+      this.applyModifier(createAttackerDebuff(this.id, targetUnit.id, defenderTeam));
+
+      // Defender debuff (delayed)
+      if ('queueModifier' in target && typeof target.queueModifier === 'function') {
+        targetUnit.queueModifier(
+          createDefenderDebuff(targetUnit.id, this.team),
+          MELEE_ENGAGEMENT_DEBUFF.defenderDelay
+        );
+      }
+
       // Direct damage
       target.takeDamage(modifiedDamage, this);
     } else {
@@ -935,7 +1007,7 @@ export class UnitEntity extends BaseEntity {
 
       const toAlly = this.position.subtract(ally.position);
       const dist = toAlly.magnitude();
-      const minDist = (this.size + ally.size) * UNIT_SPACING;
+      const minDist = (this.getCollisionSize() + ally.getCollisionSize()) * UNIT_SPACING;
 
       const avoidDist = minDist * ALLY_AVOIDANCE_DISTANCE_MULTIPLIER;
       if (dist < avoidDist && dist > 0) {
@@ -987,7 +1059,10 @@ export class UnitEntity extends BaseEntity {
     const checkPos = this.position.add(direction.normalize().multiply(checkDist));
 
     for (const ally of allies) {
-      if (checkPos.distanceTo(ally.position) < (this.size + ally.size) * UNIT_SPACING) {
+      if (
+        checkPos.distanceTo(ally.position) <
+        (this.getCollisionSize() + ally.getCollisionSize()) * UNIT_SPACING
+      ) {
         return false;
       }
     }

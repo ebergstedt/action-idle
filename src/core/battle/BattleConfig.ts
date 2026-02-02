@@ -519,6 +519,18 @@ export const ENEMY_SPAWN_MAX_COLS = 5;
  */
 export const ENEMY_SPAWN_JITTER = 0.6;
 
+/**
+ * Jitter factor for deterministic enemy formation X positions.
+ * Applied as a fraction of unit spacing.
+ */
+export const FORMATION_JITTER_X = 0.4;
+
+/**
+ * Jitter factor for deterministic enemy formation Y positions.
+ * Applied as a fraction of row height within the zone.
+ */
+export const FORMATION_JITTER_Y = 0.4;
+
 // =============================================================================
 // OVERLAP RESOLUTION
 // =============================================================================
@@ -800,21 +812,6 @@ export const MAX_ENEMY_COUNT = 20;
 export function calculateEnemyCount(waveNumber: number): number {
   return Math.min(MAX_ENEMY_COUNT, BASE_ENEMY_COUNT + (waveNumber - 1) * ENEMIES_PER_WAVE);
 }
-
-/**
- * Wave at which knights start appearing in enemy composition.
- */
-export const KNIGHT_INTRODUCTION_WAVE = 3;
-
-/**
- * Percentage of knights in composition after introduction (0-1).
- */
-export const KNIGHT_PERCENTAGE = 0.2;
-
-/**
- * Percentage of archers in composition (0-1).
- */
-export const ARCHER_PERCENTAGE = 0.4;
 
 /**
  * Minimum wave number.

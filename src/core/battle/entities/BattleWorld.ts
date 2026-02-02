@@ -64,12 +64,18 @@ export class BattleWorld implements IEntityWorld, IBattleWorld, IWorldEventEmitt
   /**
    * Add a unit to the world.
    * Emits 'entity_added' world event.
+   * Subscribes to 'killed' event to clear linked modifiers from other units.
    */
   addUnit(unit: UnitEntity): void {
     unit.setWorld(this);
     unit.init();
     this.units.push(unit);
     this.worldEvents.emitWorld({ type: 'entity_added', entity: unit });
+
+    // Subscribe to unit death to clear linked modifiers (melee engagement debuffs)
+    unit.on('killed', (event: KilledEvent) => {
+      this.clearModifiersLinkedToUnit(event.entity.id);
+    });
   }
 
   /**
@@ -282,7 +288,7 @@ export class BattleWorld implements IEntityWorld, IBattleWorld, IWorldEventEmitt
 
         const diff = unitA.position.subtract(unitB.position);
         const dist = diff.magnitude();
-        const minDist = (unitA.size + unitB.size) * UNIT_SPACING;
+        const minDist = (unitA.getCollisionSize() + unitB.getCollisionSize()) * UNIT_SPACING;
 
         if (dist < minDist && dist > 0) {
           const overlap = minDist - dist;
@@ -559,6 +565,17 @@ export class BattleWorld implements IEntityWorld, IBattleWorld, IWorldEventEmitt
    */
   getNextModifierId(): number {
     return this.nextModifierId++;
+  }
+
+  /**
+   * Clear all modifiers linked to a specific unit from all other units.
+   * Called when a unit dies to cleanse melee engagement debuffs.
+   * @param unitId - ID of the unit that died
+   */
+  clearModifiersLinkedToUnit(unitId: string): void {
+    for (const unit of this.units) {
+      unit.removeModifiersLinkedToUnit(unitId);
+    }
   }
 
   // === IWorldEventEmitter Implementation ===

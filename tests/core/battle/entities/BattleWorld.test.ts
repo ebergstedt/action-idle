@@ -38,6 +38,7 @@ function createTestUnitData(overrides: Partial<UnitData> = {}): UnitData {
     seekMode: false,
     retargetCooldown: 0,
     activeModifiers: [],
+    pendingModifiers: [],
     visualOffset: new Vector2(0, 0),
     hitFlashTimer: 0,
     deathFadeTimer: -1,

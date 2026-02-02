@@ -24,7 +24,8 @@ import {
 import { ShockwaveRenderData, UnitTeam } from '../types';
 import { BaseEntity } from './BaseEntity';
 import { IBattleWorld } from './IBattleWorld';
-import { TemporaryModifier, UnitEntity } from './UnitEntity';
+import { TemporaryModifier } from '../modifiers/TemporaryModifier';
+import { UnitEntity } from './UnitEntity';
 
 /**
  * Shockwave data.
@@ -158,6 +159,7 @@ export class ShockwaveEntity extends BaseEntity {
       sourceTeam: attackingTeam, // The attacking team caused this debuff
       moveSpeedMod: SHOCKWAVE_DEBUFF_MOVE_SPEED,
       damageMod: SHOCKWAVE_DEBUFF_DAMAGE,
+      collisionSizeMod: 0, // Shockwave doesn't affect collision size
       remainingDuration: SHOCKWAVE_DEBUFF_DURATION_SECONDS,
     };
 

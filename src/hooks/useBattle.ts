@@ -17,7 +17,7 @@ import {
   BattleOutcomeResult,
   CLASSIC_FORMATION,
   calculateAlliedSpawnPositions,
-  calculateEnemySpawnPositions,
+  calculateDeterministicEnemyPositions,
   getEnemyCompositionForWave,
   UnitRegistry,
   ZONE_HEIGHT_PERCENT,
@@ -268,10 +268,16 @@ export function useBattle(options: UseBattleOptions = {}): UseBattleReturn {
       engine.spawnSquad(spawn.type, 'player', spawn.position, arenaHeight);
     }
 
-    // Spawn enemy army
+    // Spawn enemy army using deterministic formation
     const waveNumber = engine.getState().waveNumber;
-    const enemyComposition = getEnemyCompositionForWave(waveNumber);
-    const enemyPositions = calculateEnemySpawnPositions(enemyComposition, bounds);
+    const registry = engine.getRegistry();
+    const enemyComposition = getEnemyCompositionForWave(waveNumber, registry);
+    const enemyPositions = calculateDeterministicEnemyPositions(
+      enemyComposition,
+      registry,
+      bounds,
+      waveNumber
+    );
     for (const spawn of enemyPositions) {
       engine.spawnSquad(spawn.type, 'enemy', spawn.position, arenaHeight);
     }

@@ -6,3 +6,6 @@
 
 export * from './types';
 export * from './ModifierCalculator';
+export * from './TemporaryModifier';
+export { ModifierManager } from './ModifierManager';
+export * from './MeleeEngagementDebuff';

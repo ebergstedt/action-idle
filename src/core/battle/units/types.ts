@@ -22,6 +22,14 @@ export type UnitTeam = 'player' | 'enemy';
 export type UnitCategory = 'infantry' | 'ranged' | 'cavalry';
 
 /**
+ * Formation role determines where a unit is positioned in enemy formations.
+ * - 'front': Forward row, first to engage (tanks, bruisers)
+ * - 'back': Rear row, protected (archers, mages, support)
+ * - 'flank': Sides/edges, mobile (cavalry, assassins, skirmishers)
+ */
+export type FormationRole = 'front' | 'back' | 'flank';
+
+/**
  * Visual shape for rendering.
  */
 export type UnitShape = 'circle' | 'square' | 'triangle';
@@ -122,6 +130,16 @@ export interface UnitDefinition {
 
   /** Tier level: 1 = basic, 2+ = advanced (may require unlocking) */
   tier: number;
+
+  /** Formation role for enemy positioning (front/back/flank) */
+  formationRole: FormationRole;
+
+  /**
+   * Minimum wave number at which this unit can appear in enemy compositions.
+   * Units with wavePermit > current wave won't spawn as enemies.
+   * Default: 1 (available from wave 1)
+   */
+  wavePermit: number;
 
   /** Base stats before any modifiers */
   baseStats: BaseStats;

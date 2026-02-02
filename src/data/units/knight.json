@@ -4,6 +4,8 @@
   "description": "A lightning-fast melee swarm unit. Low health but rapid attacks and high mobility.",
   "category": "cavalry",
   "tier": 1,
+  "formationRole": "flank",
+  "wavePermit": 3,
   "reference": {
     "source": "Mechabellum",
     "unit": "Crawler",

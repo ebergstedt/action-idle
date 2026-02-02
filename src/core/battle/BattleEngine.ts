@@ -396,6 +396,7 @@ export class BattleEngine {
       seekMode: false,
       retargetCooldown: 0,
       activeModifiers: [],
+      pendingModifiers: [],
       visualOffset: Vector2.zero(),
       hitFlashTimer: 0,
       deathFadeTimer: -1, // -1 means alive

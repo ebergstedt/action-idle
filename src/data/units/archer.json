@@ -4,6 +4,8 @@
   "description": "A fragile ranged attacker. Slow but keeps enemies at distance. Falls back to weak melee when cornered.",
   "category": "ranged",
   "tier": 1,
+  "formationRole": "back",
+  "wavePermit": 1,
   "reference": {
     "source": "Mechabellum",
     "unit": "Fang",

@@ -4,6 +4,8 @@
   "description": "A sturdy short-range assault unit. High health, slow but powerful attacks.",
   "category": "infantry",
   "tier": 1,
+  "formationRole": "front",
+  "wavePermit": 1,
   "reference": {
     "source": "Mechabellum",
     "unit": "Hound",
