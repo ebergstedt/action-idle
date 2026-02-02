@@ -30,8 +30,15 @@ export * from './SelectionManager';
 export * from './DragController';
 export * from './BoxSelectController';
 export {
+  // Allied formations
   CLASSIC_FORMATION,
+  DEFAULT_ALLIED_PATTERNS,
   calculateAlliedSpawnPositions,
+  calculateDeterministicAlliedPositions,
+  getDefaultAlliedComposition,
+  selectAlliedPatternForWave,
+  // Enemy formations
+  DEFAULT_ENEMY_PATTERNS,
   calculateEnemySpawnPositions,
   calculateDeterministicEnemyPositions,
   getDefaultEnemyComposition,
@@ -39,7 +46,7 @@ export {
   getAvailableUnitsForWave,
   getUnitRole,
   selectPatternForWave,
-  DEFAULT_ENEMY_PATTERNS,
+  // Types
   type FormationTemplate,
   type UnitPlacement,
   type SpawnPosition,

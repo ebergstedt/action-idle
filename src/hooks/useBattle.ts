@@ -280,13 +280,13 @@ export function useBattle(options: UseBattleOptions = {}): UseBattleReturn {
     // Spawn castles for both teams
     engine.spawnCastles();
 
-    // Spawn allied army using formation
+    // Spawn allied army using fixed classic formation
     const alliedPositions = calculateAlliedSpawnPositions(CLASSIC_FORMATION, bounds);
     for (const spawn of alliedPositions) {
       engine.spawnSquad(spawn.type, 'player', spawn.position, arenaHeight);
     }
 
-    // Spawn enemy army using deterministic formation
+    // Spawn enemy army using deterministic formation (varies by wave)
     const waveNumber = engine.getState().waveNumber;
     const registry = engine.getRegistry();
     const enemyComposition = getEnemyCompositionForWave(waveNumber, registry);
