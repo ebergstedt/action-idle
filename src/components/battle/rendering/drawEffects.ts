@@ -7,10 +7,11 @@
 
 import type { ShockwaveRenderData, DamageNumberRenderData } from '../../../core/battle';
 import { BASE_DAMAGE_NUMBER_FONT_SIZE, scaleValue } from '../../../core/battle/BattleConfig';
-import { ARENA_COLORS, DEBUFF_COLORS } from '../../../core/theme/colors';
+import { ARENA_COLORS, hexToRgba } from '../../../core/theme/colors';
 
 /**
  * Draw shockwave effect (expanding ring from castle destruction).
+ * Uses the team color of the attacking team.
  */
 export function drawShockwave(
   ctx: CanvasRenderingContext2D,
@@ -35,18 +36,22 @@ export function drawShockwave(
   // Constant ring thickness
   const ringThickness = 8;
 
+  // Derive glow colors from the team color
+  const glowColor = hexToRgba(color, 0.3);
+  const highlightColor = hexToRgba(color, 0.6);
+
   // Outer glow
   ctx.beginPath();
   ctx.arc(0, 0, currentRadius, 0, Math.PI * 2);
-  ctx.strokeStyle = color;
+  ctx.strokeStyle = glowColor;
   ctx.lineWidth = ringThickness + 4;
-  ctx.globalAlpha = 0.3;
+  ctx.globalAlpha = 1;
   ctx.stroke();
 
   // Main ring
   ctx.beginPath();
   ctx.arc(0, 0, currentRadius, 0, Math.PI * 2);
-  ctx.strokeStyle = DEBUFF_COLORS.shockwave;
+  ctx.strokeStyle = color;
   ctx.lineWidth = ringThickness;
   ctx.globalAlpha = 1;
   ctx.stroke();
@@ -54,9 +59,9 @@ export function drawShockwave(
   // Inner highlight
   ctx.beginPath();
   ctx.arc(0, 0, currentRadius - ringThickness / 2, 0, Math.PI * 2);
-  ctx.strokeStyle = DEBUFF_COLORS.shockwaveGlow;
+  ctx.strokeStyle = highlightColor;
   ctx.lineWidth = 2;
-  ctx.globalAlpha = 0.6;
+  ctx.globalAlpha = 1;
   ctx.stroke();
 
   ctx.restore();

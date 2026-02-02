@@ -69,6 +69,12 @@ export interface UnitVisuals {
    * e.g., 'warrior', 'archer', 'knight'
    */
   colorKey: string;
+  /**
+   * Walk animation type ID.
+   * e.g., 'bounce', 'none'
+   * Defaults to 'bounce' if not specified.
+   */
+  walkAnimation?: string;
 }
 
 /**

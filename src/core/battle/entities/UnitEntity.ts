@@ -38,12 +38,18 @@ import {
  * Temporary modifier (buff/debuff) applied to a unit.
  * Modifiers have a duration and modify stats multiplicatively.
  * This is simpler than the upgrade system's ActiveModifier - just for runtime effects.
+ *
+ * Buff vs Debuff is determined by sourceTeam:
+ * - If sourceTeam matches unit's team → buff (friendly effect)
+ * - If sourceTeam differs from unit's team → debuff (enemy effect)
  */
 export interface TemporaryModifier {
   /** Unique ID for this modifier instance */
   id: string;
   /** Source identifier (e.g., 'castle_death_shockwave') */
   sourceId: string;
+  /** Team that applied this modifier (determines buff vs debuff) */
+  sourceTeam: UnitTeam;
   /** Movement speed modifier (-0.9 = -90% speed) */
   moveSpeedMod: number;
   /** Damage modifier (-0.9 = -90% damage) */
@@ -87,6 +93,10 @@ export interface UnitData {
   hitFlashTimer: number;
   // Timer for death fade effect (counts down from DEATH_FADE_DURATION, -1 = alive)
   deathFadeTimer: number;
+  // Walk animation elapsed time (seconds spent moving, used by animation system)
+  walkAnimationTime: number;
+  // Walk animation type ID (e.g., 'bounce', 'none')
+  walkAnimation: string;
 }
 
 /**
@@ -187,6 +197,15 @@ export class UnitEntity extends BaseEntity {
   get isDying(): boolean {
     return this.data.deathFadeTimer >= 0;
   }
+  get walkAnimationTime(): number {
+    return this.data.walkAnimationTime;
+  }
+  set walkAnimationTime(value: number) {
+    this.data.walkAnimationTime = value;
+  }
+  get walkAnimation(): string {
+    return this.data.walkAnimation;
+  }
 
   /**
    * Get the world as IBattleWorld for battle-specific queries.
@@ -278,6 +297,26 @@ export class UnitEntity extends BaseEntity {
   }
 
   /**
+   * Remove all modifiers from a specific source.
+   * Used for clearing debuffs (e.g., friendly shockwave clears enemy shockwave debuff).
+   * @returns true if any modifiers were removed
+   */
+  removeModifierBySource(sourceId: string): boolean {
+    const initialLength = this.data.activeModifiers.length;
+    this.data.activeModifiers = this.data.activeModifiers.filter((m) => m.sourceId !== sourceId);
+    return this.data.activeModifiers.length < initialLength;
+  }
+
+  /**
+   * Clear all enemy debuffs from this unit (keeps friendly buffs).
+   * Used when a friendly shockwave rallies the unit.
+   * A debuff is any modifier where sourceTeam differs from the unit's team.
+   */
+  clearEnemyDebuffs(): void {
+    this.data.activeModifiers = this.data.activeModifiers.filter((m) => m.sourceTeam === this.team);
+  }
+
+  /**
    * Main update loop - called every frame.
    * Godot: _process(delta)
    *
@@ -341,6 +380,25 @@ export class UnitEntity extends BaseEntity {
     // Exponential decay
     const decay = Math.exp(-MELEE_OFFSET_DECAY_RATE * delta);
     this.visualOffset = this.visualOffset.multiply(decay);
+  }
+
+  /**
+   * Advance walk animation time when moving.
+   * Generic time accumulator - specific animations interpret this as they need.
+   */
+  private advanceWalkAnimation(delta: number): void {
+    this.walkAnimationTime += delta;
+    // Keep time in reasonable range to prevent floating point issues (wrap at 1000s)
+    if (this.walkAnimationTime > 1000) {
+      this.walkAnimationTime -= 1000;
+    }
+  }
+
+  /**
+   * Reset walk animation to idle state when unit stops moving.
+   */
+  private resetWalkAnimation(): void {
+    this.walkAnimationTime = 0;
   }
 
   /**
@@ -417,6 +475,8 @@ export class UnitEntity extends BaseEntity {
       visualOffset: this.visualOffset,
       hitFlashTimer: this.hitFlashTimer,
       deathFadeTimer: this.deathFadeTimer,
+      walkAnimationTime: this.walkAnimationTime,
+      walkAnimation: this.walkAnimation,
     };
   }
 
@@ -598,6 +658,11 @@ export class UnitEntity extends BaseEntity {
       // In melee range against a unit - apply combat shuffle
       // No shuffle when attacking castles - they don't attack back
       this.applyCombatShuffle(delta);
+      // Shuffling is not walking - reset animation to idle
+      this.resetWalkAnimation();
+    } else {
+      // In range (ranged mode) but not moving - reset animation to idle
+      this.resetWalkAnimation();
     }
   }
 
@@ -651,6 +716,9 @@ export class UnitEntity extends BaseEntity {
     const movement = moveDirection.multiply(delta);
     const previousPosition = this.position.clone();
     this.position = this.position.add(movement);
+
+    // Advance walk animation time while moving
+    this.advanceWalkAnimation(delta);
 
     this.emit({
       type: 'moved',
@@ -804,6 +872,9 @@ export class UnitEntity extends BaseEntity {
 
     const movement = moveDirection.multiply(delta);
     this.position = this.position.add(movement);
+
+    // Advance walk animation time while moving
+    this.advanceWalkAnimation(delta);
 
     // Emit moved event with typed payload
     this.emit({

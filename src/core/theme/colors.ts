@@ -135,20 +135,61 @@ export const ARENA_COLORS = {
 } as const;
 
 // =============================================================================
-// TEAM COLORS - Player vs Enemy
+// TEAM COLORS - Greenies vs Redwings
 // =============================================================================
 
 export type Team = 'player' | 'enemy';
 
-export const TEAM_COLORS: Record<Team, FactionColor> = {
-  // Player uses England colors (red/white) - classic protagonist
-  player: FACTION_COLORS.england,
-  // Enemy uses France colors (blue/yellow) - classic antagonist
-  enemy: FACTION_COLORS.france,
+/**
+ * Team lore names for display purposes.
+ * - Greenies: The player's faction (green theme)
+ * - Redwings: The enemy faction (red theme)
+ */
+export const TEAM_NAMES: Record<Team, string> = {
+  player: 'Greenies',
+  enemy: 'Redwings',
 } as const;
 
+/**
+ * Base colors for each team. Unit types are variations of these.
+ * Greenies (player): Green (Milan-inspired)
+ * Redwings (enemy): Red (England-inspired)
+ */
+export const TEAM_BASE_COLORS: Record<Team, string> = {
+  player: '#006400', // Greenies - Forest green
+  enemy: '#C80000', // Redwings - Deep red
+} as const;
+
+export const TEAM_COLORS: Record<Team, FactionColor> = {
+  // Greenies (player) - nature/growth theme
+  player: FACTION_COLORS.milan,
+  // Redwings (enemy) - danger/aggression theme
+  enemy: FACTION_COLORS.england,
+} as const;
+
+/**
+ * Get the opposite team.
+ */
+export function getOppositeTeam(team: Team): Team {
+  return team === 'player' ? 'enemy' : 'player';
+}
+
+/**
+ * Get team base color.
+ */
+export function getTeamColor(team: Team): string {
+  return TEAM_BASE_COLORS[team];
+}
+
+/**
+ * Get team display name.
+ */
+export function getTeamName(team: Team): string {
+  return TEAM_NAMES[team];
+}
+
 // =============================================================================
-// UNIT TYPE COLORS - By Unit Class
+// UNIT TYPE COLORS - Variations of Team Base Color
 // =============================================================================
 
 export type UnitType = 'warrior' | 'archer' | 'knight';
@@ -158,21 +199,33 @@ export interface UnitTypeColors {
   enemy: string;
 }
 
+/**
+ * Unit colors are variations of team base colors.
+ * This keeps team identity clear while distinguishing unit types.
+ * Variations are CONSISTENT across teams:
+ *
+ * - Warrior: Base color (standard)
+ * - Archer: Lighter shade (ranged = further back, lighter)
+ * - Knight: Darker shade (elite = heavier, darker)
+ *
+ * Player (green): #004D00 (dark) -> #006400 (base) -> #228B22 (light)
+ * Enemy (red):    #820000 (dark) -> #C80000 (base) -> #FF6464 (light)
+ */
 export const UNIT_TYPE_COLORS: Record<UnitType, UnitTypeColors> = {
-  // Warriors - core infantry
+  // Warriors - core infantry, uses base team color
   warrior: {
-    player: FACTION_COLORS.milan.primary, // Milan Green #006400
-    enemy: FACTION_COLORS.england.primary, // England Red #C80000
+    player: '#006400', // Base green
+    enemy: '#C80000', // Base red
   },
-  // Archers - ranged support
+  // Archers - ranged support, lighter shade
   archer: {
-    player: FACTION_COLORS.france.primary, // France Blue #0000A0
-    enemy: FACTION_COLORS.denmark.primary, // Denmark Dark Red #820000
+    player: '#228B22', // Forest green (lighter)
+    enemy: '#FF6464', // Coral red (lighter)
   },
-  // Knights - elite cavalry
+  // Knights - elite cavalry, darker shade
   knight: {
-    player: FACTION_COLORS.byzantium.primary, // Byzantium Purple #4B0082
-    enemy: FACTION_COLORS.hungary.primary, // Hungary Light Red #FF6464
+    player: '#004D00', // Deep forest (darker)
+    enemy: '#820000', // Maroon (darker)
   },
 } as const;
 

@@ -110,6 +110,10 @@ export interface UnitRenderData {
   hitFlashTimer: number;
   /** Timer for death fade effect (>= 0 means dying, -1 means alive) */
   deathFadeTimer: number;
+  /** Walk animation elapsed time in seconds (generic, used by animation system) */
+  walkAnimationTime: number;
+  /** Walk animation type ID (e.g., 'bounce', 'none') */
+  walkAnimation: string;
 }
 
 /**

@@ -29,6 +29,7 @@ import {
   scaleValue,
 } from './BattleConfig';
 import { EntityBounds } from './BoundsEnforcer';
+import { DEFAULT_WALK_ANIMATION } from './animations';
 import { BattleWorld, UnitEntity, UnitData, CastleEntity, CastleData } from './entities';
 import { BattleState, BattleOutcome, getScaledUnitSize, UnitRenderData } from './types';
 import { UnitDefinition, UnitTeam } from './units/types';
@@ -176,6 +177,8 @@ export class BattleEngine {
       visualOffset: Vector2.zero(),
       hitFlashTimer: 0,
       deathFadeTimer: -1, // -1 means alive
+      walkAnimationTime: 0, // Walk animation starts at time 0
+      walkAnimation: visuals.walkAnimation ?? DEFAULT_WALK_ANIMATION,
     };
 
     const entity = new UnitEntity(id, position.clone(), data);

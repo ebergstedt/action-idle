@@ -14,13 +14,16 @@ import {
   SELECTION_PULSE_SPEED,
   SELECTION_PULSE_INTENSITY,
 } from '../../../core/battle/BattleConfig';
-import { ARENA_COLORS, UI_COLORS, DEBUFF_COLORS } from '../../../core/theme/colors';
+import { computeWalkAnimationState } from '../../../core/battle/animations';
+import { ARENA_COLORS, UI_COLORS, getOppositeTeam, getTeamColor } from '../../../core/theme/colors';
 
 /**
  * Draw unit shadow beneath the unit.
+ * Shadow stays on the ground (no bounce offset) but scales with squash.
  */
 export function drawUnitShadow(ctx: CanvasRenderingContext2D, unit: UnitRenderData): void {
-  const { position, shape, size, visualOffset, deathFadeTimer } = unit;
+  const { position, shape, size, visualOffset, deathFadeTimer, walkAnimation, walkAnimationTime } =
+    unit;
 
   // Calculate death fade effect (shadows also fade with unit)
   const isDying = deathFadeTimer >= 0;
@@ -28,15 +31,22 @@ export function drawUnitShadow(ctx: CanvasRenderingContext2D, unit: UnitRenderDa
   const deathOpacity = isDying ? 1 - deathProgress : 1;
   const deathScale = isDying ? 1 - deathProgress * 0.3 : 1;
 
-  // Apply visual offset to match unit position
+  // Shadow stays on the ground (no bounceY offset), but stretches with squash
   const renderX = position.x + (visualOffset?.x ?? 0) + UNIT_SHADOW_OFFSET;
   const renderY = position.y + (visualOffset?.y ?? 0) + UNIT_SHADOW_OFFSET;
+
+  // Compute animation state from time and type
+  const animState = computeWalkAnimationState(walkAnimation, walkAnimationTime, size);
+  const animScaleX = animState.scaleX;
 
   ctx.save();
   ctx.translate(renderX, renderY);
 
-  if (isDying) {
-    ctx.scale(deathScale, deathScale);
+  // Apply death scale and animation horizontal stretch to shadow
+  const finalScaleX = deathScale * animScaleX;
+  const finalScaleY = deathScale; // Shadow doesn't squash vertically
+  if (finalScaleX !== 1 || finalScaleY !== 1) {
+    ctx.scale(finalScaleX, finalScaleY);
   }
 
   ctx.fillStyle = ARENA_COLORS.unitShadow;
@@ -65,7 +75,7 @@ export function drawUnitShadow(ctx: CanvasRenderingContext2D, unit: UnitRenderDa
 }
 
 /**
- * Draw the unit body with selection ring and hit flash.
+ * Draw the unit body with selection ring, hit flash, and walk animation.
  */
 export function drawUnitBody(
   ctx: CanvasRenderingContext2D,
@@ -73,7 +83,17 @@ export function drawUnitBody(
   isSelected: boolean,
   isBeingDragged: boolean
 ): void {
-  const { position, color, shape, size, team, visualOffset, deathFadeTimer } = unit;
+  const {
+    position,
+    color,
+    shape,
+    size,
+    team,
+    visualOffset,
+    deathFadeTimer,
+    walkAnimation,
+    walkAnimationTime,
+  } = unit;
 
   // Calculate death fade effect
   const isDying = deathFadeTimer >= 0;
@@ -81,16 +101,24 @@ export function drawUnitBody(
   const deathOpacity = isDying ? 1 - deathProgress : 1;
   const deathScale = isDying ? 1 - deathProgress * 0.3 : 1; // Shrink to 70% at death
 
-  // Apply visual offset (lunge/knockback) to rendered position
+  // Compute walk animation state from time and type
+  const animState = computeWalkAnimationState(walkAnimation, walkAnimationTime, size);
+  const bounceY = animState.offsetY;
+  const animScaleX = animState.scaleX;
+  const animScaleY = animState.scaleY;
+
+  // Apply visual offset (lunge/knockback) and bounce to rendered position
   const renderX = position.x + (visualOffset?.x ?? 0);
-  const renderY = position.y + (visualOffset?.y ?? 0);
+  const renderY = position.y + (visualOffset?.y ?? 0) + bounceY;
 
   ctx.save();
   ctx.translate(renderX, renderY);
 
-  // Apply death scale
-  if (isDying) {
-    ctx.scale(deathScale, deathScale);
+  // Apply death scale combined with animation squash/stretch
+  const finalScaleX = deathScale * animScaleX;
+  const finalScaleY = deathScale * animScaleY;
+  if (finalScaleX !== 1 || finalScaleY !== 1) {
+    ctx.scale(finalScaleX, finalScaleY);
   }
 
   // Selection ring with pulse animation (skip for dying units)
@@ -227,6 +255,7 @@ export function drawHealthBar(
 
 /**
  * Draw debuff indicator above unit (e.g., shockwave debuff).
+ * Debuff color is the ENEMY team's color (the team that caused the debuff).
  */
 export function drawDebuffIndicator(ctx: CanvasRenderingContext2D, unit: UnitRenderData): void {
   // Only draw if unit has shockwave debuff
@@ -235,7 +264,7 @@ export function drawDebuffIndicator(ctx: CanvasRenderingContext2D, unit: UnitRen
   );
   if (!hasShockwaveDebuff) return;
 
-  const { position, size, visualOffset } = unit;
+  const { position, size, visualOffset, team } = unit;
 
   // Apply visual offset to match unit body position
   const renderX = position.x + (visualOffset?.x ?? 0);
@@ -248,8 +277,12 @@ export function drawDebuffIndicator(ctx: CanvasRenderingContext2D, unit: UnitRen
   const iconY = -size - 32;
   const iconSize = 8;
 
+  // Debuff color is the enemy team's color (the team that caused the debuff)
+  const enemyTeam = getOppositeTeam(team);
+  const debuffColor = getTeamColor(enemyTeam);
+
   // Draw a small skull-like icon (simplified as X in circle)
-  ctx.fillStyle = DEBUFF_COLORS.shockwave;
+  ctx.fillStyle = debuffColor;
   ctx.strokeStyle = UI_COLORS.white;
   ctx.lineWidth = 1.5;
 

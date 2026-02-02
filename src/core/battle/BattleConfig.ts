@@ -634,6 +634,34 @@ export const DUST_PARTICLE_SIZE = 3;
 export const ALLY_AVOIDANCE_DISTANCE_MULTIPLIER = 2;
 
 // =============================================================================
+// BOUNCE ANIMATION
+// =============================================================================
+
+/**
+ * How many bounces per second when moving.
+ * Higher = faster bounce cycle.
+ */
+export const BOUNCE_FREQUENCY = 1.5;
+
+/**
+ * Maximum vertical offset (in pixels) at the peak of each bounce.
+ * This is the base value, scaled by unit size.
+ */
+export const BOUNCE_HEIGHT_MULTIPLIER = 0.25;
+
+/**
+ * Amount of horizontal stretch when unit hits the ground (1.0 = no stretch).
+ * 1.15 = 15% wider at the bottom of bounce.
+ */
+export const BOUNCE_SQUASH_STRETCH_X = 1.15;
+
+/**
+ * Amount of vertical squash when unit hits the ground (1.0 = no squash).
+ * 0.85 = 15% shorter at the bottom of bounce.
+ */
+export const BOUNCE_SQUASH_STRETCH_Y = 0.85;
+
+// =============================================================================
 // SHOCKWAVE CONFIGURATION
 // =============================================================================
 
@@ -650,14 +678,14 @@ export const BASE_SHOCKWAVE_EXPANSION_SPEED = 120;
 export const SHOCKWAVE_MAX_RADIUS_FALLBACK = 2000;
 
 /**
- * Movement speed debuff applied by shockwave (-0.9 = -90% speed).
+ * Movement speed debuff applied by shockwave (-0.3 = -30% speed).
  */
-export const SHOCKWAVE_DEBUFF_MOVE_SPEED = -0.9;
+export const SHOCKWAVE_DEBUFF_MOVE_SPEED = -0.3;
 
 /**
- * Damage debuff applied by shockwave (-0.9 = -90% damage).
+ * Damage debuff applied by shockwave (-0.3 = -30% damage).
  */
-export const SHOCKWAVE_DEBUFF_DAMAGE = -0.9;
+export const SHOCKWAVE_DEBUFF_DAMAGE = -0.3;
 
 /**
  * Duration of shockwave debuff in seconds.

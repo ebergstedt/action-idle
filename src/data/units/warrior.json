@@ -18,7 +18,8 @@
   "visuals": {
     "shape": "square",
     "baseSize": 20,
-    "colorKey": "warrior"
+    "colorKey": "warrior",
+    "walkAnimation": "bounce"
   },
   "innateAbilities": [],
   "unlockRequirements": []

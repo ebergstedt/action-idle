@@ -22,7 +22,8 @@
   "visuals": {
     "shape": "triangle",
     "baseSize": 16,
-    "colorKey": "archer"
+    "colorKey": "archer",
+    "walkAnimation": "bounce"
   },
   "innateAbilities": [],
   "unlockRequirements": []

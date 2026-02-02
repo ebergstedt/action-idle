@@ -11,7 +11,7 @@
  */
 
 import { Vector2 } from '../../physics/Vector2';
-import { DEBUFF_COLORS } from '../../theme/colors';
+import { getOppositeTeam, getTeamColor } from '../../theme/colors';
 import {
   SHOCKWAVE_DEBUFF_DAMAGE,
   SHOCKWAVE_DEBUFF_DURATION_SECONDS,
@@ -79,7 +79,7 @@ export class ShockwaveEntity extends BaseEntity {
 
   /**
    * Main update loop.
-   * Expands the shockwave and checks for units to debuff.
+   * Expands the shockwave and checks for units to debuff/cleanse.
    */
   override update(delta: number): void {
     if (this._destroyed) return;
@@ -94,52 +94,80 @@ export class ShockwaveEntity extends BaseEntity {
       return;
     }
 
-    // Find enemy units within the new ring (between previous and current radius)
-    this.applyDebuffsToUnitsInRing(previousRadius, this.data.currentRadius);
+    // Process units within the new ring (between previous and current radius)
+    this.processUnitsInRing(previousRadius, this.data.currentRadius);
   }
 
   /**
-   * Apply debuffs to units of the same team as the destroyed castle.
-   * When a castle is destroyed, its own team's units are debuffed (demoralized).
+   * Process units within the shockwave ring.
+   * - Units of the destroyed castle's team: apply debuff (demoralized)
+   * - Units of the attacking team: clear enemy shockwave debuffs (rallied)
    */
-  private applyDebuffsToUnitsInRing(innerRadius: number, outerRadius: number): void {
+  private processUnitsInRing(innerRadius: number, outerRadius: number): void {
     const world = this.getBattleWorld();
     if (!world) return;
 
-    // Get units of the same team as the destroyed castle (they get debuffed)
-    const affectedUnits = world.getUnitsByTeam(this.sourceTeam);
+    const attackingTeam = getOppositeTeam(this.sourceTeam);
 
-    for (const unit of affectedUnits) {
-      // Skip already hit units
-      if (this.data.hitUnitIds.has(unit.id)) continue;
-
-      // Skip destroyed/dead units
-      if (unit.isDestroyed() || unit.health <= 0) continue;
-
-      // Check if unit is within the ring
-      const distance = this.position.distanceTo(unit.position);
-
-      // Unit is hit if its center is within the ring
-      if (distance >= innerRadius && distance <= outerRadius + unit.size) {
+    // Process units of the destroyed castle's team (apply debuff)
+    const enemyUnits = world.getUnitsByTeam(this.sourceTeam);
+    for (const unit of enemyUnits) {
+      if (this.isUnitInRing(unit, innerRadius, outerRadius)) {
         this.applyDebuffToUnit(unit);
+        this.data.hitUnitIds.add(unit.id);
+      }
+    }
+
+    // Process units of the attacking team (clear enemy debuffs)
+    const friendlyUnits = world.getUnitsByTeam(attackingTeam);
+    for (const unit of friendlyUnits) {
+      if (this.isUnitInRing(unit, innerRadius, outerRadius)) {
+        this.clearDebuffFromUnit(unit);
         this.data.hitUnitIds.add(unit.id);
       }
     }
   }
 
   /**
-   * Apply the shockwave debuff to a unit.
+   * Check if a unit is within the shockwave ring.
+   */
+  private isUnitInRing(unit: UnitEntity, innerRadius: number, outerRadius: number): boolean {
+    // Skip already hit units
+    if (this.data.hitUnitIds.has(unit.id)) return false;
+
+    // Skip destroyed/dead units
+    if (unit.isDestroyed() || unit.health <= 0) return false;
+
+    // Check if unit is within the ring
+    const distance = this.position.distanceTo(unit.position);
+    return distance >= innerRadius && distance <= outerRadius + unit.size;
+  }
+
+  /**
+   * Apply the shockwave debuff to a unit (enemy team - demoralized).
+   * The debuff sourceTeam is the attacking team (opposite of the destroyed castle's team).
    */
   private applyDebuffToUnit(unit: UnitEntity): void {
+    const attackingTeam = getOppositeTeam(this.sourceTeam);
     const modifier: TemporaryModifier = {
       id: `shockwave_debuff_${nextModifierId++}`,
       sourceId: 'castle_death_shockwave',
+      sourceTeam: attackingTeam, // The attacking team caused this debuff
       moveSpeedMod: SHOCKWAVE_DEBUFF_MOVE_SPEED,
       damageMod: SHOCKWAVE_DEBUFF_DAMAGE,
       remainingDuration: SHOCKWAVE_DEBUFF_DURATION_SECONDS,
     };
 
     unit.applyModifier(modifier);
+  }
+
+  /**
+   * Clear enemy debuffs from a unit (friendly team - rallied).
+   * When your team destroys an enemy castle, the shockwave clears all
+   * enemy debuffs from your units, but keeps friendly buffs intact.
+   */
+  private clearDebuffFromUnit(unit: UnitEntity): void {
+    unit.clearEnemyDebuffs();
   }
 
   /**
@@ -162,6 +190,8 @@ export class ShockwaveEntity extends BaseEntity {
  * @param sourceTeam - The team whose castle was destroyed (this team's units get debuffed)
  * @param maxRadius - Maximum expansion radius (should be arena diagonal for full coverage)
  * @param arenaHeight - Arena height for scaling expansion speed
+ *
+ * The shockwave color is the ATTACKING team's color (the team that killed the castle).
  */
 export function createShockwave(
   id: string,
@@ -170,13 +200,17 @@ export function createShockwave(
   maxRadius: number = SHOCKWAVE_MAX_RADIUS_FALLBACK,
   arenaHeight: number = 600
 ): ShockwaveEntity {
+  // Shockwave color is the attacking team's color (opposite of the destroyed castle's team)
+  const attackingTeam = getOppositeTeam(sourceTeam);
+  const shockwaveColor = getTeamColor(attackingTeam);
+
   const data: ShockwaveData = {
     sourceTeam,
     maxRadius,
     expansionSpeed: scaleValue(BASE_SHOCKWAVE_EXPANSION_SPEED, arenaHeight),
     currentRadius: 0,
     hitUnitIds: new Set(),
-    color: DEBUFF_COLORS.shockwaveRing,
+    color: shockwaveColor,
   };
 
   return new ShockwaveEntity(id, position, data);
