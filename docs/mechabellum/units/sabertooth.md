@@ -13,15 +13,15 @@ This rare unit is best used as a midgame support unit (rounds 3-5). You usually 
 | **Cost** | 200 Supply |
 | **Unlock Cost** | N/A (Rare - Unit Pack Only) |
 | **Unit Count** | 1 (Single Entity) |
-| **HP** | 14,801 (15,258 at Level 1 per some sources) |
-| **Damage per Shot** | 7,858 (6,000 per some sources) |
-| **Attack Interval** | 3.4 seconds (3.0 per some sources) |
+| **HP** | 15,541 |
+| **Damage per Shot** | 7,858 |
+| **Attack Interval** | 3.4 seconds |
 | **DPS** | 2,311 |
 | **Range** | 95m |
 | **Speed** | 8 m/s |
 | **Target** | Ground Only |
 | **Attack Type** | Projectile (high-caliber cannon) |
-| **Splash Radius** | 6m |
+| **Splash Radius** | 5m |
 
 ### Weapon Mechanics
 
@@ -37,6 +37,7 @@ This rare unit is best used as a midgame support unit (rounds 3-5). You usually 
 - Base damage: 7,858 per shot
 - Attack interval: 3.4 seconds
 - Base DPS: 7,858 / 3.4 = 2,311 DPS
+- Splash range: 5m
 - Double Shot tech: Fires 2 shells, +12% reload time = ~4,100 effective DPS
 
 **Projectile Mechanics:**
@@ -68,7 +69,7 @@ This rare unit is best used as a midgame support unit (rounds 3-5). You usually 
 - Level 1: <300 HP, Level 2: <600 HP, Level 3: <900 HP
 - ATK reduced by 50%
 
-*Stats current as of 2025. Some variation exists between sources; values may change with balance patches.*
+*Stats current as of 2025. Values may change with balance patches.*
 
 ## Technologies
 
@@ -190,5 +191,6 @@ This rare unit is best used as a midgame support unit (rounds 3-5). You usually 
 
 - [MechaMonarch Sabertooth Guide](https://mechamonarch.com/unit/sabertooth/)
 - [Mechabellum Wiki - Sabertooth](https://mechabellum.wiki/index.php/Sabertooth)
+- [MBXmas Wiki - Sabertooth](https://wiki.mbxmas.com/units/ground/sabertooth/)
 - [MechaMonarch Counter List](https://mechamonarch.com/guide/mechabellum-counters/)
 - [MechaMonarch Unit Tier List](https://mechamonarch.com/guide/mechabellum-unit-tier-list/)

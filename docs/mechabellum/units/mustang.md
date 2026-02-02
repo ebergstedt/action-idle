@@ -23,7 +23,7 @@ Mustangs excel at clearing chaff units like Fangs and Crawlers in the early game
 | **Speed** | 16 m/s |
 | **Target** | Air and Ground |
 | **Attack Type** | Projectile (rapid-fire cannon) |
-| **Splash Radius** | Small (approximately 3m) |
+| **Splash Radius** | None (0m base; 7m with High-Explosive Ammo tech) |
 
 ### Weapon Mechanics
 
@@ -31,7 +31,7 @@ Mustangs excel at clearing chaff units like Fangs and Crawlers in the early game
 
 - **Projectile Speed:** Fast hitscan-like projectiles
 - **Fire Pattern:** Continuous rapid fire at 2.5 shots/second per unit
-- **Splash Damage:** Small splash radius (~3m), excellent for hitting clustered chaff
+- **Splash Damage:** No base splash (0m); High-Explosive Ammo adds 7m splash at -35% ATK
 - **Armor Interaction:** Low damage per shot (36) means Armor Enhancement is extremely effective against Mustangs - each point of armor reduction applies to every shot
 
 **DPS Breakdown:**
@@ -46,7 +46,7 @@ Mustangs excel at clearing chaff units like Fangs and Crawlers in the early game
 | Tech | Cost | Description |
 |------|------|-------------|
 | **Range Enhancement** | 300 | Increases attack range by 40m. Usually the first tech to get. |
-| **High-Explosive Ammo** | 200 | Increases splash damage range by 7m, but reduces ATK by 40%. Good vs Fangs, Crawlers, and Wasps. |
+| **High-Explosive Ammo** | 50 | Increases splash damage range by 7m, but reduces ATK by 35%. Good vs Fangs, Crawlers, and Wasps. |
 | **Armor-Piercing Bullets** | 300 | Increases ATK by 50%. Late game tech for high-level carry Mustangs. Great vs barrier shields, Sledgehammers, Overlord, and armored units. |
 | **Aerial Specialization** | 300 | ATK increases by 90% to aerial units, increases range by 30 when attacking aerial units. Must-have for air battles. |
 | **Missile Intercept** | 200 | Mustang will attempt to intercept enemy missiles within 150m (battlefield skills cannot be intercepted). Continuous interception decreases success rate over time. |
@@ -55,7 +55,7 @@ Mustangs excel at clearing chaff units like Fangs and Crawlers in the early game
 
 **Range Enhancement** - Almost always the first tech to pick. Extra range keeps your Mustangs safer and allows them to engage before enemies can close the gap. Essential before investing in damage techs.
 
-**High-Explosive Ammo** - Best against swarm units (Fangs, Crawlers, Wasps). Consider this if the enemy is leaning into Crawlers. If you already have several Mustang squads, HE is a good answer to Crawlers.
+**High-Explosive Ammo** - Very cheap (50 supply) and best against swarm units (Fangs, Crawlers, Wasps). Consider this if the enemy is leaning into Crawlers. If you already have several Mustang squads, HE is a good answer to Crawlers.
 
 **Armor-Piercing Bullets** - Late game technology for high-level carry Mustangs. Great vs barrier shields, Sledgehammers, Overlord, and armored units. Always buy Range before this tech. Note: Buffs are additive, so this provides diminishing returns if you already have Advanced Firepower Control System (+200% damage).
 

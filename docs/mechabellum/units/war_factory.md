@@ -15,30 +15,35 @@ The War Factory's main weapon is housed in four turrets along its hull that can 
 | **Cost** | 800 Supply |
 | **Unlock Cost** | 350 |
 | **Unit Count** | 1 per squad |
-| **Unit HP** | 146,782 |
-| **Attack Damage** | 8,500 per turret |
+| **Unit HP** | 113,593 |
+| **Attack Damage** | 7,520 per turret |
 | **Turrets** | 4 independent turrets |
-| **Attack Interval** | 3.0s |
-| **DPS** | ~5,667 (calculated as x2 due to firing arcs) |
+| **Attack Interval** | 1.8s |
+| **DPS** | ~4,178 per turret (~8,356 typical with 2 turrets engaged) |
 | **Range** | 100m |
-| **Splash Radius** | 8m per shell |
-| **Speed** | 4 m/s |
+| **Splash Radius** | 4.5m per shell |
+| **Rotation Speed** | 30 degrees/s |
+| **Speed** | 6 m/s |
 | **Target** | Ground Only |
-| **Upkeep** | 200 Supply/round (50 with tech) |
+| **Upkeep** | 200 Supply/round (50 with Efficient Maintenance) |
+| **Upgrade EXP** | 3,200 |
+
+*Note: HP was 166,798 pre-1.0 patch, reduced to 146,782 in patch 1.0, and further adjusted to current 113,593 in subsequent patches.*
 
 ### Turret Mechanics
 
-**Four Independent Turrets:**
+**Four Independent High-Power Cannons:**
 - Main weapon housed in four turrets along hull
-- Each turret can independently engage different targets
+- Each turret has separate targeting cones
+- Can independently engage different targets
 - Potential to quadruple stated damage output vs multiple targets
-- DPS calculation uses x2 multiplier for accuracy (typical engagement)
+- Typically only 2 turrets engage unless flanked or beaconed diagonally
 
 **Turret Arc Limitations:**
 - Front turrets cannot engage targets behind factory
 - Rear turrets cannot engage targets in front
 - Under normal positioning, rear turrets rarely active
-- Diagonal beacon placement allows 50% more turret coverage
+- Diagonal beacon placement allows 50% more turret coverage (3 turrets)
 
 **Positioning Strategy:**
 - Leave 7x7 gaps in formation for War Factory placement
@@ -46,71 +51,74 @@ The War Factory's main weapon is housed in four turrets along its hull that can 
 - Aggressive positioning uses more turrets effectively
 
 **Launcher Overload (Tech):**
-- Attack interval reduced by 50% (1.5s)
+- Attack interval reduced by 50% (0.9s)
 - Range reduced by 20m (80m)
-- Doubles effective DPS
+- Effectively doubles DPS output
 - Best for aggressive factory builds
 
 ### Unit Production Mechanics
 
 **Sledgehammer Production (Tech):**
-- Produces 1 Sledgehammer every 4.4 seconds
-- Sledgehammer speed matches War Factory
-- Units join battle together
+- Produces 1 Sledgehammer every 6 seconds
+- Produces up to 17 units per battle
+- Sledgehammer speed matches War Factory (6 m/s)
+- Units join battle together as a group
 - Most efficient production tech (cost vs output)
 
 **Steel Ball Production (Tech):**
-- Produces 1 Steel Ball every 5.5 seconds
+- Produces 1 Steel Ball every 8.8 seconds
+- Produces up to 11 units per battle
 - Great chaff generation
-- Synergizes with Mechanical Division
+- Synergizes with Mechanical Division tech on Steel Balls
 - Good for aggressive pushes
 
 **Phoenix Production (Tech):**
-- Produces 1 Phoenix every 11 seconds
+- Produces 1 Phoenix every 15.6 seconds
+- Produces up to 7 units per battle
 - Only anti-air production option
 - Essential since War Factory cannot target air
 - Slower production rate but valuable coverage
 
-**Missile Intercept (Tech):**
+**Missile Interceptor (Tech):**
 - Intercepts enemy missiles within 150m
 - No efficiency decline over time (unlike AM Device)
 - Best use case for War Factory
 - Excellent flank protection
 
-*Note: HP decreased from 166,798 to 146,782 (12%) in patch 1.0.*
-
 ## Technologies
 
 | Tech | Cost | Description |
 |------|------|-------------|
-| **Efficient Maintenance** | 50 | Upkeep cost reduced by 150 (from 200 to 50 per round). |
-| **High-Explosive Ammo** | 150 | Splash damage range +5m, ATK -40%. |
-| **Sledgehammer Production** | 250 | Produces 1 Sledgehammer every 4.4s. |
-| **Steel Ball Production** | 300 | Produces 1 Steel Ball every 5.5s. |
-| **Phoenix Production** | 350 | Produces 1 Phoenix every 11s. |
-| **Photon Coating** | 200 | Damage -30% for first 25s, immunity to electromagnetic, ignition, and acid effects. |
-| **Launcher Overload** | 200 | Attack interval -50%, range -20m. |
-| **Missile Intercept** | 200 | Intercepts enemy missiles within 150m. |
-| **Armor Enhancement** | 200 | HP +35% and 60 damage blocked (+60/level). |
-| **Range Enhancement** | 300 | Attack range +40m. |
+| **Efficient Maintenance** | 200 | Upkeep cost reduced by 150 (from 200 to 50 per round). |
+| **High-Explosive Ammo** | 350 | Splash damage range +7m, ATK -40%. |
+| **Sledgehammer Production** | 400 | Produces 1 Sledgehammer every 6s (17 total per battle). |
+| **Steel Ball Production** | 450 | Produces 1 Steel Ball every 8.8s (11 total per battle). |
+| **Phoenix Production** | 500 | Produces 1 Phoenix every 15.6s (7 total per battle). |
+| **Photon Coating** | 300 | Damage -30% for first 30s, immunity to EM, ignition, acid, and degeneration effects. |
+| **Launcher Overload** | 350 | Attack interval -50%, range -20m. |
+| **Missile Interceptor** | 350 | Intercepts enemy missiles within 150m. |
+| **Armor Enhancement** | 400 | HP +50%, blocks 60 damage per hit (+60/level). |
+| **Range Enhancement** | 500 | Attack range +40m. |
+
+*Note: Tech costs updated as of patch 1.8.1.1 which reduced costs for Photon Coating (400->300), Launcher Overload (400->350), and Missile Interceptor (400->350). Production intervals were increased in the same patch.*
 
 ### Tech Analysis
 
-**Efficient Maintenance** - CRITICAL. Reduces upkeep from 200 to 50 per round. Do not buy War Factory before turn 5 unless you can immediately purchase this tech.
+**Efficient Maintenance** - CRITICAL. Costs 200 supply but reduces upkeep from 200 to 50 per round. Do not buy War Factory before turn 5 unless you can immediately purchase this tech. The problem is it increases the effective cost of other technologies by 200.
 
-**Sledgehammer Production** - Usually the best summoning tech. Summons the most units and costs less than other production techs. Sledgehammers' speed matches War Factory, so they join battle together.
+**Sledgehammer Production** - Usually the best summoning tech. Summons the most units (17 total) and costs less than other production techs. Sledgehammers' speed matches War Factory (6 m/s), so they join battle together.
 
-**Steel Ball Production** - Great chaff generation tool, especially with Mechanical Division tech on Steel Balls. Good for aggressive pushes.
+**Steel Ball Production** - Great chaff generation tool (11 total), especially with Mechanical Division tech on Steel Balls. Good for aggressive pushes.
 
-**Phoenix Production** - The only anti-air production option. Essential since War Factory cannot target air itself.
+**Phoenix Production** - The only anti-air production option (7 total). Essential since War Factory cannot target air itself.
 
-**Missile Intercept** - Best use case for War Factory. It intercepts missiles without efficiency decline over time (unlike AM Device). Excellent protection role.
+**Missile Interceptor** - Best use case for War Factory. It intercepts missiles without efficiency decline over time (unlike AM Device). Excellent protection role.
 
-**Photon Coating** - Protects against acid, fire, and EMP effects. Good vs Scorpion Acid.
+**Photon Coating** - Protects against acid, fire, EMP, and degeneration effects for 30 seconds. Good vs Scorpion Acid.
 
 **Range Enhancement** - Keeps factory safe after enemy counters it. Good vs acid and Melting Points.
 
-**Launcher Overload** - Faster attacks but shorter range. Good for aggressive factory builds.
+**Launcher Overload** - Halves attack interval (1.8s -> 0.9s) but reduces range by 20m. Good for aggressive factory builds.
 
 ## Counters
 
@@ -196,28 +204,32 @@ Two main strategies:
 
 ## Strengths
 
-- Highest stats in the game (HP, potential damage)
-- Four independent turrets can quadruple damage
-- Production techs create endless reinforcements
-- Missile Intercept provides team-wide protection
+- Extremely high stats (HP, potential damage)
+- Four independent turrets can quadruple damage vs multiple targets
+- Production techs create continuous reinforcements (up to 17 Sledgehammers, 11 Steel Balls, or 7 Phoenixes)
+- Missile Interceptor provides team-wide protection without efficiency decline
 - Absolutely destroys Sandworms
 - Can serve as aggressive pusher or defensive factory
 - Phoenix Production provides anti-air coverage
+- Can select 6 techs instead of standard 4
 
 ## Weaknesses
 
 - Extremely expensive (800 supply + 200 upkeep)
-- MUST buy Efficient Maintenance early
+- MUST buy Efficient Maintenance early (costs 200 supply)
 - Hard countered by Scorpion Acid
 - Hard countered by Melting Point beam
-- Cannot target air units
-- Slow movement speed (4 m/s)
+- Cannot target air units (ground only)
+- Slowest unit in the game (6 m/s)
 - Turret arcs limit engagement angles
 - 8 Acid Crawlers can defeat it
 
 ## Sources
 
+- [Mechabellum Wiki (mbxmas)](https://wiki.mbxmas.com/units/ground/war-factory/)
 - [MechaMonarch War Factory Guide](https://mechamonarch.com/unit/war-factory/)
 - [Mechabellum Wiki - War Factory](https://mechabellum.wiki/index.php/War_Factory)
 - [Steam Community Unit Matrix](https://steamcommunity.com/sharedfiles/filedetails/?id=2981751067)
 - [TheGamer - Best Tech Upgrades](https://www.thegamer.com/mechabellum-best-upgrades/)
+- [MechaMonarch Patch Notes 1.0](https://mechamonarch.com/news/mechabellum-patch-notes-1-0/)
+- [Patch Notes 1.8.1.1](https://wiki.mbxmas.com/updates/update-1811/)

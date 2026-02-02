@@ -11,14 +11,15 @@ The Vulcan has good synergy with high-damage-per-shot units like Marksmen becaus
 | Stat | Value |
 |------|-------|
 | **Cost** | 400 Supply |
-| **Unlock Cost** | 100 |
+| **Unlock Cost** | 200 |
 | **Unit Count** | 1 per squad |
 | **Unit HP** | 32,559 |
 | **Attack Damage** | 74 per tick |
 | **Attack Interval** | 0.1s (10 ticks/second) |
 | **DPS** | 740 (base, before splash multiplier) |
 | **Range** | 95m |
-| **Splash Radius** | Wide cone AOE |
+| **Splash Radius** | 15m cone AOE |
+| **Rotation Speed** | 70 deg/s |
 | **Speed** | 6 m/s |
 | **Target** | Ground Only |
 
@@ -60,13 +61,13 @@ The Vulcan has good synergy with high-damage-per-shot units like Marksmen becaus
 
 | Tech | Cost | Description |
 |------|------|-------------|
-| **Scorching Flames** | 250 | Increases ATK by 100%. |
+| **Scorching Fire** | 300 | Increases ATK by 85%. |
 | **Range Enhancement** | 300 | Increases attack range by 40m. |
-| **Armor Enhancement** | 200 | HP +35% and 60 damage blocked when attacked. Blocking +60 per level. |
-| **Sticky Oil Bomb** | 250 | Launches sticky deceleration bombs every 16s. Range 40-180m. |
+| **Armor Enhancement** | 150 | HP +50% and 60 damage blocked when attacked. Blocking +60 per rank. |
+| **Sticky Oil Bomb** | 200 | Launches sticky deceleration bombs every 16s. Range 40-180m. |
 | **Incendiary Bomb** | 300 | Launches ignition barrage every 16s. Deals damage and leaves lingering fire. Range 40-180m. |
-| **Best Partner** | 200 | Summons 1 Marksman at the same level as Vulcan at round start. |
-| **Ignite** | 200 | Attacks ignite targets, causing 6% HP loss per second for 2s. |
+| **Best Partner** | 250 | Summons 1 Marksman at the same Rank as Vulcan at combat start. |
+| **Ignite** | 250 | Attacks ignite targets, causing 6% HP loss per second for 2s. |
 
 ### Tech Analysis
 

@@ -49,11 +49,12 @@ The Hacker does not deal true damage. Instead, it fills a "hack bar" on the targ
 - **EMP Vulnerability:** EMP resets hack progress completely
 - **Stolen Unit Penalty:** Converted units only deal 25% damage to original owner's base
 
-**Multiple Control Tech:**
-- Fires 5 beams simultaneously instead of 1
-- Each beam has 17% potency (not 20%)
-- Range reduced by 25m
+**Multiple Control Tech (250 supply):**
+- Fires 5 Control Beams simultaneously instead of 1
+- Each beam has 17% of original control efficiency (not 20%)
+- Range reduced by 25m (to 85m)
 - Best vs many low-level units, worst vs single high-HP targets
+- Good against boards with lots of chaff or high amounts of low-level medium units
 
 **Fragility Note:**
 - Hacker has less HP than an Arclight (3,249 vs ~4,500)
@@ -67,7 +68,7 @@ The Hacker does not deal true damage. Instead, it fills a "hack bar" on the targ
 | Tech | Cost | Description |
 |------|------|-------------|
 | **Electromagnetic Interference** | 100 | Causes electromagnetic interference on hit, disabling target tech and reducing movement speed by 40%. |
-| **Multiple Control** | 250 | Range reduced by 25m, but fires 5 control beams at once (each at 17% potency). |
+| **Multiple Control** | 250 | Range reduced by 25m (to 85m), but fires 5 control beams at once (each at 17% control efficiency). |
 | **Enhanced Control** | 300 | Units under Hacker's control immediately recover their maximum HP. |
 | **Barrier** | 300 | Generates large-scale shield protecting all allies within it. Shield HP increases by 20,000 per unit level. |
 | **Range Enhancement** | 300 | Increases attack range by 40m. Usually the first tech to get. |
@@ -184,5 +185,6 @@ The Hacker does not deal true damage. Instead, it fills a "hack bar" on the targ
 
 - [MechaMonarch Hacker Guide](https://mechamonarch.com/unit/hacker/)
 - [Mechabellum Wiki - Hacker](https://mechabellum.wiki/index.php/Hacker)
+- [MBXmas Wiki - Hacker](https://wiki.mbxmas.com/units/ground/hacker/)
 - [ZLeague Hacker Guide](https://www.zleague.gg/theportal/mechabellum-hacker-guide/)
 - [MechaMonarch Counter List](https://mechamonarch.com/guide/mechabellum-counters/)

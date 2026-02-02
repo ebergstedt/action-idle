@@ -16,8 +16,8 @@ Void Eyes are unique in having one of the most distinctive EMP abilities in the 
 | **Unit HP** | 1,522 |
 | **Squad HP** | 4,566 |
 | **Damage per Attack** | 947 |
-| **Attack Interval** | 3.5s |
-| **Squad DPS** | 811 |
+| **Attack Interval** | 3.3s |
+| **Squad DPS** | 861 |
 | **Range** | 100m (140m with Range Enhancement) |
 | **Speed** | 8 m/s |
 | **Target** | Air + Ground |

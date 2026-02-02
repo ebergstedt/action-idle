@@ -11,15 +11,16 @@ The Sandworm excels at protecting Wasps with its Sandstorm ability, disrupting e
 | Stat | Value |
 |------|-------|
 | **Cost** | 400 Supply |
-| **Unlock Cost** | 100 |
+| **Unlock Cost** | 200 |
 | **Unit Count** | 1 per squad |
-| **Unit HP** | 29,876 |
-| **Attack Damage** | 4,800 |
-| **Attack Interval** | 2.0s |
-| **DPS** | 2,400 |
-| **Range** | Melee (close range) |
-| **Splash Radius** | Wide melee splash |
-| **Speed** | 11 m/s (Fastest giant) |
+| **Unit HP** | 48,645 |
+| **Attack Damage** | 9,352 |
+| **Attack Interval** | 2.5s |
+| **DPS** | ~3,741 |
+| **Range** | 60m (melee) |
+| **Splash Radius** | 12m |
+| **Rotation Speed** | 90 deg/s |
+| **Speed** | 16 m/s (Fastest giant) |
 | **Target** | Ground Only (Air with tech) |
 
 ### Burrow Mechanics
@@ -30,44 +31,50 @@ The Sandworm excels at protecting Wasps with its Sandstorm ability, disrupting e
 - Emerges to attack enemies, then can re-burrow
 - Bypasses frontline to strike backline units directly
 
-**Burrow Regeneration (Tech: Underground Maintenance):**
-- Recovers 15% Max HP per second while burrowed
+**Burrow Regeneration (Tech: Burrow Maintenance):**
+- HP increased by 20%
+- Recovers 20% Max HP per second while burrowed
 - Incredible sustain against ranged compositions
 - Can repeatedly burrow/emerge to heal between engagements
 - Not effective against beam weapons that track through ground
 
 **Emergence Attack:**
 - Emerges with high-damage melee strike
-- Wide splash radius hits multiple nearby enemies
-- 4,800 damage per attack with 2.0s interval
+- 12m splash radius hits multiple nearby enemies
+- 9,352 damage per attack with 2.5s interval
 - Excellent against grouped medium units
+
+**Strike (Tech):**
+- First attack after emerging: ATK +30%, splash range +10m
+- Faster emergence from underground
 
 **Sandstorm (Tech):**
 - Creates 120m radius sandstorm on emergence
-- Lasts 10 seconds
+- Lasts 5 seconds
 - Enemies in sandstorm: Range reduced by 50%
-- Enemies in sandstorm: Ranged damage reduced by 30%
+- Enemies in sandstorm: Ranged damage taken reduced by 30%
 - Protects Wasps from Mustangs and Fortress Anti-Air
 
 **Larva Spawning:**
 - Mechanical Division: Spawns 4 Larvae on Sandworm death
 - Replicate: Creates 1 Larva each time Sandworm emerges
-- Larvae have ~1/9 HP and ~1/6 DPS of parent Sandworm
+- Larvae have reduced HP and DPS compared to parent Sandworm
 - Creates swarm chaos across battlefield
 
-*Note: Stats may vary based on game version and balance patches.*
+*Note: Stats verified from wiki.mbxmas.com as of Season 5+.*
 
 ## Technologies
 
 | Tech | Cost | Description |
 |------|------|-------------|
-| **Mechanical Rage** | 250 | Movement speed +4, attack interval -0.8s. |
-| **Armor Enhancement** | 200 | HP +35% and 60 damage blocked (+60/level). |
-| **Mechanical Division** | 250 | Spawns four level 1 Larvae when Sandworm is destroyed. |
-| **Anti-Air** | 250 | Enables Sandworm to attack aerial targets. |
-| **Underground Maintenance** | 250 | Recovers 15% Max HP per second while burrowed. |
+| **Mechanical Rage** | 150 | Movement speed +5, attack interval reduced. |
+| **Armor Enhancement** | 200 | HP +35% and 60 damage blocked (+60/rank). |
+| **Mechanical Division** | 150 | Spawns four rank 1 Larvae when Sandworm is destroyed. |
+| **Anti-Aerial** | 100 | Range +20m and enables Sandworm to attack aerial targets. |
+| **Burrow Maintenance** | 200 | HP +20%, recovers 20% Max HP per second while burrowed. |
 | **Replicate** | 250 | Creates one Larva each time Sandworm emerges from ground. |
-| **Sandstorm** | 250 | When emerging, creates 120m radius sandstorm lasting 10s. Units inside have range -50% and ranged damage -30%. |
+| **Sandstorm** | 250 | When emerging, creates 120m radius sandstorm lasting 5s. Units inside have range -50% and ranged damage taken -30%. |
+| **Strike** | - | First attack after emerging: ATK +30%, splash range +10m, faster emergence. |
 
 ### Tech Analysis
 

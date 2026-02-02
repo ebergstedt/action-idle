@@ -15,9 +15,9 @@ Fangs excel in a support role - they are rarely the star of your army but consis
 | **Unit Count** | 18 per squad |
 | **Unit HP** | 117 |
 | **Squad HP** | 2,106 |
-| **Damage per Attack** | 63 |
+| **Damage per Attack** | 61 |
 | **Attack Interval** | 1.5s (1.0s with Mechanical Rage) |
-| **Squad DPS** | 756 |
+| **Squad DPS** | 732 |
 | **Range** | 75m (115m with Range Enhancement) |
 | **Speed** | 6 m/s (Slowest in game) |
 | **Target** | Air + Ground |
@@ -30,13 +30,13 @@ Fangs excel in a support role - they are rarely the star of your army but consis
 | **Projectile** | Energy bolt (fast travel time) |
 | **AoE/Splash** | None (single target) |
 | **Targets per Attack** | 1 |
-| **Special** | Base damage (63) barely exceeds Armor Enhancement threshold (60) |
+| **Special** | Base damage (61) barely exceeds Armor Enhancement threshold (60) |
 
 **Combat Notes:**
 - Each Fang fires independently at targets within range
 - Laser blaster on right arm provides consistent single-target damage
 - High unit count (18) makes them effective at absorbing single-target fire
-- Base damage of 63 is only 3 points over the 60 damage blocked by Armor Enhancement tech at same level
+- Base damage of 61 is only 1 point over the 60 damage blocked by Armor Enhancement tech at same level
 - Slowest base movement speed in the game (6 m/s) keeps them from outpacing ranged allies
 
 *Stats current as of early 2026. Values represent base level 1 stats.*

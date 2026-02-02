@@ -25,7 +25,7 @@ Stormcallers reign as Mechabellum's ultimate artillery, raining destruction on c
 | **Speed** | 6 m/s |
 | **Target** | Ground Only |
 | **Attack Type** | Unguided Rocket Barrage |
-| **Splash Radius** | ~8m per rocket (wide area coverage) |
+| **Splash Radius** | 5.5m per rocket |
 
 ### Weapon Mechanics
 
@@ -34,8 +34,10 @@ Stormcallers reign as Mechabellum's ultimate artillery, raining destruction on c
 **Rocket Mechanics:**
 - **Rockets per Attack:** 4 rockets per unit (2 from left arm, 2 from right arm)
 - **Projectile Speed:** Very slow, "drifting through the sky"
+- **Projectile HP:** 42,000 (can be intercepted by Missile Intercept tech)
 - **Guidance:** Unguided - rockets fire at target's position at launch time
-- **Splash Pattern:** Each rocket has independent splash, creating overlapping damage zones
+- **Splash Pattern:** Each rocket has 5.5m splash radius, creating overlapping damage zones
+- **Interceptable:** Yes - Mustangs, Sabertooths, and War Factory with Missile Intercept tech can shoot down rockets
 
 **Damage Distribution:**
 - Each Stormcaller fires 4 rockets per volley
@@ -188,6 +190,7 @@ Stormcallers reign as Mechabellum's ultimate artillery, raining destruction on c
 
 - [MechaMonarch Stormcaller Guide](https://mechamonarch.com/unit/stormcaller/)
 - [Mechabellum Wiki - Stormcaller](https://mechabellum.wiki/index.php/Stormcaller)
+- [MBXmas Wiki - Stormcaller](https://wiki.mbxmas.com/units/ground/stormcaller/)
 - [ZLeague Stormcaller Guide](https://www.zleague.gg/theportal/mechabellum-stormcaller-guide/)
 - [MechaMonarch Counter List](https://mechamonarch.com/guide/mechabellum-counters/)
 - [MechaTactics Stormcaller Guide](https://www.mechatactics.com/mastering-the-stormcaller-mechabellums-artillery-dominance)

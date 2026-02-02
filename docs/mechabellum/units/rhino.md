@@ -21,7 +21,7 @@ Rhinos excel at destroying small groups of units (Sledgehammers, Steel Balls) as
 | **Speed** | 16 m/s |
 | **Target** | Ground Only |
 | **Attack Type** | Melee (Dual Sawblades) |
-| **Splash Radius** | Small (~6m) |
+| **Splash Radius** | 6m |
 
 ### Weapon Mechanics
 
@@ -41,16 +41,20 @@ Rhinos excel at destroying small groups of units (Sledgehammers, Steel Balls) as
 
 **Life Drain Mechanic - Wreckage Recycling:**
 - **NOT** traditional life steal (does not heal on damage dealt)
-- Heals on **kill** for HP equal to the killed enemy's maximum HP
+- Heals on **kill** for HP equal to the killed enemy's HP
+- Also increases ATK by 20%
 - Example: Killing a Fortress (~50,000 HP) restores Rhino to full health
 - Best against medium units (Sledgehammers) - high enough HP to matter, low enough to kill
 - Less effective vs chaff (too little HP restored) or giants (hard to kill)
 
 **Whirlwind Mechanic:**
 - Activates when surrounded by multiple enemies
-- Deals 1.5x damage to ALL surrounding enemies
+- Deals 1.5x damage (5,340) to ALL surrounding enemies
+- **Whirlwind Radius:** Equivalent to 4x normal AOE (length of 16 Crawlers)
+- **Whirlwind Attack Interval:** 1.0 second
 - Transforms Rhino from single-target to effective AOE damage
 - Essential for dealing with chaff and multi-unit squads
+- Rhino always uses Whirlwind when multiple enemies are in range
 
 **Final Blitz (Self-Destruct):**
 - Triggers at 0 HP
@@ -64,7 +68,7 @@ Rhinos excel at destroying small groups of units (Sledgehammers, Steel Balls) as
 
 | Tech | Cost | Description |
 |------|------|-------------|
-| **Wreckage Recycling** | 100 | Upon destroying an enemy, recovers HP equal to enemy's HP. Great value for low cost. |
+| **Wreckage Recycling** | 100 | Upon destroying an enemy, recovers HP equal to enemy's HP and increases ATK by 20%. Great value for low cost. |
 | **Armor Enhancement** | 200 | Reduces damage received by 60 per level. More effective vs high fire-rate units (Mustangs). |
 | **Mechanical Rage** | 200 | Increases movement speed by 5 m/s and reduces attack interval by 0.3s. Most important for Rhino rushes. |
 | **Final Blitz** | 250 | Activates self-destruct at 0 HP, dealing damage equal to Rhino's Max HP within 48m radius. A must-pick. |
@@ -199,5 +203,6 @@ Rhinos excel at destroying small groups of units (Sledgehammers, Steel Balls) as
 
 - [MechaMonarch Rhino Guide](https://mechamonarch.com/unit/rhino/)
 - [Mechabellum Wiki - Rhino](https://mechabellum.wiki/index.php/Rhino)
+- [MBXmas Wiki - Rhino](https://wiki.mbxmas.com/units/ground/rhino/)
 - [ZLeague Rhino Guide](https://www.zleague.gg/theportal/mechabellum-rhino-guide/)
 - [MechaMonarch Counter List](https://mechamonarch.com/guide/mechabellum-counters/)

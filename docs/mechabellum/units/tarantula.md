@@ -21,7 +21,7 @@ Look to use Tarantulas against boards heavy in chaff that also have Arclights or
 | **Speed** | 8 m/s |
 | **Target** | Ground Only (Air with Anti-Aircraft Ammunition tech) |
 | **Attack Type** | Dual Autocannons (rapid-fire) |
-| **Splash Radius** | Small (~4m) |
+| **Splash Radius** | 5m |
 
 ### Weapon Mechanics
 
@@ -185,4 +185,5 @@ Look to use Tarantulas against boards heavy in chaff that also have Arclights or
 
 - [MechaMonarch Tarantula Guide](https://mechamonarch.com/unit/tarantula/)
 - [Mechabellum Wiki - Tarantula](https://mechabellum.wiki/index.php/Tarantula)
+- [MBXmas Wiki - Tarantula](https://wiki.mbxmas.com/units/ground/tarantula/)
 - [MechaMonarch Counter List](https://mechamonarch.com/guide/mechabellum-counters/)

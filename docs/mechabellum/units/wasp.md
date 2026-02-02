@@ -12,15 +12,15 @@ Wasps excel in the late game, serving as the perfect counter for mass Overlord o
 |------|-------|
 | **Cost** | 200 Supply |
 | **Unlock Cost** | 50 Supply |
-| **Unit Count** | 6 per squad |
-| **HP per Unit** | 550 (estimated) |
-| **Total Squad HP** | 3,300 (estimated) |
-| **Damage per Shot** | 45 (estimated) |
-| **Attack Interval** | 0.5 seconds (estimated) |
-| **DPS per Unit** | 90 (estimated) |
-| **Squad DPS** | 540 (estimated) |
-| **Range** | 55m (short, "critically short") |
-| **Speed** | 14 m/s (Flying) |
+| **Unit Count** | 12 per squad |
+| **HP per Unit** | 311 |
+| **Total Squad HP** | 3,732 |
+| **Damage per Shot** | 202 |
+| **Attack Interval** | 1.4 seconds |
+| **DPS per Unit** | 144 |
+| **Squad DPS** | 1,728 |
+| **Range** | 50m (short, "critically short") |
+| **Speed** | 16 m/s (Flying) |
 | **Target** | Air and Ground |
 | **Attack Type** | Projectile (rapid-fire cannon) |
 | **Splash Radius** | None (single-target) |
@@ -30,14 +30,14 @@ Wasps excel in the late game, serving as the perfect counter for mass Overlord o
 **Attack Type:** Rapid-fire projectile cannon (air-to-ground/air-to-air)
 
 **Combat Characteristics:**
-- **Fragility:** Very low HP - dies in one hit from Sentry Missiles at Level 1
-- **Short Range:** Base range of ~55m is described as "critically short"
-- **Rapid Fire:** High rate of fire similar to Fangs/Mustangs
+- **Fragility:** Very low HP (311 per unit) - dies in one hit from Sentry Missiles at Level 1
+- **Short Range:** Base range of 50m is described as "critically short"
+- **Slower Fire Rate:** 1.4 second attack interval - slower than Fangs/Mustangs
 - **Flight:** Flying unit - immune to ground-only attacks
 
 **Damage Profile:**
-- Individual Wasps deal moderate damage
-- Squad damage is significant when all 6 units are alive
+- Individual Wasps deal 202 damage per hit
+- Squad damage is significant when all 12 units are alive (1,728 DPS)
 - DPS drops rapidly as Wasps are killed due to low individual HP
 
 **Tech Effects on Stats:**
@@ -50,7 +50,7 @@ Wasps excel in the late game, serving as the perfect counter for mass Overlord o
 
 **Key Limitation:** The short base range means Wasps must get dangerously close to deal damage, exposing them to anti-air fire
 
-*Stats are estimated based on community data as of 2025. Exact values may vary with balance patches.*
+*Stats current as of 2025. Values may change with balance patches.*
 
 ## Technologies
 
@@ -184,5 +184,6 @@ Wasps excel in the late game, serving as the perfect counter for mass Overlord o
 
 - [MechaMonarch Wasp Guide](https://mechamonarch.com/unit/wasp/)
 - [Mechabellum Wiki - Wasp](https://mechabellum.wiki/index.php/Wasp)
+- [MBXmas Wiki - Wasp](https://wiki.mbxmas.com/units/air/wasp/)
 - [ZLeague Wasp Guide](https://www.zleague.gg/theportal/mechabellum-wasp-guide/)
 - [MechaMonarch Counter List](https://mechamonarch.com/guide/mechabellum-counters/)

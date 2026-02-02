@@ -11,64 +11,66 @@ Fortresses can face off against any units you put them up against, and they have
 | Stat | Value |
 |------|-------|
 | **Cost** | 400 Supply |
-| **Unlock Cost** | 100 |
+| **Unlock Cost** | 200 |
 | **Unit Count** | 1 per squad |
 | **Unit HP** | 43,938 |
-| **Attack Damage** | 6,177 |
-| **Attack Interval** | 3.6s |
-| **DPS** | 1,716 |
-| **Range** | 130m |
-| **Splash Radius** | 7m |
-| **Speed** | 5 m/s |
+| **Attack Damage** | 6,524 |
+| **Attack Interval** | 1.8s |
+| **DPS** | ~3,624 |
+| **Range** | 100m |
+| **Splash Radius** | 5m |
+| **Rotation Speed** | 50 deg/s |
+| **Speed** | 6 m/s |
 | **Target** | Ground Only (base), Air with tech |
 
 ### Weapon Mechanics
 
 **Shoulder-Mounted Cannons:**
 - Fires high-damage artillery shells from shoulder cannons
-- 3.6 second attack interval between shots
-- 6,177 damage per shot with 7m splash radius
-- Long 130m base range for safe engagement
+- 1.8 second attack interval between shots
+- 6,524 damage per shot with 5m splash radius
+- 100m base range for safe engagement
 
 **Launcher Overload (Tech):**
-- Reduces attack interval by 50% (1.8s)
-- Reduces range by 20m (110m total)
+- Reduces attack interval by 50% (0.9s)
+- Reduces range by 20m (80m total)
 - Effectively doubles DPS output
-- With Doubleshot, achieves 12K+ DPS
+- With Doubleshot, achieves very high DPS
 
 **Barrier Shield (Tech):**
-- Generates large protective shield for allies
-- Shield HP: 40,000 per unit level
+- Generates large protective dome for allied units
+- Shield HP: 40,000 per unit rank
 - Absorbs damage for nearby units
 - Combined with Armor Enhancement for maximum tank potential
 
 **Rocket Punch (Tech):**
 - Launches fists at 85% and 55% HP thresholds
-- 180m range, 15,000 damage (+15,000/level)
+- 180m range, 12,000 damage (+12,000/rank)
 - 25m splash radius on impact
 - Emergency chaff clear against Crawlers/Fangs
 
 **Anti-Air Barrage (Tech):**
 - Launches 16 guided missiles every 10 seconds
 - Each missile deals 900 damage to air units only
-- 180m range (170m after recent nerf)
+- 170m range
 - Essential for dealing with Phoenix, Wasp, Overlord
 
-*Note: Stats from patch 1.01. HP decreased from 45,297 (3%), ATK decreased from 6,369 (3%).*
+*Note: Stats updated for Season 4+. Previous versions had different values.*
 
 ## Technologies
 
 | Tech | Cost | Description |
 |------|------|-------------|
-| **Rocket Punch** | 300 | Launches fists at 85% and 55% HP thresholds. 180m range, 15,000 damage (+15,000/level) in 25m radius. |
-| **Elite Marksman** | 200 | Range +5m and ATK +25% per level. |
-| **Launcher Overload** | 200 | Attack interval -50%, range -20m. |
-| **Armor Enhancement** | 200 | HP +35% and 60 damage blocked when attacked (+60/level). |
-| **Doubleshot** | 200 | Fires 2 shells per attack but reload time +12%. |
-| **Barrier** | 300 | Generates large shield protecting allies. Shield HP 40,000 per unit level. |
-| **Fang Summoning** | 300 | Produces 12 Fangs every 28s. |
+| **Rocket Punch** | 300 | Launches fists at 85% and 55% HP thresholds. 180m range, 12,000 damage (+12,000/rank) in 25m radius. |
+| **Elite Marksman** | 150 | Range +5m and ATK +25% per rank. |
+| **Launcher Overload** | 150 | Attack interval -50%, range -20m. |
+| **Armor Enhancement** | 150 | HP +50% and 60 damage blocked when attacked (+60/rank). |
+| **Doubleshot** | 100 | Fires 2 shells per attack but reload time +12%. |
+| **Barrier** | 500 | Generates large protective dome for allies. Shield HP 40,000 per unit rank. |
+| **Fang Production** | 300 | Generates 8 Fangs three times over 36-second intervals. |
 | **Range Enhancement** | 300 | Attack range +40m. |
-| **Anti-Air Barrage** | 200 | Launches 16 anti-air missiles every 10s. 900 damage each, 180m range. Air targets only. |
+| **Anti-Air Barrage** | 200 | Launches 16 anti-air missiles every 10s. 900 damage each, 170m range. Air targets only. |
+| **Solid Shot** | 200 | Range +60m, attack interval +0.7s, splash range -2m. |
 
 ### Tech Analysis
 

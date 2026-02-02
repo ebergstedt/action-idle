@@ -16,11 +16,14 @@ The Overlord is a backline damage dealer that needs protection. When properly su
 | **Unit HP** | 20,323 |
 | **Attack Damage** | 4,474 |
 | **Attack Interval** | 4.6s |
-| **DPS** | 972 |
+| **DPS** | ~972 |
 | **Range** | 120m |
 | **Splash Radius** | 7m |
+| **Rotation Speed** | 20 deg/s |
 | **Speed** | 10 m/s |
+| **Projectile HP** | 152,895 |
 | **Target** | Ground and Air |
+| **Unit Type** | Flying (Giant Aircraft) |
 
 ### Flying Unit Mechanics
 
@@ -38,9 +41,9 @@ The Overlord is a backline damage dealer that needs protection. When properly su
 
 **Overlord Artillery (Tech):**
 - Installs two ground-only cannons at prow
-- Cannons have 140m range (120m per some sources)
-- Attack every 3 seconds dealing 7,000-11,000 damage
-- Damage increases by 7,000-11,000 per unit level
+- Cannons have 140m range
+- Attack every 3 seconds dealing 7,000 damage
+- Damage increases by 7,000 per unit rank
 - Massive DPS increase for ground targets
 
 **Launcher Overload + Range Combo:**
@@ -61,15 +64,15 @@ The Overlord is a backline damage dealer that needs protection. When properly su
 
 | Tech | Cost | Description |
 |------|------|-------------|
-| **Field Maintenance** | 150 | HP +30%, restores 4.5% Max HP/sec when taking damage. |
+| **Field Maintenance** | 200 | HP +30%, restores 4.5% Max HP/sec when taking damage. |
 | **Launcher Overload** | 300 | Attack interval -50%, range -20m. |
 | **Photon Emission** | 350 | At combat start, allies within 100m get 30% damage reduction for 20s + immunity to electromagnetic, ignition, and acid. |
-| **Armor Enhancement** | 200 | HP +35% and 60 damage blocked (+60/level). |
-| **Overlord Artillery** | 350 | Installs two ground-only cannons with 120m range. Attack every 3s for 11,000 damage. |
+| **Armor Enhancement** | 150 | HP +35% and 60 damage blocked (+60/rank). |
+| **Overlord Artillery** | 300 | Installs two ground-only cannons with 140m range. Attack every 3s for 7,000 damage (+7,000/rank). |
 | **Range Enhancement** | 300 | Attack range +40m. |
-| **Mothership** | 300 | Produces 4 Wasps every 30s. |
+| **Mothership** | 250 | Spawns 5 Wasps every 32 seconds (3 times total). |
 | **Jump Drive** | 200 | Movement speed +5m/s. Allows free repositioning during deployment phase. |
-| **High-Explosive Ammo** | 100 | Splash damage range +5m, ATK -40%. |
+| **High-Explosive Ammo** | 200 | Splash damage range +7m, ATK -40%. |
 
 ### Tech Analysis
 

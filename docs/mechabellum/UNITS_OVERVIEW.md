@@ -19,11 +19,11 @@ Complete unit database from Mechabellum for implementing units in Total Idle.
 | Unit | Squad | HP/Unit | Total HP | Damage | Interval | DPS | Range | Speed | Weapon Mechanics | Special |
 |------|-------|---------|----------|--------|----------|-----|-------|-------|------------------|---------|
 | **Crawler** | 24 | 263 | 6,312 | 79 | 0.6s | 3,160 | Melee | 16 | Melee, single-target | Fastest, bypasses shields |
-| **Fang** | 18 | 117 | 2,106 | 63 | 1.5s | 756 | 75 | 6 | Projectile, single-target | Air+Ground |
+| **Fang** | 18 | 117 | 2,106 | 61 | 1.5s | 732 | 75 | 6 | Projectile, single-target | Air+Ground |
 | **Arclight** | 1 | 4,813 | 4,813 | 347 | 0.9s | 385 | 95 | 7 | Projectile, 7m splash | Ground only |
 | **Marksman** | 1 | 1,622 | 1,622 | 2,329 | 3.1s | 751 | 140 | 8 | Hitscan, single-target | Air+Ground sniper |
-| **Hound** | 5 | 897 | 4,485 | 247 | 2.4s | 514 | 70 | 10 | Shotgun, 6m cone splash | Ground only |
-| **Void Eye** | 3 | 1,522 | 4,566 | 947 | 3.5s | 811 | 100 | 8 | Projectile, single-target | Aerial mode capable |
+| **Hound** | 5 | 897 | 4,485 | 246 | 2.4s | 513 | 70 | 10 | Shotgun, 6m cone splash | Ground only |
+| **Void Eye** | 3 | 1,522 | 4,566 | 947 | 3.3s | 861 | 100 | 8 | Projectile, single-target | Aerial mode capable |
 
 ### 200 Supply Cost (Tier 2)
 
@@ -104,9 +104,9 @@ Complete unit database from Mechabellum for implementing units in Total Idle.
 | Squad Size | 18 | Second highest |
 | HP per Unit | 117 | Lowest HP unit |
 | Total Squad HP | 2,106 | |
-| Damage | 61-63 | Sources vary |
+| Damage | 61 | Only 1 point over Armor Enhancement threshold |
 | Attack Interval | 1.5s | |
-| DPS (Squad) | 756 | |
+| DPS (Squad) | 732 | |
 | Range | 75m | |
 | Speed | 6 m/s | Slowest unit |
 | Target | Air + Ground | |
@@ -169,9 +169,9 @@ Complete unit database from Mechabellum for implementing units in Total Idle.
 | Squad Size | 5 | Mid-size squad |
 | HP per Unit | 897 | |
 | Total Squad HP | 4,485 | |
-| Damage | 247 | Shotgun spread |
+| Damage | 246 | Shotgun spread |
 | Attack Interval | 2.4s | |
-| DPS (Squad) | 514 | |
+| DPS (Squad) | 513 | |
 | Range | 70m | Short ranged |
 | Speed | 10 m/s | |
 | Splash Radius | 6m | Shotgun AoE |
@@ -193,8 +193,8 @@ Complete unit database from Mechabellum for implementing units in Total Idle.
 | HP per Unit | 1,522 | |
 | Total Squad HP | 4,566 | |
 | Damage | 947 | |
-| Attack Interval | 3.5s | Slow |
-| DPS (Squad) | 811 | |
+| Attack Interval | 3.3s | Slow |
+| DPS (Squad) | 861 | |
 | Range | 100m | |
 | Speed | 8 m/s | |
 | Target | Ground only | |
@@ -781,7 +781,7 @@ attackSpeed = 1 / attackInterval
 | Arclight | 0.9s | 1.11 |
 | Marksman | 3.1s | 0.32 |
 | Hound | 2.4s | 0.42 |
-| Void Eye | 3.5s | 0.29 |
+| Void Eye | 3.3s | 0.30 |
 | Wasp | 1.4s | 0.71 |
 | Phoenix | 3.4s | 0.29 |
 | Fortress | 1.8s | 0.56 |

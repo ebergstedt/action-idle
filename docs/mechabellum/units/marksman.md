@@ -26,7 +26,7 @@ A team of Marksmen deployed in the back of your army can easily rack up kills fr
 | Property | Value |
 |----------|-------|
 | **Attack Type** | Ranged (sniper rifle) |
-| **Projectile** | High-velocity bullet (near-instant) |
+| **Projectile** | High-velocity bullet (fast travel time, not hitscan) |
 | **AoE/Splash** | None (single target) |
 | **Targets per Attack** | 1 |
 | **Overkill Waste** | High - slow fire rate means wasted damage on weak targets |
@@ -168,9 +168,9 @@ A team of Marksmen deployed in the back of your army can easily rack up kills fr
 ## Weaknesses
 
 - Extremely fragile; low HP for a single-module unit
-- Slow fire rate (4.6s attack interval)
+- Slow fire rate (3.1s attack interval)
 - Hard countered by any swarm unit (Crawlers, Wasps, Mustangs)
-- No air targeting without Aerial Specialization tech
+- Aerial Specialization tech needed to maximize air-targeting effectiveness
 - Slow movement speed makes repositioning difficult
 - Requires supporting units to function
 

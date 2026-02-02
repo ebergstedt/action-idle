@@ -10,18 +10,20 @@ Unlike other chaff clear units, the Wraith always targets up to 4 different unit
 
 | Stat | Value |
 |------|-------|
-| **Cost** | 300 Supply |
-| **Unlock Cost** | 100 |
+| **Cost** | 300 Supply (Tier 3) |
+| **Unlock Cost** | 50 |
 | **Unit Count** | 1 per squad |
 | **Unit HP** | 14,115 |
 | **Attack Damage** | 381 per cannon |
 | **Attack Interval** | 1.6s |
-| **DPS** | 952 (4 cannons x 238 each) |
+| **DPS per Cannon** | ~238 |
 | **Floating Cannons** | 4 (8 with tech) |
 | **Range** | 60m (base) |
 | **Splash Radius** | 8m per beam |
+| **Rotation Speed** | 120 deg/s |
 | **Speed** | 10 m/s |
 | **Target** | Ground and Air |
+| **Unit Type** | Flying (Heavy Aircraft) |
 
 ### Multi-Target Beam Mechanics
 
@@ -63,12 +65,13 @@ Unlike other chaff clear units, the Wraith always targets up to 4 different unit
 
 | Tech | Cost | Description |
 |------|------|-------------|
-| **High-Explosive Ammo** | 150 | Splash damage range +5m, ATK -40%. |
-| **Field Maintenance** | 300 | HP +30%, restores 4.5% Max HP/sec when taking damage. |
-| **Armor Enhancement** | 200 | HP +35% and 60 damage blocked (+60/level). |
-| **Range Enhancement** | 300 | Attack range +40m. |
-| **Degeneration Beam** | 200 | Projects debuff beam to ground units within 120m. Reduces movement speed by 40%, ATK by 30%, and increases damage taken by 30%. |
+| **High-Explosive Ammo** | 150 | Splash damage range +7m, ATK -30%. |
+| **Field Maintenance** | 200 | HP +30%, restores 4.5% Max HP/sec when taking damage. |
+| **Armor Enhancement** | 200 | HP +35% and 60 damage blocked (+60/rank). |
+| **Range Enhancement** | 300 | Attack range +40m (to 100m total). |
+| **Degeneration Beam** | 200 | Projects debuff beam to ground units within 120m. Reduces movement speed by 40%, ATK by 20%, and increases damage taken by 30%. |
 | **Floating Artillery Array** | 400 | Increases floating cannons from 4 to 8, movement speed -3. |
+| **Land Cruiser** | 300 | Becomes ground unit; loses air targeting; range +50m, attack interval +0.5s. |
 
 ### Tech Analysis
 
@@ -169,13 +172,14 @@ Unlike other chaff clear units, the Wraith always targets up to 4 different unit
 
 ## Weaknesses
 
-- Short base range (80m) requires protection
+- Short base range (60m) requires protection
 - Vulnerable to Phoenix which outranges it
 - EMP disables critical techs
 - Easily targeted by anti-air units
 - Degeneration Beam blocked by Photon effects
 - Requires tech investment for full effectiveness
 - Not designed for tower racing from own base
+- Not a giant unit (Tier 3, 300 supply)
 
 ## Sources
 

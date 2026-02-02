@@ -11,21 +11,22 @@ The Raiden is incredibly fragile for a giant unit, with even less base HP than t
 | Stat | Value |
 |------|-------|
 | **Cost** | 400 Supply |
-| **Unlock Cost** | 100 |
+| **Unlock Cost** | 200 |
 | **Unit Count** | 1 per squad |
-| **Unit HP** | 16,500 (Low for a giant) |
-| **Attack Damage** | 3,200 per bolt |
+| **Unit HP** | 16,065 (Low for a giant) |
+| **Attack Damage** | 5,027 per bolt |
 | **Lightning Bolts** | 3 per attack (5 with Fork) |
-| **Attack Interval** | 2.0s |
-| **DPS** | 4,800 (3 bolts x 1,600 each) |
-| **Range** | 100m |
-| **Speed** | 8 m/s |
+| **Attack Interval** | 4.6s |
+| **DPS** | ~3,276 (3 bolts x ~1,092 each) |
+| **Range** | 110m |
+| **Speed** | 10 m/s |
 | **Target** | Ground and Air |
+| **Unit Type** | Flying (Giant Aircraft) |
 
 ### Chain Lightning Mechanics
 
 **Multi-Target Lightning:**
-- Fires 3 high-damage lightning bolts per attack
+- Fires 3 high-damage lightning bolts per attack (5,027 damage each)
 - Each bolt targets a different enemy
 - If only 1 target available, loses 2/3 damage output
 - Designed to devastate groups of medium units
@@ -33,19 +34,20 @@ The Raiden is incredibly fragile for a giant unit, with even less base HP than t
 **Chain Lightning (Tech):**
 - Range reduced by 20m
 - Each bolt jumps to enemies within 60m radius
-- Jump deals 25-30% of original damage
+- Jump deals 25% of original damage
+- Each bolt jumps once (3 primary targets + 3 chain targets = 6 total)
 - Extends effective range through chaining
 - Can reach backline units via jump connections
 
 **Fork (Tech):**
-- Range reduced by 15m
+- Range reduced by 10m
 - Increases bolts from 3 to 5 per attack
-- Not recommended with Chain (too much range loss)
+- Not recommended with Chain (combined range loss)
 - Choose one or the other, not both
 
 **Ionization (Tech):**
 - Base damage reduced by 70%
-- Each hit deals additional 40% of target's current HP
+- Each hit deals additional 50% of target's current HP (updated from 40%)
 - Devastating against super-tanky units
 - Melts high-rank War Factories and giants with Super-Heavy Armor
 - Best against high-HP targets, weak against chaff
@@ -63,16 +65,16 @@ The Raiden is incredibly fragile for a giant unit, with even less base HP than t
 - No Field Maintenance tech available
 - Relies on damage output for survival, not tankiness
 
-*Note: Stats may vary based on game version and balance patches.*
+*Note: Stats verified from wiki.mbxmas.com as of Season 5+.*
 
 ## Technologies
 
 | Tech | Cost | Description |
 |------|------|-------------|
 | **Electromagnetic Shot (EMP)** | 300 | Causes electromagnetic interference on hit, disabling Tech and reducing movement speed by 40%. |
-| **Ionization** | 100 | ATK -70%, but attacks cause additional damage equal to 40% of target's current HP. |
-| **Chain Lightning** | 300 | Range -20, lightning bolts jump to enemies within 60m radius, dealing 25% damage. |
-| **Fork** | 250 | Range -15, increases lightning bolts from 3 to 5 per attack. |
+| **Ionization** | 100 | ATK -70%, but attacks cause additional damage equal to 50% of target's current HP. |
+| **Chain Lightning** | 200 | Range -20m, lightning bolts jump to enemies within 60m radius, dealing 25% damage. |
+| **Fork** | 250 | Range -10m, increases lightning bolts from 3 to 5 per attack. |
 | **Range Enhancement** | 300 | Attack range +40m. |
 
 ### Tech Analysis
@@ -175,7 +177,7 @@ The Raiden is incredibly fragile for a giant unit, with even less base HP than t
 
 ## Weaknesses
 
-- Extremely fragile for a giant unit
+- Extremely fragile for a giant unit (16,065 HP)
 - Less HP than old Overlord
 - No defensive techs (no Armor Enhancement, no Field Maintenance)
 - Struggles against chaff early game
@@ -183,6 +185,7 @@ The Raiden is incredibly fragile for a giant unit, with even less base HP than t
 - Requires significant tech investment
 - Countered by early Fortress Anti-Air
 - Loses 2/3 damage with only 1 target in range
+- Slow attack interval (4.6s) means burst windows matter
 
 ## Sources
 

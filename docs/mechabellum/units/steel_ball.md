@@ -27,7 +27,12 @@ Steel Balls excel against high-HP units with either low range or low fire rate, 
 
 **Attack Type:** Continuous laser beam with progressive damage scaling
 
-The Steel Ball's signature mechanic is its ramping laser damage. Unlike other units with flat damage, the beam starts weak and grows exponentially stronger the longer it fires at a target.
+The Steel Ball's signature mechanic is its ramping laser damage. Unlike other units with flat damage, the beam starts weak and grows stronger the longer it fires at a target.
+
+**Base Stats:**
+- **Base Damage:** 55 per tick (displayed stat; effective damage ramps from 2 to 2,605)
+- **Attack Interval:** 0.2 seconds (5 ticks per second)
+- **Base DPS:** 275 (at minimum ramp)
 
 **Damage Ramp-Up:**
 - **Initial Damage:** Starts at 2 damage per tick
@@ -39,6 +44,7 @@ The Steel Ball's signature mechanic is its ramping laser damage. Unlike other un
 **Beam Mechanics:**
 - **Attack Interval:** 0.2 seconds (5 ticks per second)
 - **Target Lock:** Beam stays connected while target is in range
+- **Splash Range:** 0 (single-target only)
 - **Ramp Reset:** Damage resets to minimum if:
   - Target dies
   - Target moves out of range
@@ -175,5 +181,6 @@ The Steel Ball's signature mechanic is its ramping laser damage. Unlike other un
 
 - [MechaMonarch Steel Ball Guide](https://mechamonarch.com/unit/steel-ball/)
 - [Mechabellum Wiki - Steel Ball](https://mechabellum.wiki/index.php/Steel_Ball)
+- [MBXmas Wiki - Steel Ball](https://wiki.mbxmas.com/units/ground/steel-ball/)
 - [ZLeague Steel Ball Guide](https://www.zleague.gg/theportal/mechabellum-steel-ball-guide/)
 - [MechaMonarch Counter List](https://mechamonarch.com/guide/mechabellum-counters/)

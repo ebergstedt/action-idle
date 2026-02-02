@@ -4,7 +4,7 @@
 
 The Hound is a specialized anti-swarm unit that falls between chaff and medium units in the Mechabellum hierarchy. Despite its name suggesting a swarming unit, the Hound is designed to counter light units with its rapid attacks, incendiary bombs, and fire-clearing capabilities.
 
-Hounds are versatile units that can attack both ground and air targets with adequate quantity, appropriate DPS, high speed, and even missile interception when upgraded. They excel at clearing chaff units and providing fire suppression support for your army.
+Hounds are versatile ground-targeting units with adequate quantity, appropriate DPS, high speed, and fire-clearing capabilities when upgraded. They excel at clearing chaff units and providing fire suppression support for your army. Unlike Fangs, Hounds cannot target air units.
 
 ## Stats
 
@@ -15,13 +15,13 @@ Hounds are versatile units that can attack both ground and air targets with adeq
 | **Unit Count** | 5 per squad |
 | **Unit HP** | 897 |
 | **Squad HP** | 4,485 |
-| **Damage per Attack** | 247 |
+| **Damage per Attack** | 246 |
 | **Attack Interval** | 2.4s (1.6s with Mechanical Rage) |
-| **Squad DPS** | 514 |
+| **Squad DPS** | 513 |
 | **Splash Radius** | 6m |
 | **Range** | 70m (110m with Range Enhancement) |
 | **Speed** | 10 m/s (14 m/s with Mechanical Rage) |
-| **Target** | Air + Ground |
+| **Target** | Ground only |
 
 ### Weapon Mechanics
 
@@ -144,7 +144,6 @@ Hounds are versatile units that can attack both ground and air targets with adeq
 ## Strengths
 
 - Specialized anti-light unit design
-- Can attack both ground and air
 - High movement speed
 - Incendiary Bomb devastates chaff positions
 - Fire Extinguisher counters fire/acid compositions
@@ -153,6 +152,7 @@ Hounds are versatile units that can attack both ground and air targets with adeq
 
 ## Weaknesses
 
+- Cannot target air units (unlike Fangs)
 - Very low HP (similar to Crawler)
 - Extremely low damage per shot against armored targets
 - Cannot damage giants with defense upgrades effectively

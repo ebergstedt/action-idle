@@ -13,13 +13,13 @@ However, while more expensive than Marksmen, Phoenixes move much faster and can 
 | **Cost** | 200 Supply |
 | **Unlock Cost** | 50 Supply |
 | **Unit Count** | 2 per squad |
-| **HP per Unit** | 1,800 (estimated) |
-| **Total Squad HP** | 3,600 (estimated) |
-| **Damage per Shot** | 3,500 (estimated) |
-| **Attack Interval** | 3.3 seconds |
-| **DPS per Unit** | 1,060 (estimated) |
-| **Squad DPS** | 2,120 (estimated) |
-| **Range** | 130m (estimated) |
+| **HP per Unit** | 1,491 |
+| **Total Squad HP** | 2,982 |
+| **Damage per Shot** | 3,219 |
+| **Attack Interval** | 3.4 seconds |
+| **DPS per Unit** | 947 |
+| **Squad DPS** | 1,894 |
+| **Range** | 120m |
 | **Speed** | 16 m/s (Flying) |
 | **Target** | Air and Ground |
 | **Attack Type** | Projectile (high-damage single-target) |
@@ -42,10 +42,11 @@ However, while more expensive than Marksmen, Phoenixes move much faster and can 
 
 **Revive Mechanic - Quantum Reassembly:**
 - When a Phoenix is destroyed, its cockpit follows the nearest surviving allied Phoenix
-- After approximately 15-20 seconds, the Phoenix is fully restored
-- **Limit:** Each Phoenix can only revive once per battle (recently nerfed)
+- After 12 seconds, the Phoenix is fully restored to maximum HP (1,491)
+- **Limit:** Each Phoenix can only revive once per battle
 - **Counter:** EMP on the killing blow prevents the revive from triggering
 - **Requirement:** At least one other Phoenix must survive for revive to activate
+- **Tech Cost:** 200 supply (reduced from original 300)
 
 **Tech Effects on Stats:**
 - **Jump Drive:** +5 m/s movement speed, free repositioning
@@ -54,7 +55,7 @@ However, while more expensive than Marksmen, Phoenixes move much faster and can 
 - **Energy Shield:** Shield equal to HP (blocks at least one hit)
 - **Elite Marksman:** +5m range and +25% ATK per level (up to +75% at Level 3)
 
-*Stats are estimated based on community data as of 2025. Exact values may vary with balance patches.*
+*Stats current as of 2025. Values may change with balance patches.*
 
 ## Technologies
 
@@ -66,7 +67,7 @@ However, while more expensive than Marksmen, Phoenixes move much faster and can 
 | **Energy Shield** | 200 | Obtain energy shield equal to HP that blocks at least one instance of damage. |
 | **Launcher Overload** | 250 | Attack interval reduced by 50%, range decreased by 25m. Good for defending pushes or pushing yourself. |
 | **Range Enhancement** | 300 | Increases attack range by 40m. |
-| **Quantum Reassembly** | 300 | Destroyed Phoenix cockpit follows nearest ally, fully restored in 15s. Triggers only once per battle. |
+| **Quantum Reassembly** | 200 | Destroyed Phoenix cockpit follows nearest ally, fully restored in 12s. Triggers only once per battle. |
 | **Elite Marksman** | 400 | Increases range by 5m and ATK by 25% per level. |
 
 ### Tech Analysis
@@ -81,7 +82,7 @@ However, while more expensive than Marksmen, Phoenixes move much faster and can 
 
 **Launcher Overload** - The 50% attack interval reduction is significant. Good for both defending against pushes and pushing yourself, though range reduction requires closer positioning.
 
-**Quantum Reassembly** - Unique tech that revives one Phoenix per battle after 15 seconds. Can provide an extra Phoenix when you need it most.
+**Quantum Reassembly** - Unique tech that revives one Phoenix per battle after 12 seconds with full HP. Can provide an extra Phoenix when you need it most. Cost reduced from 300 to 200 in balance updates.
 
 **Elite Marksman** - Final upgrade that scales with levels. At Level 3, provides 15m extra range and 75% ATK increase. Excellent on high-level carry Phoenixes.
 
@@ -180,11 +181,12 @@ However, while more expensive than Marksmen, Phoenixes move much faster and can 
 - Relatively high cost (200 supply)
 - Requires good positioning to maximize effectiveness
 - Single-target damage struggles against swarms
-- Limited to 3 per squad
+- Limited to 2 per squad
 
 ## Sources
 
 - [MechaMonarch Phoenix Guide](https://mechamonarch.com/unit/phoenix/)
 - [Mechabellum Wiki - Phoenix](https://mechabellum.wiki/index.php/Phoenix)
+- [MBXmas Wiki - Phoenix](https://wiki.mbxmas.com/units/air/phoenix/)
 - [ZLeague Phoenix Guide](https://www.zleague.gg/theportal/mechabellum-phoenix-guide/)
 - [MechaMonarch Counter List](https://mechamonarch.com/guide/mechabellum-counters/)

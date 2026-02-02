@@ -23,7 +23,7 @@ Sledgehammers are the most reliable unit for creating a solid frontline. They ha
 | **Speed** | 7 m/s |
 | **Target** | Ground Only |
 | **Attack Type** | Projectile (explosive shell) |
-| **Splash Radius** | Small (~5m diameter, roughly 3 Crawlers wide) |
+| **Splash Radius** | 5m |
 
 ### Weapon Mechanics
 
@@ -31,7 +31,7 @@ Sledgehammers are the most reliable unit for creating a solid frontline. They ha
 
 - **Projectile Speed:** Medium-speed ballistic shells
 - **Fire Pattern:** Single shot every 4.5 seconds per unit
-- **Splash Damage:** Small AOE splash (~5m diameter), deals full damage in blast radius
+- **Splash Damage:** 5m splash radius, deals full damage in blast radius
 - **Armor Interaction:** High damage per shot (608) means a larger portion of each hit bypasses armor compared to rapid-fire units
 
 **DPS Comparison:**
@@ -170,5 +170,6 @@ Sledgehammers are the most reliable unit for creating a solid frontline. They ha
 
 - [MechaMonarch Sledgehammer Guide](https://mechamonarch.com/unit/sledgehammer/)
 - [Mechabellum Wiki - Sledgehammer](https://mechabellum.wiki/index.php/Sledgehammer)
+- [MBXmas Wiki - Sledgehammer](https://wiki.mbxmas.com/units/ground/sledgehammer/)
 - [ZLeague Sledgehammer Guide](https://www.zleague.gg/theportal/mechabellum-sledgehammer-guide/)
 - [MechaMonarch Counter List](https://mechamonarch.com/guide/mechabellum-counters/)

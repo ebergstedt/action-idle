@@ -11,7 +11,7 @@ Scorpions excel at melting Steel Balls, Sledgehammers, and War Factory turrets. 
 | Stat | Value |
 |------|-------|
 | **Cost** | 300 Supply |
-| **Unlock Cost** | 100 |
+| **Unlock Cost** | 50 (reduced from 100) |
 | **Unit Count** | 1 per squad |
 | **Unit HP** | 18,632 |
 | **Attack Damage** | 10,650 |
@@ -19,7 +19,7 @@ Scorpions excel at melting Steel Balls, Sledgehammers, and War Factory turrets. 
 | **DPS** | 2,367 |
 | **Range** | 100m |
 | **Speed** | 7 m/s |
-| **Splash Radius** | 15m (with Acid Attack creates acid pool) |
+| **Splash Radius** | 8m base (Acid Attack creates 15m acid pool) |
 | **Attack Type** | Single-target Artillery |
 | **Target** | Ground Only |
 
@@ -32,7 +32,7 @@ Scorpions excel at melting Steel Balls, Sledgehammers, and War Factory turrets. 
 - Deals approximately 10,650 damage per shot at base level
 
 **Splash Mechanics:**
-- Base attack has small splash radius
+- Base attack has 8m splash radius (increased from 3m in patch 0.7.40)
 - Acid Attack tech creates 15m radius acid pool at impact point
 - Acid pool persists for 40 seconds
 - Units in acid lose 3% HP/sec and take 250% damage from all sources

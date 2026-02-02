@@ -11,15 +11,18 @@ This spider tank fires an energy beam that builds up damage over time. A level 1
 | Stat | Value |
 |------|-------|
 | **Cost** | 400 Supply |
-| **Unlock Cost** | 100 |
+| **Unlock Cost** | 200 |
 | **Unit Count** | 1 per squad |
-| **Unit HP** | 25,133 |
-| **Attack Damage** | 1 - 9,000 (ramping) |
-| **Attack Interval** | Continuous beam |
+| **Unit HP** | 30,907 |
+| **Attack Damage** | 168 per tick (ramping beam) |
+| **Attack Interval** | 0.2s |
+| **Base DPS** | 840 (scales up over time) |
 | **DPS (Maximum)** | 34,000+ at full burn |
 | **Time to Max DPS** | ~5 seconds |
 | **Time to 1M Damage** | ~36 seconds |
-| **Range** | 90m |
+| **Range** | 115m |
+| **Splash Range** | 3m |
+| **Rotation Speed** | 60 deg/s |
 | **Speed** | 6 m/s |
 | **Target** | Ground and Air |
 
@@ -64,12 +67,12 @@ This spider tank fires an energy beam that builds up damage over time. A level 1
 
 | Tech | Cost | Description |
 |------|------|-------------|
-| **Energy Absorption** | 200 | HP +40% and converts damage dealt to HP (lifesteal). |
+| **Energy Absorption** | 200 | HP +60% and converts damage dealt to HP (lifesteal). |
 | **Range Enhancement** | 300 | Attack range +40m. |
-| **Crawler Summoning** | 300 | Produces 10 Crawlers every 30s. |
-| **Electromagnetic Barrage** | 300 | Launches 16 EMP shots every 13s. 4,000 damage to shields, slows targets, disables Tech for 13s. Range 180m. |
-| **Armor Enhancement** | 200 | HP +35% and 60 damage blocked (+60/level). |
-| **Energy Diffraction** | 250 | Fires 5 rays at 17% damage each instead of single beam. Range -30m. |
+| **Crawler Production** | 300 | Produces 8 Crawlers to join the battle every 36s for 3 times. |
+| **Electromagnetic Barrage** | 300 | Launches 16 EMP shots every 15s. 4,000 damage to shields, slows targets, disables Tech for 8s. Range 180m. |
+| **Armor Enhancement** | 100 | HP +50% and 60 damage blocked (+60/rank). |
+| **Energy Diffraction** | 150 | Fires 5 rays at 17% damage each instead of single beam. Range -30m. |
 
 ### Tech Analysis
 

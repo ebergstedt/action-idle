@@ -23,17 +23,18 @@ The role of Fire Badger is not to be a "carry unit," but to burn away enemy chaf
 | **Speed** | 9 m/s |
 | **Target** | Ground Only |
 | **Attack Type** | Flamethrower (continuous AOE) |
-| **Flame Cone Radius** | ~15m wide at max range |
+| **Splash Range** | 7m |
 
 ### Weapon Mechanics
 
-**Attack Type:** Continuous flamethrower (cone AOE)
+**Attack Type:** Continuous flamethrower (AOE)
 
 **Flamethrower Mechanics:**
 - **Continuous Damage:** Attacks every 0.1 seconds (10 ticks per second)
-- **Cone Pattern:** Flame sprays in a cone, hitting all enemies in the area
+- **Splash Range:** 7m - flame hits all enemies in the area
 - **Short Range:** 75m is much shorter than similar units like Vulcan
-- **Fire DOT:** Base attacks can apply fire damage over time
+- **Rotation Speed:** 80 degrees/second
+- **Fire DOT:** Base attacks can apply fire damage over time with Ignite tech
 
 **DPS Breakdown:**
 - Damage per tick: 25
@@ -49,8 +50,8 @@ The role of Fire Badger is not to be a "carry unit," but to burn away enemy chaf
 
 **Fire/Burn Mechanics:**
 - **Ignite Tech:** Chance to ignite targets for 6% HP/second for 2 seconds
-- **Liquid Fire (Scorching Ground):** Creates 15m radius fire zone lasting 20 seconds
-- **Ground Fire Damage:** 350 damage per second to anything in the zone
+- **Liquid Fire (Scorching Ground):** Creates 15m radius fire zone lasting 20 seconds, dealing 350 DPS
+- **Napalm Tech (Alternative):** Creates 12m radius fire zone lasting 8 seconds, dealing 270 DPS (reduces HP by 30%)
 - **Friendly Fire Warning:** Allied units are vulnerable to ground fire
 
 **Recent Balance Changes (2025):**
@@ -179,6 +180,7 @@ The role of Fire Badger is not to be a "carry unit," but to burn away enemy chaf
 ## Sources
 
 - [MechaMonarch Fire Badger Guide](https://mechamonarch.com/unit/fire-badger/)
+- [MBXmas Wiki - Fire Badger](https://wiki.mbxmas.com/units/ground/fire-badger/)
 - [MechaMonarch Counter List](https://mechamonarch.com/guide/mechabellum-counters/)
 - [MechaMonarch Unit Tier List](https://mechamonarch.com/guide/mechabellum-unit-tier-list/)
 - [ZLeague Fire Badger Analysis](https://www.zleague.gg/theportal/cobrak-strategy-analyzing-the-new-fire-badger-unit-in-mechabellum/)

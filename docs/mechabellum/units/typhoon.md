@@ -19,7 +19,7 @@ The Typhoon is a **Rare unit** that can only be obtained through Random Reinforc
 | **Attack Interval** | 0.2s (5 hits/second) |
 | **DPS** | 440 per unit (880 squad) |
 | **Range** | 100m |
-| **Splash Radius** | Small AOE per hit |
+| **Splash Radius** | 5m AOE per hit |
 | **Speed** | 9 m/s |
 | **Target** | Ground and Air |
 
@@ -28,19 +28,20 @@ The Typhoon is a **Rare unit** that can only be obtained through Random Reinforc
 **Dual Gatling Cannons:**
 - Each Typhoon mounts twin rapid-fire gatling guns
 - Fires every 0.2 seconds (5 rounds per second)
-- Each hit deals 88 damage with small splash radius
+- Each hit deals 88 damage with 5m splash radius
 - Sustained fire shreds swarms and light units quickly
 
 **Splash Damage:**
-- Small AOE on each hit allows hitting clustered enemies
+- 5m AOE on each hit allows hitting clustered enemies
 - Effective against tightly grouped Crawlers and Fangs
 - Splash helps clear chaff faster than single-target weapons
 
 **Barrier Shield (Tech):**
 - Generates large protective shield for allies within
-- Shield HP: 11,000 per unit level
-- Two Typhoons provide double barrier coverage (22,000+ HP total)
+- Shield HP: 8,000 per unit level (nerfed from 10,000 in patch 1.01)
+- Two Typhoons provide double barrier coverage (16,000+ HP total at base level)
 - Deploy vertically for maximum shield overlap
+- Tech cost increased to 400 (from 300) in patch 1.01
 
 **Homing Missiles (Tech):**
 - Launches 4 homing missiles every 8 seconds
@@ -56,12 +57,12 @@ The Typhoon is a **Rare unit** that can only be obtained through Random Reinforc
 |------|------|-------------|
 | **Mechanical Rage** | 300 | Movement speed +4, ATK +50%. Great for aggressive plays. |
 | **Aerial Specialization** | 300 | ATK +90% vs aerial units, Range +30 when attacking air. |
-| **Barrier** | 300 | Generates large-scale shield protecting allies within it. Shield HP increases by 11,000 per unit level. |
+| **Barrier** | 400 | Generates large-scale shield protecting allies within it. Shield HP increases by 8,000 per unit level. |
 | **Homing Missiles** | 300 | Launches 4 homing missiles every 8s. Each deals 675 damage (+450 per level). Max range 180m, min range 60m. |
 
 ### Tech Analysis
 
-**Barrier** - Generally the first tech choice unless facing Steel Balls or giants. Creates a protective shield for allies. Since there are 2 units in the pack, the total barrier strength is doubled. Deploy Typhoons vertically to maximize barrier coverage.
+**Barrier** - Generally the first tech choice unless facing Steel Balls or giants. Creates a protective shield for allies. Since there are 2 units in the pack, the total barrier strength is doubled. Deploy Typhoons vertically to maximize barrier coverage. Note: Tech cost was increased to 400 in patch 1.01, making it more of a late-game investment.
 
 **Homing Missiles** - Provides significant additional damage, especially against medium-unit-heavy boards (Steel Balls, Sledgehammers). The 180m range even allows tower sniping.
 

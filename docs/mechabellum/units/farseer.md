@@ -12,12 +12,11 @@ The Farseer is a **Rare unit** that can only be obtained through Random Reinforc
 |------|-------|
 | **Cost** | 300 Supply |
 | **Unlock Cost** | Rare (Random Reinforcement only) |
-| **Unit Count** | 2 per squad |
-| **Unit HP** | 11,991 (per unit) |
-| **Squad HP** | 23,982 (total) |
+| **Unit Count** | 1 per squad |
+| **Unit HP** | 11,991 |
 | **Attack Damage** | 1,348 x 2 missiles (2,696 per volley) |
 | **Attack Interval** | 2.0s |
-| **DPS** | 1,348 per unit (2,696 squad) |
+| **DPS** | 1,348 (2,696 with both missiles hitting) |
 | **Range** | 125m |
 | **Speed** | 16 m/s |
 | **Target** | Ground and Air |
@@ -28,7 +27,7 @@ The Farseer is a **Rare unit** that can only be obtained through Random Reinforc
 - Each Farseer fires 2 homing missiles simultaneously per attack
 - Missiles can target different enemies or focus same target
 - 2.0 second attack interval between volleys
-- Total squad fires 4 missiles per volley (2 units x 2 missiles)
+- Single Farseer fires 2 missiles per volley
 
 **Targeting Behavior:**
 - Missiles have homing capability, rarely miss
