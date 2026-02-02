@@ -25,6 +25,56 @@ function calculateHealthPercent(health: number, maxHealth: number): number {
   return Math.round((health / maxHealth) * 100);
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Extracted Components (reduce nesting and DRY violations)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** Single stat row with label and value */
+function StatRow({
+  label,
+  value,
+  bold,
+}: {
+  label: string;
+  value: string | number;
+  bold?: boolean;
+}) {
+  return (
+    <div className="flex justify-between">
+      <span style={styles.textFaded}>{label}</span>
+      <span style={bold ? { color: UI_COLORS.black, fontWeight: 'bold' } : styles.textDark}>
+        {value}
+      </span>
+    </div>
+  );
+}
+
+/** Attack stats section (melee or ranged) */
+function AttackStatsSection({
+  title,
+  damage,
+  attackSpeed,
+  range,
+}: {
+  title: string;
+  damage: number;
+  attackSpeed: number;
+  range?: number;
+}) {
+  const dps = calculateDPS(damage, attackSpeed);
+  return (
+    <div className="pb-2 mb-2" style={{ borderBottom: `1px solid ${UI_COLORS.parchmentDark}` }}>
+      <div className="text-sm mb-1" style={styles.textFaded}>
+        {title}
+      </div>
+      <StatRow label="Damage" value={damage} />
+      <StatRow label="Speed" value={`${attackSpeed}/s`} />
+      {range !== undefined && <StatRow label="Range" value={`${range}px`} />}
+      <StatRow label="DPS" value={dps.toFixed(1)} bold />
+    </div>
+  );
+}
+
 interface UnitInfoPanelProps {
   unit: UnitRenderData;
   squadCount?: number;
@@ -89,66 +139,24 @@ export function UnitInfoPanel({ unit, squadCount = 1, onDeselect }: UnitInfoPane
 
       {/* Stats */}
       <div className="space-y-2 text-sm">
-        {/* Melee Attack */}
         {unit.stats.melee && (
-          <div
-            className="pb-2 mb-2"
-            style={{ borderBottom: `1px solid ${UI_COLORS.parchmentDark}` }}
-          >
-            <div className="text-sm mb-1" style={styles.textFaded}>
-              Melee Attack
-            </div>
-            <div className="flex justify-between">
-              <span style={styles.textFaded}>Damage</span>
-              <span style={styles.textDark}>{unit.stats.melee.damage}</span>
-            </div>
-            <div className="flex justify-between">
-              <span style={styles.textFaded}>Speed</span>
-              <span style={styles.textDark}>{unit.stats.melee.attackSpeed}/s</span>
-            </div>
-            <div className="flex justify-between">
-              <span style={styles.textFaded}>DPS</span>
-              <span style={{ color: UI_COLORS.black, fontWeight: 'bold' }}>
-                {calculateDPS(unit.stats.melee.damage, unit.stats.melee.attackSpeed).toFixed(1)}
-              </span>
-            </div>
-          </div>
+          <AttackStatsSection
+            title="Melee Attack"
+            damage={unit.stats.melee.damage}
+            attackSpeed={unit.stats.melee.attackSpeed}
+          />
         )}
 
-        {/* Ranged Attack */}
         {unit.stats.ranged && (
-          <div
-            className="pb-2 mb-2"
-            style={{ borderBottom: `1px solid ${UI_COLORS.parchmentDark}` }}
-          >
-            <div className="text-sm mb-1" style={styles.textFaded}>
-              Ranged Attack
-            </div>
-            <div className="flex justify-between">
-              <span style={styles.textFaded}>Damage</span>
-              <span style={styles.textDark}>{unit.stats.ranged.damage}</span>
-            </div>
-            <div className="flex justify-between">
-              <span style={styles.textFaded}>Speed</span>
-              <span style={styles.textDark}>{unit.stats.ranged.attackSpeed}/s</span>
-            </div>
-            <div className="flex justify-between">
-              <span style={styles.textFaded}>Range</span>
-              <span style={styles.textDark}>{unit.stats.ranged.range}px</span>
-            </div>
-            <div className="flex justify-between">
-              <span style={styles.textFaded}>DPS</span>
-              <span style={{ color: UI_COLORS.black, fontWeight: 'bold' }}>
-                {calculateDPS(unit.stats.ranged.damage, unit.stats.ranged.attackSpeed).toFixed(1)}
-              </span>
-            </div>
-          </div>
+          <AttackStatsSection
+            title="Ranged Attack"
+            damage={unit.stats.ranged.damage}
+            attackSpeed={unit.stats.ranged.attackSpeed}
+            range={unit.stats.ranged.range}
+          />
         )}
 
-        <div className="flex justify-between">
-          <span style={styles.textFaded}>Move Speed</span>
-          <span style={styles.textDark}>{unit.stats.moveSpeed}</span>
-        </div>
+        <StatRow label="Move Speed" value={unit.stats.moveSpeed} />
       </div>
 
       {/* Active Modifiers (Buffs/Debuffs) */}

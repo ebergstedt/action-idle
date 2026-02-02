@@ -1,8 +1,9 @@
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { GameEngine } from '../core/engine/GameEngine';
 import { GameState } from '../core/types/GameState';
 import { UpgradeDefinition } from '../core/types/Upgrade';
 import { SaveManager } from '../core/persistence/SaveManager';
+import { IPersistenceAdapter } from '../core/persistence/IPersistenceAdapter';
 import { LocalStorageAdapter } from '../adapters/LocalStorageAdapter';
 import { Decimal } from '../core/utils/BigNumber';
 import { useGameLoop } from './useGameLoop';
@@ -21,26 +22,32 @@ export interface GameStateHook {
   resetGame: () => Promise<void>;
 }
 
+export interface UseGameStateOptions {
+  /** Persistence adapter for save/load. Defaults to LocalStorageAdapter. */
+  persistenceAdapter?: IPersistenceAdapter;
+}
+
+/** Default persistence adapter - created lazily */
+let defaultAdapter: IPersistenceAdapter | null = null;
+function getDefaultAdapter(): IPersistenceAdapter {
+  if (!defaultAdapter) {
+    defaultAdapter = new LocalStorageAdapter();
+  }
+  return defaultAdapter;
+}
+
 /**
  * Main hook that bridges the core game engine with React.
  * Handles the game loop, state updates, and save/load operations.
  */
-export function useGameState(): GameStateHook {
-  const engineRef = useRef<GameEngine | null>(null);
-  const saveManagerRef = useRef<SaveManager | null>(null);
+export function useGameState(options: UseGameStateOptions = {}): GameStateHook {
+  const { persistenceAdapter = getDefaultAdapter() } = options;
+
+  // Memoize engine and saveManager to ensure stable references
+  const engine = useMemo(() => new GameEngine(upgradesData as UpgradeDefinition[]), []);
+  const saveManager = useMemo(() => new SaveManager(persistenceAdapter), [persistenceAdapter]);
+
   const lastSaveRef = useRef<number>(Date.now());
-
-  // Initialize engine and save manager
-  if (!engineRef.current) {
-    engineRef.current = new GameEngine(upgradesData as UpgradeDefinition[]);
-  }
-  if (!saveManagerRef.current) {
-    const adapter = new LocalStorageAdapter();
-    saveManagerRef.current = new SaveManager(adapter);
-  }
-
-  const engine = engineRef.current;
-  const saveManager = saveManagerRef.current;
 
   // React state that triggers re-renders
   const [state, setState] = useState<GameState>(() => engine.getState());
@@ -137,9 +144,9 @@ export function useGameState(): GameStateHook {
 
   const resetGame = useCallback(async (): Promise<void> => {
     await saveManager.deleteSave();
-    engineRef.current = new GameEngine(upgradesData as UpgradeDefinition[]);
+    engine.reset();
     syncState();
-  }, [saveManager, syncState]);
+  }, [engine, saveManager, syncState]);
 
   return {
     state,

@@ -249,8 +249,3 @@ export class BattleUpgradeRegistry {
     this.byTarget.clear();
   }
 }
-
-/**
- * Default singleton instance.
- */
-export const battleUpgradeRegistry = new BattleUpgradeRegistry();

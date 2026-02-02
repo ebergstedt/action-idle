@@ -5,7 +5,7 @@
  * Victory shows a green seal, defeat shows a red seal.
  */
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import type { BattleOutcome } from '../../core/battle';
 import {
   OVERLAY_SHOW_DELAY_MS,
@@ -54,22 +54,38 @@ export function WaxSealOverlay({
   }, [outcome]);
 
   // Auto-battle countdown timer
+  const countdownRef = useRef(AUTO_BATTLE_COUNTDOWN_SECONDS);
+  const hasTriggeredDismissRef = useRef(false);
+
+  useEffect(() => {
+    // Reset refs when outcome changes
+    if (outcome === 'pending') {
+      countdownRef.current = AUTO_BATTLE_COUNTDOWN_SECONDS;
+      hasTriggeredDismissRef.current = false;
+    }
+  }, [outcome]);
+
   useEffect(() => {
     if (!autoBattle || outcome === 'pending' || !isStamped) return;
 
-    // Start countdown after stamp animation completes
-    const countdownInterval = setInterval(() => {
-      setCountdown((prev) => {
-        if (prev <= 1) {
-          clearInterval(countdownInterval);
-          onDismiss?.();
-          return 0;
-        }
-        return prev - 1;
-      });
+    // Reset countdown state when starting
+    countdownRef.current = AUTO_BATTLE_COUNTDOWN_SECONDS;
+    setCountdown(AUTO_BATTLE_COUNTDOWN_SECONDS);
+
+    const intervalId = setInterval(() => {
+      countdownRef.current -= 1;
+      setCountdown(countdownRef.current);
+
+      if (countdownRef.current <= 0 && !hasTriggeredDismissRef.current) {
+        hasTriggeredDismissRef.current = true;
+        clearInterval(intervalId);
+        onDismiss?.();
+      }
     }, 1000);
 
-    return () => clearInterval(countdownInterval);
+    return () => {
+      clearInterval(intervalId);
+    };
   }, [autoBattle, outcome, isStamped, onDismiss]);
 
   if (outcome === 'pending' || !isVisible) {

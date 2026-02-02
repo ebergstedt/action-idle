@@ -31,17 +31,28 @@ import {
   BoxSelectSession,
 } from '../../../core/battle/BoxSelectController';
 
-export interface UseCanvasInputProps {
+/** Canvas configuration for input handling */
+export interface CanvasConfig {
   canvasRef: RefObject<HTMLCanvasElement | null>;
-  units: ISelectable[];
-  selectedUnitIds: string[];
   width: number;
   height: number;
+}
+
+/** Current selection state */
+export interface SelectionState {
+  units: ISelectable[];
+  selectedUnitIds: string[];
+}
+
+/** Callbacks for canvas input events */
+export interface CanvasInputCallbacks {
   onUnitMove?: (unitId: string, position: Vector2) => void;
   onUnitsMove?: (moves: Array<{ unitId: string; position: Vector2 }>) => void;
   onSelectUnit?: (unitId: string | null) => void;
   onSelectUnits?: (unitIds: string[]) => void;
 }
+
+export interface UseCanvasInputProps extends CanvasConfig, SelectionState, CanvasInputCallbacks {}
 
 export interface UseCanvasInputResult {
   isDragging: boolean;
@@ -69,11 +80,18 @@ export function useCanvasInput({
   onSelectUnit,
   onSelectUnits,
 }: UseCanvasInputProps): UseCanvasInputResult {
+  // ─────────────────────────────────────────────────────────────────────────────
+  // State
+  // ─────────────────────────────────────────────────────────────────────────────
   const [isDragging, setIsDragging] = useState(false);
   const [boxSelectSession, setBoxSelectSession] = useState<BoxSelectSession | null>(null);
   const dragSessionRef = useRef<DragSession | null>(null);
 
-  // Calculate bounds for allied deployment zone
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Utilities
+  // ─────────────────────────────────────────────────────────────────────────────
+
+  /** Calculate bounds for allied deployment zone */
   const getDragBounds = useCallback((): DragBounds => {
     const zoneHeight = height * ZONE_HEIGHT_PERCENT;
     return {
@@ -84,7 +102,7 @@ export function useCanvasInput({
     };
   }, [width, height]);
 
-  // Get mouse position relative to canvas
+  /** Get mouse position relative to canvas */
   const getMousePos = useCallback(
     (e: MouseEvent | React.MouseEvent): Vector2 => {
       const canvas = canvasRef.current;
@@ -95,7 +113,11 @@ export function useCanvasInput({
     [canvasRef]
   );
 
-  // Shared logic: Process mouse move for drag or box select
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Event Processing (shared logic for canvas and document events)
+  // ─────────────────────────────────────────────────────────────────────────────
+
+  /** Process mouse move for drag or box select */
   const processMoveEvent = useCallback(
     (pos: Vector2) => {
       // Handle box selection
@@ -123,7 +145,7 @@ export function useCanvasInput({
     [isDragging, boxSelectSession, getDragBounds, units, onUnitMove, onUnitsMove]
   );
 
-  // Shared logic: Process mouse up for ending drag or finalizing selection
+  /** Process mouse up for ending drag or finalizing selection */
   const processUpEvent = useCallback(() => {
     // Finalize box selection
     if (boxSelectSession) {
@@ -144,7 +166,11 @@ export function useCanvasInput({
     dragSessionRef.current = null;
   }, [boxSelectSession, units, onSelectUnit, onSelectUnits]);
 
-  // Input: Mouse down - start selection, drag, or box select
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Input Handlers (exposed to canvas)
+  // ─────────────────────────────────────────────────────────────────────────────
+
+  /** Mouse down - start selection, drag, or box select */
   const handleMouseDown = useCallback(
     (e: React.MouseEvent<HTMLCanvasElement>) => {
       const pos = getMousePos(e);
@@ -182,7 +208,7 @@ export function useCanvasInput({
     [getMousePos, units, selectedUnitIds, onSelectUnits]
   );
 
-  // Input: Double click - select all of type
+  /** Double click - select all of type */
   const handleDoubleClick = useCallback(
     (e: React.MouseEvent<HTMLCanvasElement>) => {
       const pos = getMousePos(e);
@@ -196,7 +222,7 @@ export function useCanvasInput({
     [getMousePos, units, onSelectUnits]
   );
 
-  // Input: Mouse move - delegates to shared logic
+  /** Mouse move - delegates to shared logic */
   const handleMouseMove = useCallback(
     (e: React.MouseEvent<HTMLCanvasElement>) => {
       processMoveEvent(getMousePos(e));
@@ -204,12 +230,14 @@ export function useCanvasInput({
     [getMousePos, processMoveEvent]
   );
 
-  // Input: Mouse up - delegates to shared logic
+  /** Mouse up - delegates to shared logic */
   const handleMouseUp = useCallback(() => {
     processUpEvent();
   }, [processUpEvent]);
 
-  // Document-level event handlers for capturing mouse events outside canvas
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Document-level Event Capture (for drag/select outside canvas bounds)
+  // ─────────────────────────────────────────────────────────────────────────────
   useEffect(() => {
     if (!isDragging && !boxSelectSession) return;
 

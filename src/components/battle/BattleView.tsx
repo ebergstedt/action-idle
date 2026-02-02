@@ -16,7 +16,6 @@ import {
   MIN_ARENA_HEIGHT,
   ARENA_ASPECT_RATIO,
   ARENA_SIZE_STABLE_DELAY_MS,
-  AUTO_BATTLE_START_DELAY_MS,
 } from '../../core/battle/BattleConfig';
 import { getUniformSelectionUnit } from '../../core/battle/SelectionManager';
 import { UI_COLORS } from '../../core/theme/colors';
@@ -44,8 +43,8 @@ export function BattleView() {
     setBattleSpeed,
     setAutoBattle,
     setWave,
-    handleBattleOutcome,
     getWaveGoldReward,
+    handleOutcomeAndContinue,
   } = useBattle();
 
   const containerRef = useRef<HTMLDivElement>(null);
@@ -127,20 +126,13 @@ export function BattleView() {
     }
   }, [autoBattle, setAutoBattle, state.isRunning, start]);
 
-  // Handle outcome dismiss - delegates to engine for gold/wave logic, then resets
-  // If auto-battle is enabled, automatically starts the next battle
+  // Handle outcome dismiss - delegates to hook for outcome processing and auto-battle flow
   const handleOutcomeDismiss = useCallback(() => {
-    handleBattleOutcome();
-    handleReset();
-
-    // Auto-start next battle if auto-battle is enabled
-    if (autoBattle) {
-      // Small delay to let the reset/spawn complete
-      setTimeout(() => {
-        start();
-      }, AUTO_BATTLE_START_DELAY_MS);
-    }
-  }, [handleBattleOutcome, handleReset, autoBattle, start]);
+    handleOutcomeAndContinue(() => {
+      // Reset spawned ref so units can spawn again
+      hasSpawnedRef.current = false;
+    });
+  }, [handleOutcomeAndContinue]);
 
   return (
     <div className="flex gap-4 h-full">

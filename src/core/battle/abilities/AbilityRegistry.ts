@@ -97,8 +97,3 @@ export class AbilityRegistry {
     this.byTrigger.clear();
   }
 }
-
-/**
- * Default singleton instance.
- */
-export const abilityRegistry = new AbilityRegistry();

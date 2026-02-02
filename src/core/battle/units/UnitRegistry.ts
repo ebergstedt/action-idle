@@ -119,8 +119,3 @@ export class UnitRegistry {
     this.byTier.clear();
   }
 }
-
-/**
- * Default singleton instance.
- */
-export const unitRegistry = new UnitRegistry();

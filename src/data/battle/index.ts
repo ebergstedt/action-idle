@@ -2,15 +2,22 @@
  * Battle Data Loader
  *
  * Aggregates and loads all battle-related data into registries.
+ * This is the application layer that creates singleton instances.
+ * Core modules only export classes, not instances.
  */
 
-import { unitRegistry, UnitRegistry } from '../../core/battle/units';
-import { abilityRegistry, AbilityRegistry } from '../../core/battle/abilities';
-import { battleUpgradeRegistry, BattleUpgradeRegistry } from '../../core/battle/upgrades';
+import { UnitRegistry } from '../../core/battle/units';
+import { AbilityRegistry } from '../../core/battle/abilities';
+import { BattleUpgradeRegistry } from '../../core/battle/upgrades';
 
 import { unitDefinitions } from '../units';
 import { abilityDefinitions } from '../abilities';
 import { battleUpgradeDefinitions } from '../battle-upgrades';
+
+// Application-level singleton instances (created in data layer, not core)
+export const unitRegistry = new UnitRegistry();
+export const abilityRegistry = new AbilityRegistry();
+export const battleUpgradeRegistry = new BattleUpgradeRegistry();
 
 /**
  * Initializes all battle registries with data from JSON files.
@@ -41,9 +48,6 @@ export function createBattleRegistries(): {
 
   return { units, abilities, upgrades };
 }
-
-// Re-export singleton instances for convenience
-export { unitRegistry, abilityRegistry, battleUpgradeRegistry };
 
 // Re-export definitions for direct access
 export { unitDefinitions } from '../units';

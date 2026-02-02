@@ -5,7 +5,7 @@
  * Creates a hand-drawn aesthetic with sepia ink spots on the parchment.
  */
 
-import { useRef, useCallback } from 'react';
+import { useRef, useCallback, useEffect } from 'react';
 import type { UnitRenderData } from '../../../core/battle';
 import {
   INK_SPLATTER_COUNT,
@@ -83,11 +83,25 @@ export function useInkSplatter(): {
     splattersRef.current = [];
     deadUnitsRef.current.clear();
     prevHealthRef.current.clear();
+    wasStartedRef.current = false;
+  }, []);
+
+  // Clean up on unmount to prevent memory leaks
+  useEffect(() => {
+    // Capture refs at effect time for safe cleanup
+    const splatters = splattersRef;
+    const deadUnits = deadUnitsRef;
+    const prevHealth = prevHealthRef;
+    return () => {
+      splatters.current = [];
+      deadUnits.current.clear();
+      prevHealth.current.clear();
+    };
   }, []);
 
   const updateSplatters = useCallback(
     (units: UnitRenderData[], hasStarted: boolean, delta: number): InkSplatter[] => {
-      // Clear splatters when game resets (hasStarted goes from true to false)
+      // Clear splatters when game resets (hasStarted transitions from true to false)
       if (wasStartedRef.current && !hasStarted) {
         clearSplatters();
       }

@@ -133,4 +133,11 @@ export class GameEngine implements IGameEngine {
     this.state.currency = this.state.currency.add(amount);
     this.state.totalEarned = this.state.totalEarned.add(amount);
   }
+
+  /**
+   * Resets the game to initial state.
+   */
+  reset(): void {
+    this.state = this.createInitialState();
+  }
 }
