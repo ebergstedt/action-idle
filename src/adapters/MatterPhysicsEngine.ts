@@ -1,7 +1,7 @@
 import Matter from 'matter-js';
-import { Vector2 } from './Vector2';
-import { BodyConfig, CollisionEvent, IPhysicsBody, Team } from './types';
-import { IPhysicsEngine } from './IPhysicsEngine';
+import { Vector2 } from '../core/physics/Vector2';
+import { BodyConfig, CollisionEvent, IPhysicsBody, Team } from '../core/physics/types';
+import { IPhysicsEngine } from '../core/physics/IPhysicsEngine';
 
 /**
  * Physics body wrapper that implements IPhysicsBody using matter.js.

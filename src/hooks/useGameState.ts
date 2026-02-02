@@ -3,7 +3,7 @@ import { GameEngine } from '../core/engine/GameEngine';
 import { GameState } from '../core/types/GameState';
 import { UpgradeDefinition } from '../core/types/Upgrade';
 import { SaveManager } from '../core/persistence/SaveManager';
-import { LocalStorageAdapter } from '../core/persistence/LocalStorageAdapter';
+import { LocalStorageAdapter } from '../adapters/LocalStorageAdapter';
 import { Decimal } from '../core/utils/BigNumber';
 import { useGameLoop } from './useGameLoop';
 import { AUTOSAVE_INTERVAL_MS, MAX_OFFLINE_TIME_SECONDS } from '../core/battle/BattleConfig';

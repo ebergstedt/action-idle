@@ -9,6 +9,7 @@
 
 import { Vector2 } from '../../physics/Vector2';
 import { UNIT_TYPE_COLORS, UnitType as ColorUnitType } from '../../theme/colors';
+import { REFERENCE_ARENA_HEIGHT } from '../BattleConfig';
 import { ActiveModifier } from '../modifiers/types';
 import { getScaledUnitSize } from '../types';
 import { computeAllStats, cloneBaseStats } from './StatCalculator';
@@ -60,14 +61,14 @@ export class UnitFactory {
    * @param definitionId - The unit definition ID
    * @param team - The team the unit belongs to
    * @param options - Optional creation options
-   * @param arenaHeight - Arena height for scaling (defaults to 600)
+   * @param arenaHeight - Arena height for scaling (defaults to REFERENCE_ARENA_HEIGHT)
    * @returns A new UnitInstance
    */
   createUnit(
     definitionId: string,
     team: UnitTeam,
     options: CreateUnitOptions = {},
-    arenaHeight: number = 600
+    arenaHeight: number = REFERENCE_ARENA_HEIGHT
   ): UnitInstance {
     const definition = this.registry.get(definitionId);
     return this.createUnitFromDefinition(definition, team, options, arenaHeight);
@@ -79,14 +80,14 @@ export class UnitFactory {
    * @param definition - The unit definition
    * @param team - The team the unit belongs to
    * @param options - Optional creation options
-   * @param arenaHeight - Arena height for scaling (defaults to 600)
+   * @param arenaHeight - Arena height for scaling (defaults to REFERENCE_ARENA_HEIGHT)
    * @returns A new UnitInstance
    */
   createUnitFromDefinition(
     definition: UnitDefinition,
     team: UnitTeam,
     options: CreateUnitOptions = {},
-    arenaHeight: number = 600
+    arenaHeight: number = REFERENCE_ARENA_HEIGHT
   ): UnitInstance {
     const id = generateUnitId();
 

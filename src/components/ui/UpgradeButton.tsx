@@ -15,22 +15,26 @@ export function UpgradeButton({ upgrade, level, cost, canAfford, onPurchase }: U
     <button
       onClick={onPurchase}
       disabled={!canAfford}
-      className={`
-        w-full p-4 rounded-lg text-left transition-colors duration-150
-        ${
-          canAfford
-            ? 'bg-gray-700 hover:bg-gray-600 cursor-pointer'
-            : 'bg-gray-800 opacity-60 cursor-not-allowed'
-        }
-      `}
+      className="w-full p-4 rounded-lg text-left transition-colors duration-150"
+      style={{
+        backgroundColor: canAfford ? DARK_THEME.bgTertiary : DARK_THEME.bgSecondary,
+        opacity: canAfford ? 1 : 0.6,
+        cursor: canAfford ? 'pointer' : 'not-allowed',
+      }}
     >
       <div className="flex justify-between items-start">
         <div className="flex-1">
-          <div className="font-semibold text-lg">
+          <div className="font-semibold text-lg" style={{ color: DARK_THEME.textPrimary }}>
             {upgrade.name}
-            {level > 0 && <span className="ml-2 text-sm text-gray-400">Lv. {level}</span>}
+            {level > 0 && (
+              <span className="ml-2 text-sm" style={{ color: DARK_THEME.textSecondary }}>
+                Lv. {level}
+              </span>
+            )}
           </div>
-          <div className="text-sm text-gray-400 mt-1">{upgrade.description}</div>
+          <div className="text-sm mt-1" style={{ color: DARK_THEME.textSecondary }}>
+            {upgrade.description}
+          </div>
           <div className="text-sm mt-2" style={{ color: DARK_THEME.success }}>
             +{upgrade.baseProduction}/sec each
           </div>

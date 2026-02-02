@@ -18,7 +18,7 @@ import {
   saveBattleSettings,
 } from '../core/battle/BattleSettings';
 import type { IPersistenceAdapter } from '../core/persistence/IPersistenceAdapter';
-import { LocalStorageAdapter } from '../core/persistence/LocalStorageAdapter';
+import { LocalStorageAdapter } from '../adapters/LocalStorageAdapter';
 import { Vector2 } from '../core/physics/Vector2';
 import { unitDefinitions } from '../data/units';
 

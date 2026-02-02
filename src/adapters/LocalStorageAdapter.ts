@@ -1,4 +1,4 @@
-import { IPersistenceAdapter } from './IPersistenceAdapter';
+import { IPersistenceAdapter } from '../core/persistence/IPersistenceAdapter';
 
 /**
  * Browser-based persistence adapter using localStorage.

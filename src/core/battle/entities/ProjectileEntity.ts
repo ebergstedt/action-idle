@@ -11,7 +11,12 @@
  */
 
 import { Vector2 } from '../../physics/Vector2';
-import { PROJECTILE_HIT_RADIUS, BASE_PROJECTILE_SPEED, scaleValue } from '../BattleConfig';
+import {
+  PROJECTILE_HIT_RADIUS,
+  BASE_PROJECTILE_SPEED,
+  REFERENCE_ARENA_HEIGHT,
+  scaleValue,
+} from '../BattleConfig';
 import { isOutOfBounds } from '../BoundsEnforcer';
 import { ProjectileRenderData, UnitTeam } from '../types';
 import { BaseEntity } from './BaseEntity';
@@ -156,7 +161,7 @@ export function createProjectile(
   sourceTeam: UnitTeam,
   sourceUnit: UnitEntity | null,
   color: string,
-  arenaHeight: number = 600
+  arenaHeight: number = REFERENCE_ARENA_HEIGHT
 ): ProjectileEntity {
   return new ProjectileEntity(id, position, {
     target,

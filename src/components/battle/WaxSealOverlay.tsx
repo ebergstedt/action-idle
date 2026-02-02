@@ -7,7 +7,7 @@
 
 import { useEffect, useState } from 'react';
 import type { BattleOutcome } from '../../core/battle';
-import { WAX_SEAL_COLORS, UI_COLORS } from '../../core/theme/colors';
+import { WAX_SEAL_COLORS, UI_COLORS, hexToRgba } from '../../core/theme/colors';
 
 interface WaxSealOverlayProps {
   outcome: BattleOutcome;
@@ -103,7 +103,7 @@ export function WaxSealOverlay({
     <div
       className="absolute inset-0 flex items-center justify-center z-50"
       style={{
-        backgroundColor: 'rgba(0, 0, 0, 0.6)',
+        backgroundColor: hexToRgba(UI_COLORS.black, 0.6),
         opacity: isVisible ? 1 : 0,
         transition: 'opacity 0.5s ease-out',
       }}
@@ -114,7 +114,7 @@ export function WaxSealOverlay({
         style={{
           backgroundColor: UI_COLORS.parchmentBase,
           border: `4px solid ${UI_COLORS.inkBrown}`,
-          boxShadow: '0 10px 40px rgba(0, 0, 0, 0.5)',
+          boxShadow: `0 10px 40px ${hexToRgba(UI_COLORS.black, 0.5)}`,
           transform: isStamped ? 'scale(1)' : 'scale(0.8)',
           opacity: isStamped ? 1 : 0,
           transition: 'transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease-out',
@@ -162,7 +162,7 @@ export function WaxSealOverlay({
           <div
             className="flex items-center gap-2 px-4 py-2 rounded"
             style={{
-              backgroundColor: 'rgba(218, 165, 32, 0.2)',
+              backgroundColor: hexToRgba(UI_COLORS.goldPrimary, 0.2),
             }}
           >
             <span className="text-xl font-bold" style={{ color: UI_COLORS.inkBlack }}>

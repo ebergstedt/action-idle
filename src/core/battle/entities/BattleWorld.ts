@@ -123,7 +123,7 @@ export class BattleWorld implements IEntityWorld, IBattleWorld, IWorldEventEmitt
 
     // Calculate max radius to cover entire arena (distance to farthest corner)
     let maxRadius: number | undefined;
-    let arenaHeight = 600; // Default fallback
+    let arenaHeight = REFERENCE_ARENA_HEIGHT; // Default fallback
     if (this.arenaBounds) {
       const { width, height } = this.arenaBounds;
       arenaHeight = height;

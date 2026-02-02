@@ -130,7 +130,7 @@ export function useCanvasInput({
         setBoxSelectSession(startBoxSelect(pos));
       }
     },
-    [getMousePos, units, selectedUnitIds, onSelectUnit]
+    [getMousePos, units, selectedUnitIds, onSelectUnits]
   );
 
   // Input: Double click - select all of type

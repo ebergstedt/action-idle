@@ -9,17 +9,19 @@ interface StatsDisplayProps {
 
 export function StatsDisplay({ currency, productionPerSecond, onManualClick }: StatsDisplayProps) {
   return (
-    <div className="bg-gray-800 rounded-lg p-6 text-center">
+    <div className="rounded-lg p-6 text-center" style={{ backgroundColor: DARK_THEME.bgSecondary }}>
       <div className="mb-4">
         <div className="text-4xl font-bold" style={{ color: DARK_THEME.accentGold }}>
           {formatNumber(currency)}
         </div>
-        <div className="text-sm text-gray-400 mt-1">Currency</div>
+        <div className="text-sm mt-1" style={{ color: DARK_THEME.textSecondary }}>
+          Currency
+        </div>
       </div>
 
-      <div className="text-lg text-gray-300 mb-6">
+      <div className="text-lg mb-6" style={{ color: DARK_THEME.textSecondary }}>
         <span style={{ color: DARK_THEME.success }}>{formatNumber(productionPerSecond)}</span>
-        <span className="text-gray-500"> /sec</span>
+        <span style={{ color: DARK_THEME.textTertiary }}> /sec</span>
       </div>
 
       <button

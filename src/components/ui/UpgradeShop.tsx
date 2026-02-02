@@ -1,6 +1,7 @@
 import { GameState } from '../../core/types/GameState';
 import { UpgradeDefinition } from '../../core/types/Upgrade';
 import { Decimal } from '../../core/utils/BigNumber';
+import { DARK_THEME } from '../../core/theme/colors';
 import { UpgradeButton } from './UpgradeButton';
 
 interface UpgradeShopProps {
@@ -12,8 +13,10 @@ interface UpgradeShopProps {
 
 export function UpgradeShop({ upgrades, state, getUpgradeCost, onPurchase }: UpgradeShopProps) {
   return (
-    <div className="bg-gray-800 rounded-lg p-4">
-      <h2 className="text-xl font-bold mb-4 text-gray-200">Upgrades</h2>
+    <div className="rounded-lg p-4" style={{ backgroundColor: DARK_THEME.bgSecondary }}>
+      <h2 className="text-xl font-bold mb-4" style={{ color: DARK_THEME.textPrimary }}>
+        Upgrades
+      </h2>
       <div className="space-y-2">
         {upgrades.map((upgrade) => {
           const upgradeState = state.upgrades[upgrade.id];

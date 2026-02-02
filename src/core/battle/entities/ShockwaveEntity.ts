@@ -18,6 +18,7 @@ import {
   SHOCKWAVE_DEBUFF_MOVE_SPEED,
   BASE_SHOCKWAVE_EXPANSION_SPEED,
   SHOCKWAVE_MAX_RADIUS_FALLBACK,
+  REFERENCE_ARENA_HEIGHT,
   scaleValue,
 } from '../BattleConfig';
 import { ShockwaveRenderData, UnitTeam } from '../types';
@@ -198,7 +199,7 @@ export function createShockwave(
   position: Vector2,
   sourceTeam: UnitTeam,
   maxRadius: number = SHOCKWAVE_MAX_RADIUS_FALLBACK,
-  arenaHeight: number = 600
+  arenaHeight: number = REFERENCE_ARENA_HEIGHT
 ): ShockwaveEntity {
   // Shockwave color is the attacking team's color (opposite of the destroyed castle's team)
   const attackingTeam = getOppositeTeam(sourceTeam);
