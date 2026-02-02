@@ -247,6 +247,13 @@ export const CASTLE_SIZE = 14;
  */
 export const BASE_CASTLE_HORIZONTAL_MARGIN = 300;
 
+/**
+ * Padding around castles for formation placement (pixels).
+ * Units will not be placed within this distance of a castle.
+ * Scaled by arena size at runtime.
+ */
+export const BASE_CASTLE_FORMATION_PADDING = 25;
+
 // =============================================================================
 // SEPARATION & COLLISION
 // =============================================================================

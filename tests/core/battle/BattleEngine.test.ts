@@ -20,9 +20,9 @@ describe('BattleEngine tick', () => {
     engine.setArenaBounds(ARENA_WIDTH, ARENA_HEIGHT);
 
     // Spawn player unit at bottom
-    engine.spawnUnit('warrior', 'player', new Vector2(400, 500), ARENA_HEIGHT);
+    engine.spawnUnit('hound', 'player', new Vector2(400, 500), ARENA_HEIGHT);
     // Spawn enemy unit at top
-    engine.spawnUnit('warrior', 'enemy', new Vector2(400, 100), ARENA_HEIGHT);
+    engine.spawnUnit('hound', 'enemy', new Vector2(400, 100), ARENA_HEIGHT);
 
     const world = engine.getWorld();
     const units = world.getUnits();
@@ -57,8 +57,8 @@ describe('BattleEngine tick', () => {
     engine.setArenaBounds(ARENA_WIDTH, ARENA_HEIGHT);
 
     // Place units within aggro radius (150) of each other
-    engine.spawnUnit('warrior', 'player', new Vector2(400, 350), ARENA_HEIGHT);
-    engine.spawnUnit('warrior', 'enemy', new Vector2(400, 250), ARENA_HEIGHT);
+    engine.spawnUnit('hound', 'player', new Vector2(400, 350), ARENA_HEIGHT);
+    engine.spawnUnit('hound', 'enemy', new Vector2(400, 250), ARENA_HEIGHT);
 
     const world = engine.getWorld();
     const playerUnit = world.getUnits().find((u) => u.team === 'player');
@@ -80,8 +80,8 @@ describe('BattleEngine tick', () => {
     engine.setArenaBounds(ARENA_WIDTH, ARENA_HEIGHT);
 
     // Place units far apart (outside aggro radius)
-    engine.spawnUnit('warrior', 'player', new Vector2(400, 500), ARENA_HEIGHT);
-    engine.spawnUnit('warrior', 'enemy', new Vector2(400, 100), ARENA_HEIGHT);
+    engine.spawnUnit('hound', 'player', new Vector2(400, 500), ARENA_HEIGHT);
+    engine.spawnUnit('hound', 'enemy', new Vector2(400, 100), ARENA_HEIGHT);
 
     const world = engine.getWorld();
     const playerUnit = world.getUnits().find((u) => u.team === 'player');
@@ -121,8 +121,8 @@ describe('BattleEngine lifecycle', () => {
     const engine = createTestEngine();
     engine.setArenaBounds(ARENA_WIDTH, ARENA_HEIGHT);
 
-    engine.spawnUnit('warrior', 'player', new Vector2(400, 500));
-    engine.spawnUnit('warrior', 'enemy', new Vector2(400, 100));
+    engine.spawnUnit('hound', 'player', new Vector2(400, 500));
+    engine.spawnUnit('hound', 'enemy', new Vector2(400, 100));
     engine.start();
 
     expect(engine.getWorld().getUnits().length).toBe(2);
@@ -138,7 +138,7 @@ describe('BattleEngine lifecycle', () => {
     const engine = createTestEngine();
     engine.setArenaBounds(ARENA_WIDTH, ARENA_HEIGHT);
 
-    engine.spawnUnit('warrior', 'player', new Vector2(400, 500));
+    engine.spawnUnit('hound', 'player', new Vector2(400, 500));
     const playerUnit = engine.getWorld().getUnits()[0];
     const initialY = playerUnit.position.y;
 
@@ -155,10 +155,10 @@ describe('BattleEngine unit spawning', () => {
     const engine = createTestEngine();
     engine.setArenaBounds(ARENA_WIDTH, ARENA_HEIGHT);
 
-    const unit = engine.spawnUnit('warrior', 'player', new Vector2(100, 200));
+    const unit = engine.spawnUnit('hound', 'player', new Vector2(100, 200));
 
     expect(unit.id).toBe('unit_1');
-    expect(unit.type).toBe('warrior');
+    expect(unit.type).toBe('hound');
     expect(unit.team).toBe('player');
     expect(unit.position.x).toBe(100);
     expect(unit.position.y).toBe(200);
@@ -170,9 +170,9 @@ describe('BattleEngine unit spawning', () => {
     const engine = createTestEngine();
     engine.setArenaBounds(ARENA_WIDTH, ARENA_HEIGHT);
 
-    const unit1 = engine.spawnUnit('warrior', 'player', new Vector2(100, 200));
-    const unit2 = engine.spawnUnit('archer', 'player', new Vector2(200, 200));
-    const unit3 = engine.spawnUnit('knight', 'enemy', new Vector2(300, 100));
+    const unit1 = engine.spawnUnit('hound', 'player', new Vector2(100, 200));
+    const unit2 = engine.spawnUnit('fang', 'player', new Vector2(200, 200));
+    const unit3 = engine.spawnUnit('crawler', 'enemy', new Vector2(300, 100));
 
     expect(unit1.id).toBe('unit_1');
     expect(unit2.id).toBe('unit_2');
@@ -183,11 +183,11 @@ describe('BattleEngine unit spawning', () => {
     const engine = createTestEngine();
     engine.setArenaBounds(ARENA_WIDTH, ARENA_HEIGHT);
 
-    engine.spawnUnit('warrior', 'player', new Vector2(100, 200));
+    engine.spawnUnit('hound', 'player', new Vector2(100, 200));
 
     const unit = engine.getUnit('unit_1');
     expect(unit).toBeDefined();
-    expect(unit!.type).toBe('warrior');
+    expect(unit!.type).toBe('hound');
 
     const notFound = engine.getUnit('unit_999');
     expect(notFound).toBeUndefined();
@@ -197,9 +197,9 @@ describe('BattleEngine unit spawning', () => {
     const engine = createTestEngine();
     engine.setArenaBounds(ARENA_WIDTH, ARENA_HEIGHT);
 
-    engine.spawnUnit('warrior', 'player', new Vector2(100, 500));
-    engine.spawnUnit('archer', 'player', new Vector2(200, 500));
-    engine.spawnUnit('warrior', 'enemy', new Vector2(100, 100));
+    engine.spawnUnit('hound', 'player', new Vector2(100, 500));
+    engine.spawnUnit('fang', 'player', new Vector2(200, 500));
+    engine.spawnUnit('hound', 'enemy', new Vector2(100, 100));
 
     const playerUnits = engine.getPlayerUnits();
     const enemyUnits = engine.getEnemyUnits();
@@ -259,8 +259,8 @@ describe('BattleEngine combat', () => {
     engine.setArenaBounds(ARENA_WIDTH, ARENA_HEIGHT);
 
     // Place units very close so they attack immediately
-    engine.spawnUnit('warrior', 'player', new Vector2(400, 320));
-    engine.spawnUnit('warrior', 'enemy', new Vector2(400, 280));
+    engine.spawnUnit('hound', 'player', new Vector2(400, 320));
+    engine.spawnUnit('hound', 'enemy', new Vector2(400, 280));
 
     const world = engine.getWorld();
     const enemyUnit = world.getUnits().find((u) => u.team === 'enemy')!;
@@ -282,8 +282,8 @@ describe('BattleEngine combat', () => {
     engine.setArenaBounds(ARENA_WIDTH, ARENA_HEIGHT);
 
     // Spawn a very weak enemy (manually reduce health)
-    engine.spawnUnit('warrior', 'player', new Vector2(400, 320));
-    engine.spawnUnit('warrior', 'enemy', new Vector2(400, 280));
+    engine.spawnUnit('hound', 'player', new Vector2(400, 320));
+    engine.spawnUnit('hound', 'enemy', new Vector2(400, 280));
 
     const world = engine.getWorld();
     const enemyUnit = world.getUnits().find((u) => u.team === 'enemy')!;
@@ -310,8 +310,8 @@ describe('BattleEngine battle outcome', () => {
     engine.setArenaBounds(ARENA_WIDTH, ARENA_HEIGHT);
 
     // Spawn units but no castles
-    engine.spawnUnit('warrior', 'player', new Vector2(400, 320));
-    engine.spawnUnit('warrior', 'enemy', new Vector2(400, 280));
+    engine.spawnUnit('hound', 'player', new Vector2(400, 320));
+    engine.spawnUnit('hound', 'enemy', new Vector2(400, 280));
 
     const world = engine.getWorld();
     const enemyUnit = world.getUnits().find((u) => u.team === 'enemy')!;
@@ -335,8 +335,8 @@ describe('BattleEngine battle outcome', () => {
     const engine = createTestEngine();
     engine.setArenaBounds(ARENA_WIDTH, ARENA_HEIGHT);
 
-    engine.spawnUnit('warrior', 'player', new Vector2(400, 320));
-    engine.spawnUnit('warrior', 'enemy', new Vector2(400, 280));
+    engine.spawnUnit('hound', 'player', new Vector2(400, 320));
+    engine.spawnUnit('hound', 'enemy', new Vector2(400, 280));
 
     const world = engine.getWorld();
     const playerUnit = world.getUnits().find((u) => u.team === 'player')!;
@@ -360,8 +360,8 @@ describe('BattleEngine battle outcome', () => {
     const engine = createTestEngine();
     engine.setArenaBounds(ARENA_WIDTH, ARENA_HEIGHT);
 
-    engine.spawnUnit('warrior', 'player', new Vector2(400, 320));
-    engine.spawnUnit('warrior', 'enemy', new Vector2(400, 280));
+    engine.spawnUnit('hound', 'player', new Vector2(400, 320));
+    engine.spawnUnit('hound', 'enemy', new Vector2(400, 280));
 
     const world = engine.getWorld();
     const playerUnit = world.getUnits().find((u) => u.team === 'player')!;
@@ -390,7 +390,7 @@ describe('BattleEngine unit movement', () => {
     const engine = createTestEngine();
     engine.setArenaBounds(ARENA_WIDTH, ARENA_HEIGHT);
 
-    engine.spawnUnit('warrior', 'player', new Vector2(400, 500));
+    engine.spawnUnit('hound', 'player', new Vector2(400, 500));
 
     engine.moveUnit('unit_1', new Vector2(300, 450));
 
@@ -403,7 +403,7 @@ describe('BattleEngine unit movement', () => {
     const engine = createTestEngine();
     engine.setArenaBounds(ARENA_WIDTH, ARENA_HEIGHT);
 
-    engine.spawnUnit('warrior', 'player', new Vector2(400, 500));
+    engine.spawnUnit('hound', 'player', new Vector2(400, 500));
 
     engine.start();
     engine.moveUnit('unit_1', new Vector2(300, 450));
@@ -417,7 +417,7 @@ describe('BattleEngine unit movement', () => {
     const engine = createTestEngine();
     engine.setArenaBounds(ARENA_WIDTH, ARENA_HEIGHT);
 
-    engine.spawnUnit('warrior', 'enemy', new Vector2(400, 100));
+    engine.spawnUnit('hound', 'enemy', new Vector2(400, 100));
 
     engine.moveUnit('unit_1', new Vector2(300, 50));
 
@@ -433,8 +433,8 @@ describe('BattleEngine overlap resolution', () => {
     engine.setArenaBounds(ARENA_WIDTH, ARENA_HEIGHT);
 
     // Spawn units at exactly the same position
-    engine.spawnUnit('warrior', 'player', new Vector2(400, 500));
-    engine.spawnUnit('warrior', 'player', new Vector2(400, 500));
+    engine.spawnUnit('hound', 'player', new Vector2(400, 500));
+    engine.spawnUnit('hound', 'player', new Vector2(400, 500));
 
     const units = engine.getWorld().getUnits();
     const unit1 = units[0];
@@ -472,14 +472,14 @@ describe('BattleEngine state accessors', () => {
     const registry = engine.getRegistry();
 
     expect(registry).toBeDefined();
-    expect(registry.get('warrior')).toBeDefined();
+    expect(registry.get('hound')).toBeDefined();
   });
 
   it('should return unit entity by ID', () => {
     const engine = createTestEngine();
     engine.setArenaBounds(ARENA_WIDTH, ARENA_HEIGHT);
 
-    engine.spawnUnit('warrior', 'player', new Vector2(400, 500));
+    engine.spawnUnit('hound', 'player', new Vector2(400, 500));
 
     const entity = engine.getUnitEntity('unit_1');
     expect(entity).toBeDefined();
@@ -594,8 +594,8 @@ describe('BattleEngine handleBattleOutcome', () => {
     engine.setArenaBounds(ARENA_WIDTH, ARENA_HEIGHT);
 
     // Set up a victory scenario
-    engine.spawnUnit('warrior', 'player', new Vector2(400, 320));
-    engine.spawnUnit('warrior', 'enemy', new Vector2(400, 280));
+    engine.spawnUnit('hound', 'player', new Vector2(400, 320));
+    engine.spawnUnit('hound', 'enemy', new Vector2(400, 280));
 
     const enemyUnit = engine
       .getWorld()
@@ -632,8 +632,8 @@ describe('BattleEngine handleBattleOutcome', () => {
     engine.setWave(5);
 
     // Set up a defeat scenario
-    engine.spawnUnit('warrior', 'player', new Vector2(400, 320));
-    engine.spawnUnit('warrior', 'enemy', new Vector2(400, 280));
+    engine.spawnUnit('hound', 'player', new Vector2(400, 320));
+    engine.spawnUnit('hound', 'enemy', new Vector2(400, 280));
 
     const playerUnit = engine
       .getWorld()
@@ -667,8 +667,8 @@ describe('BattleEngine handleBattleOutcome', () => {
     engine.setArenaBounds(ARENA_WIDTH, ARENA_HEIGHT);
 
     // Set up a defeat scenario at wave 1
-    engine.spawnUnit('warrior', 'player', new Vector2(400, 320));
-    engine.spawnUnit('warrior', 'enemy', new Vector2(400, 280));
+    engine.spawnUnit('hound', 'player', new Vector2(400, 320));
+    engine.spawnUnit('hound', 'enemy', new Vector2(400, 280));
 
     const playerUnit = engine
       .getWorld()

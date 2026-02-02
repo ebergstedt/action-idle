@@ -21,7 +21,7 @@ Complete unit database from Mechabellum for implementing units in Total Idle.
 | **Crawler** | 24 | 263 | 6,312 | 79 | 0.6s | 3,160 | Melee | 16 | Melee, single-target | Fastest, bypasses shields |
 | **Fang** | 18 | 117 | 2,106 | 61 | 1.5s | 732 | 75 | 6 | Projectile, single-target | Air+Ground |
 | **Arclight** | 1 | 4,813 | 4,813 | 347 | 0.9s | 385 | 95 | 7 | Projectile, 7m splash | Ground only |
-| **Marksman** | 1 | 1,622 | 1,622 | 2,329 | 3.1s | 751 | 140 | 8 | Hitscan, single-target | Air+Ground sniper |
+| **Marksman** | 1 | 1,622 | 1,622 | 2,329 | 3.1s | 751 | 140 | 8 | Projectile (fast), single-target | Air+Ground sniper |
 | **Hound** | 5 | 897 | 4,485 | 246 | 2.4s | 513 | 70 | 10 | Shotgun, 6m cone splash | Ground only |
 | **Void Eye** | 3 | 1,522 | 4,566 | 947 | 3.3s | 861 | 100 | 8 | Projectile, single-target | Aerial mode capable |
 
@@ -39,14 +39,14 @@ Complete unit database from Mechabellum for implementing units in Total Idle.
 | **Rhino** | 1 | 19,297 | 19,297 | 3,560 | 0.9s | 3,956 | Melee | 16 | Melee, 6m AoE | Life drain on attack |
 | **Hacker** | 1 | 3,249 | 3,249 | 585 | 0.3s | 1,950 | 110 | 8 | Beam, single-target | Unit conversion |
 | **Fire Badger** | 3 | 4,222 | 12,666 | 25 | 0.1s | 750 | 75 | 9 | Flamethrower, 7m cone | Rare unit, DOT |
-| **Sabertooth** | 1 | 14,801 | 14,801 | 7,858 | 3.4s | 2,311 | 95 | 8 | Projectile, 5m splash | Rare unit |
+| **Sabertooth** | 1 | 15,541 | 15,541 | 7,858 | 3.4s | 2,311 | 95 | 8 | Projectile, 5m splash | Rare unit |
 
 ### 300 Supply Cost (Tier 3)
 
 | Unit | Squad | HP/Unit | Total HP | Damage | Interval | DPS | Range | Speed | Weapon Mechanics | Special |
 |------|-------|---------|----------|--------|----------|-----|-------|-------|------------------|---------|
-| **Scorpion** | 1 | 18,632 | 18,632 | 10,650 | 4.5s | 2,367 | 100 | 7 | Projectile, 15m massive splash | Ground only |
-| **Farseer** | 1 | 11,991 | 11,991 | 2,696 | 2.0s | 1,348 | 125 | 16 | Missiles, 8m splash | Flying, Air+Ground |
+| **Scorpion** | 1 | 18,632 | 18,632 | 10,650 | 4.5s | 2,367 | 100 | 7 | Projectile, 8m splash (15m w/Acid) | Ground only |
+| **Farseer** | 1 | 11,991 | 11,991 | 2,696 | 2.0s | 1,348 | 125 | 16 | Missiles, 8m splash | Ground vehicle, Air+Ground |
 | **Typhoon** | 2 | 9,529 | 19,058 | 88 | 0.2s | 880 | 100 | 9 | Gatling, 5m splash | Rare, Air+Ground, dual guns |
 | **Wraith** | 1 | 14,115 | 14,115 | 381×4 | 1.6s | 953 | 60 | 10 | Multi-beam, 4 independent targets | Rare, Flying, Air+Ground |
 
@@ -413,7 +413,7 @@ Complete unit database from Mechabellum for implementing units in Total Idle.
 | DPS | 2,367 | |
 | Range | 100m | |
 | Speed | 7 m/s | |
-| Splash Radius | 15m | Huge AoE |
+| Splash Radius | 8m base (15m with Acid Attack) | AoE |
 | Target | Ground only | |
 
 **Special Mechanics:**
@@ -437,9 +437,9 @@ Complete unit database from Mechabellum for implementing units in Total Idle.
 | Target | Air + Ground | |
 
 **Special Mechanics:**
-- Flying unit
-- Missile support
-- Good mobility
+- Ground-based wheeled vehicle (NOT flying)
+- Fires 2 missiles per volley
+- Good mobility (16 m/s)
 
 ---
 
@@ -614,7 +614,7 @@ Complete unit database from Mechabellum for implementing units in Total Idle.
 **Special Mechanics:**
 - Burrows underground while moving
 - Immune to damage while burrowed
-- Recovers 15% max HP per second while burrowed
+- Recovers 20% max HP instantly + 20% per second while burrowed
 - Sandstorm tech: 120m radius, -50% enemy range, -30% ranged damage taken
 - Replicate tech spawns Larva on emergence
 - Mechanical Rage: +4 speed, -0.8s interval
@@ -727,7 +727,9 @@ Complete unit database from Mechabellum for implementing units in Total Idle.
 - **Titan**: War Factory, Abyss
 
 ### Flying Units
-- Wasp, Phoenix, Farseer, Wraith, Overlord, Raiden, Abyss
+- Wasp, Phoenix, Wraith, Overlord, Raiden, Abyss
+
+*Note: Farseer is a ground vehicle despite its mobility*
 
 ### Rare Units (From Unit Packs)
 - Fire Badger, Typhoon, Sabertooth, Wraith

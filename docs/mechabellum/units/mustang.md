@@ -159,5 +159,6 @@ Mustangs excel at clearing chaff units like Fangs and Crawlers in the early game
 
 - [MechaMonarch Mustang Guide](https://mechamonarch.com/unit/mustang/)
 - [Mechabellum Wiki - Mustang](https://mechabellum.wiki/index.php/Mustang)
+- [MBXmas Wiki - Mustang](https://wiki.mbxmas.com/units/ground/mustang/)
 - [ZLeague Mustang Guide](https://www.zleague.gg/theportal/mechabellum-mustang-guide/)
 - [MechaMonarch Counter List](https://mechamonarch.com/guide/mechabellum-counters/)

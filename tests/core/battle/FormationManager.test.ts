@@ -166,11 +166,12 @@ describe('FormationManager', () => {
     });
 
     it('falls back to legacy behavior without registry', () => {
+      // Legacy fallback uses 'hound', 'fang', 'crawler' unit types
       const wave1Comp = getEnemyCompositionForWave(1);
-      expect(wave1Comp.filter((t) => t === 'knight')).toHaveLength(0);
+      expect(wave1Comp.filter((t) => t === 'crawler')).toHaveLength(0);
 
       const wave3Comp = getEnemyCompositionForWave(3);
-      expect(wave3Comp.filter((t) => t === 'knight').length).toBeGreaterThan(0);
+      expect(wave3Comp.filter((t) => t === 'crawler').length).toBeGreaterThan(0);
     });
   });
 

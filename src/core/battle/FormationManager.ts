@@ -213,6 +213,12 @@ import {
   LEGACY_ENEMY_ARCHER_RATIO,
   ENEMY_ROLE_FRONT_RATIO,
   ENEMY_ROLE_BACK_RATIO,
+  // Castle obstacle constants
+  CASTLE_SIZE,
+  BASE_CASTLE_HORIZONTAL_MARGIN,
+  BASE_CASTLE_FORMATION_PADDING,
+  ZONE_HEIGHT_PERCENT,
+  ZONE_MIDWAY_DIVISOR,
 } from './BattleConfig';
 
 // =============================================================================
@@ -491,6 +497,74 @@ function findNonOverlappingPosition(
 
   // Fallback: return target position (shouldn't happen with proper zone sizing)
   return { x: targetX, y: targetY };
+}
+
+// =============================================================================
+// CASTLE OBSTACLES
+// =============================================================================
+// Castles need to be avoided during unit placement to prevent overlap.
+
+/**
+ * Generate obstacle bounds for all 4 castles (2 per team).
+ *
+ * Castle positions match BattleEngine.spawnCastles():
+ * - Player castles: bottom zone, left and right flanks
+ * - Enemy castles: top zone, left and right flanks
+ *
+ * Each castle bound includes padding to keep units at a safe distance.
+ *
+ * @param bounds - Arena dimensions
+ * @returns Array of SquadBounds representing castle obstacle areas
+ */
+function generateCastleObstacles(bounds: ArenaBounds): SquadBounds[] {
+  const { width, height } = bounds;
+  const zoneHeight = height * ZONE_HEIGHT_PERCENT;
+
+  // Castle positions (same calculation as BattleEngine.spawnCastles)
+  const castleMargin = scaleValue(BASE_CASTLE_HORIZONTAL_MARGIN, height);
+  const leftX = castleMargin;
+  const rightX = width - castleMargin;
+
+  // Castle Y positions (centered in each zone)
+  const playerY = height - zoneHeight / ZONE_MIDWAY_DIVISOR;
+  const enemyY = zoneHeight / ZONE_MIDWAY_DIVISOR;
+
+  // Castle size with padding
+  const castleSize = scaleValue(CASTLE_SIZE, height);
+  const padding = scaleValue(BASE_CASTLE_FORMATION_PADDING, height);
+  const obstacleSize = (castleSize + padding) * 2; // Diameter + padding on all sides
+
+  // Generate bounds for all 4 castles
+  const obstacles: SquadBounds[] = [
+    // Player castles (bottom zone)
+    {
+      x: leftX - obstacleSize / 2,
+      y: playerY - obstacleSize / 2,
+      width: obstacleSize,
+      height: obstacleSize,
+    },
+    {
+      x: rightX - obstacleSize / 2,
+      y: playerY - obstacleSize / 2,
+      width: obstacleSize,
+      height: obstacleSize,
+    },
+    // Enemy castles (top zone)
+    {
+      x: leftX - obstacleSize / 2,
+      y: enemyY - obstacleSize / 2,
+      width: obstacleSize,
+      height: obstacleSize,
+    },
+    {
+      x: rightX - obstacleSize / 2,
+      y: enemyY - obstacleSize / 2,
+      width: obstacleSize,
+      height: obstacleSize,
+    },
+  ];
+
+  return obstacles;
 }
 
 // =============================================================================
@@ -850,7 +924,9 @@ export function calculateDeterministicAlliedPositions(
   shuffle(grouped.flank, random);
 
   const positions: SpawnPosition[] = [];
-  const placedSquads: SquadBounds[] = [];
+
+  // Initialize with castle obstacles to prevent units from spawning on castles
+  const placedSquads: SquadBounds[] = generateCastleObstacles(bounds);
 
   // Zone boundaries for collision detection
   const zoneLeft = FORMATION_SPAWN_MARGIN;
@@ -1253,7 +1329,9 @@ export function calculateDeterministicEnemyPositions(
   shuffle(grouped.flank, random);
 
   const positions: SpawnPosition[] = [];
-  const placedSquads: SquadBounds[] = []; // Track all placed squad boundaries
+
+  // Initialize with castle obstacles to prevent units from spawning on castles
+  const placedSquads: SquadBounds[] = generateCastleObstacles(bounds);
 
   // Zone boundaries for collision detection
   const zoneLeft = FORMATION_SPAWN_MARGIN;
