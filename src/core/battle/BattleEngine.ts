@@ -12,12 +12,17 @@ import { getCastleColor, getUnitColor } from '../theme/colors';
 import {
   BASE_CASTLE_HORIZONTAL_MARGIN,
   BASE_SQUAD_UNIT_SPACING,
+  BATTLE_TIME_THRESHOLD,
   CASTLE_MAX_HEALTH,
   CASTLE_SIZE,
   DEFAULT_ARENA_MARGIN,
   DRAG_OVERLAP_ITERATIONS,
   DRAG_POSITION_MAX_ITERATIONS,
+  IDLE_DAMAGE_TIMEOUT,
+  IDLE_SPEED_INCREMENT,
+  MAX_IDLE_SPEED_BONUS,
   MAX_SCALE,
+  STALEMATE_TIMEOUT,
   MIN_SEPARATION_DISTANCE,
   MIN_SCALE,
   OVERLAP_BASE_PUSH,
@@ -37,6 +42,7 @@ import {
 import { EntityBounds } from './BoundsEnforcer';
 import { DEFAULT_WALK_ANIMATION } from './animations';
 import { BattleWorld, UnitEntity, UnitData, CastleEntity, CastleData } from './entities';
+import { DamagedEvent, EntityAddedEvent, EventListener } from './IEntity';
 import {
   BattleState,
   BattleOutcome,
@@ -65,6 +71,23 @@ export class BattleEngine {
   private arenaBounds: EntityBounds | null = null;
   private battleOutcome: BattleOutcome = 'pending';
 
+  // Speed control
+  private userBattleSpeed = 1;
+
+  // Auto speed-up system
+  // - Speeds up battle by 40% every 3s when idle (no damage)
+  // - After 20s or stalemate (5s no damage), speeds up unconditionally
+  private battleTime = 0;
+  private idleTimer = 0;
+  private speedBonus = 0;
+  private speedUpEnabled = false; // Activates after first damage
+  private unconditionalMode = false; // Once true, damage no longer resets timer
+  private subscribedUnits: Set<string> = new Set();
+
+  // Event listeners (bound for proper unsubscription)
+  private onDamagedListener: EventListener<DamagedEvent>;
+  private onEntityAddedListener: EventListener<EntityAddedEvent>;
+
   /**
    * Create a new BattleEngine.
    * @param registry - Unit registry for spawning units
@@ -73,6 +96,50 @@ export class BattleEngine {
   constructor(registry: UnitRegistry, world?: BattleWorld) {
     this.registry = registry;
     this.world = world ?? new BattleWorld();
+
+    // Bind event listeners for idle speed-up system
+    this.onDamagedListener = this.handleDamaged.bind(this);
+    this.onEntityAddedListener = this.handleEntityAdded.bind(this);
+
+    // Subscribe to world events for auto-subscription to new units
+    this.world.onWorld('entity_added', this.onEntityAddedListener);
+  }
+
+  /**
+   * Handle damage event from any unit.
+   */
+  private handleDamaged(): void {
+    this.speedUpEnabled = true;
+    if (!this.unconditionalMode) {
+      this.idleTimer = 0;
+    }
+  }
+
+  /**
+   * Handle entity added - subscribe to damage events for units.
+   */
+  private handleEntityAdded(event: EntityAddedEvent): void {
+    if (event.entity instanceof UnitEntity) {
+      this.subscribeToUnit(event.entity);
+    }
+  }
+
+  /**
+   * Subscribe to a unit's damage events.
+   */
+  private subscribeToUnit(unit: UnitEntity): void {
+    if (this.subscribedUnits.has(unit.id)) return;
+    unit.on('damaged', this.onDamagedListener);
+    this.subscribedUnits.add(unit.id);
+  }
+
+  /**
+   * Unsubscribe from a unit's damage events.
+   */
+  private unsubscribeFromUnit(unit: UnitEntity): void {
+    if (!this.subscribedUnits.has(unit.id)) return;
+    unit.off('damaged', this.onDamagedListener);
+    this.subscribedUnits.delete(unit.id);
   }
 
   /**
@@ -99,6 +166,7 @@ export class BattleEngine {
       highestWave: this.highestWave,
       gold: this.gold,
       outcome: this.battleOutcome,
+      timeScale: this.getTimeScale(),
     };
   }
 
@@ -119,13 +187,34 @@ export class BattleEngine {
     this.isRunning = false;
   }
 
+  /**
+   * Set the user's battle speed setting (0.5, 1, 2, etc.).
+   * This is added to the idle speed bonus for the total time scale.
+   */
+  setBattleSpeed(speed: number): void {
+    this.userBattleSpeed = speed;
+  }
+
   clear(): void {
+    // Unsubscribe from all units before clearing
+    for (const unit of this.world.getUnits()) {
+      this.unsubscribeFromUnit(unit);
+    }
+
     this.world.clear();
     this.hasStarted = false;
     this.nextUnitId = 1;
     this.nextCastleId = 1;
     this.nextSquadId = 1;
     this.battleOutcome = 'pending';
+
+    // Reset auto speed-up state
+    this.battleTime = 0;
+    this.idleTimer = 0;
+    this.speedBonus = 0;
+    this.speedUpEnabled = false;
+    this.unconditionalMode = false;
+    this.subscribedUnits.clear();
   }
 
   /**
@@ -519,11 +608,58 @@ export class BattleEngine {
   /**
    * Main game loop tick.
    * Delegates to BattleWorld for entity updates.
+   * Applies combined speed: user battle speed + idle speed-up bonus (additive).
+   *
+   * @param delta - Raw frame delta in seconds (not pre-scaled)
    */
   tick(delta: number): void {
     if (!this.isRunning) return;
 
-    this.world.update(delta);
+    // Track total battle time
+    this.battleTime += delta;
+
+    // Update time since last damage (always track for stalemate detection)
+    if (this.hasDamageTaken) {
+      this.timeSinceLastDamage += delta;
+    }
+
+    // Three conditions for unconditional speed-up (Phase 2 behavior):
+    // 1. Battle time exceeds threshold (20s)
+    // 2. Stalemate detected (no damage for 5s after first damage)
+    // Phase 1: Speed up when no damage for 3s, resets on damage
+    const isPhase2 =
+      this.battleTime >= BATTLE_TIME_THRESHOLD ||
+      (this.hasDamageTaken && this.timeSinceLastDamage >= STALEMATE_TIMEOUT);
+
+    if (isPhase2) {
+      // Phase 2 / Stalemate: Unconditional speed-up every IDLE_DAMAGE_TIMEOUT seconds
+      while (
+        this.timeSinceLastDamage >= IDLE_DAMAGE_TIMEOUT &&
+        this.idleSpeedBonus < MAX_IDLE_SPEED_BONUS
+      ) {
+        this.timeSinceLastDamage -= IDLE_DAMAGE_TIMEOUT;
+        this.idleSpeedBonus = Math.min(
+          this.idleSpeedBonus + IDLE_SPEED_INCREMENT,
+          MAX_IDLE_SPEED_BONUS
+        );
+      }
+    } else if (this.hasDamageTaken) {
+      // Phase 1: Speed up when no damage taken for IDLE_DAMAGE_TIMEOUT seconds
+      while (
+        this.timeSinceLastDamage >= IDLE_DAMAGE_TIMEOUT &&
+        this.idleSpeedBonus < MAX_IDLE_SPEED_BONUS
+      ) {
+        this.timeSinceLastDamage -= IDLE_DAMAGE_TIMEOUT;
+        this.idleSpeedBonus = Math.min(
+          this.idleSpeedBonus + IDLE_SPEED_INCREMENT,
+          MAX_IDLE_SPEED_BONUS
+        );
+      }
+    }
+
+    // Apply combined time scale (additive: userSpeed + idleBonus)
+    const timeScale = this.userBattleSpeed + this.idleSpeedBonus;
+    this.world.update(delta * timeScale);
 
     // Check for battle end
     const result = this.world.isBattleOver();
@@ -537,6 +673,13 @@ export class BattleEngine {
         this.battleOutcome = 'draw';
       }
     }
+  }
+
+  /**
+   * Get current time scale (combined user speed + idle bonus).
+   */
+  getTimeScale(): number {
+    return this.userBattleSpeed + this.idleSpeedBonus;
   }
 
   /**

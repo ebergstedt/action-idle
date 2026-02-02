@@ -199,6 +199,8 @@ export interface BattleState {
   highestWave: number;
   gold: number;
   outcome: BattleOutcome;
+  /** Current time scale (1.0 = normal, 6.0 = max with idle speed-up) */
+  timeScale: number;
 }
 
 // =============================================================================

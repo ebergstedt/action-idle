@@ -2,21 +2,18 @@
  * Battle Loop Hook
  *
  * Manages the game loop using requestAnimationFrame.
- * Calls tick functions at the appropriate rate with battle speed scaling.
+ * Passes raw delta time to tick function (speed scaling is handled by BattleEngine).
  *
  * SRP: Only responsible for frame timing and update dispatch.
  */
 
-import { useEffect, useRef } from 'react';
-import type { BattleSpeed } from './useBattleSettings';
+import { useEffect } from 'react';
 
 export interface UseBattleLoopProps {
   /** Whether the loop should be running */
   isRunning: boolean;
-  /** Current battle speed multiplier */
-  battleSpeed: BattleSpeed;
-  /** Called each frame with delta time in seconds (already speed-scaled) */
-  onTick: (scaledDelta: number) => void;
+  /** Called each frame with raw delta time in seconds */
+  onTick: (delta: number) => void;
 }
 
 /**
@@ -24,14 +21,7 @@ export interface UseBattleLoopProps {
  *
  * @param props - Loop configuration
  */
-export function useBattleLoop({ isRunning, battleSpeed, onTick }: UseBattleLoopProps): void {
-  // Keep battleSpeed in ref to avoid recreating the loop on speed changes
-  const battleSpeedRef = useRef<BattleSpeed>(battleSpeed);
-
-  useEffect(() => {
-    battleSpeedRef.current = battleSpeed;
-  }, [battleSpeed]);
-
+export function useBattleLoop({ isRunning, onTick }: UseBattleLoopProps): void {
   useEffect(() => {
     if (!isRunning) return;
 
@@ -42,9 +32,7 @@ export function useBattleLoop({ isRunning, battleSpeed, onTick }: UseBattleLoopP
       const delta = (currentTime - lastTime) / 1000; // Convert to seconds
       lastTime = currentTime;
 
-      // Apply battle speed multiplier
-      const scaledDelta = delta * battleSpeedRef.current;
-      onTick(scaledDelta);
+      onTick(delta);
 
       frameId = requestAnimationFrame(loop);
     };

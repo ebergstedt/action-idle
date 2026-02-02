@@ -79,6 +79,44 @@ export const ZONE_MIDWAY_DIVISOR = 2;
 export const MAX_FRAME_DELTA = 0.1;
 
 // =============================================================================
+// IDLE SPEED-UP SYSTEM
+// =============================================================================
+
+/**
+ * Time in seconds without damage before game speed increases (Phase 1).
+ * Only active after the first damage has been dealt and before BATTLE_TIME_THRESHOLD.
+ * Timer resets on each damage event, but speed bonus persists.
+ */
+export const IDLE_DAMAGE_TIMEOUT = 3;
+
+/**
+ * Speed increase per timeout period (0.4 = 40% faster).
+ * Stacks additively until MAX_IDLE_SPEED_BONUS is reached.
+ */
+export const IDLE_SPEED_INCREMENT = 0.4;
+
+/**
+ * Maximum speed bonus from idle speed-up (5.0 = 500% bonus).
+ * Resets at the start of each battle.
+ */
+export const MAX_IDLE_SPEED_BONUS = 5.0;
+
+/**
+ * Battle duration threshold in seconds for Phase 2 speed-up.
+ * After this time, speed increases every IDLE_DAMAGE_TIMEOUT seconds
+ * regardless of damage (damage no longer resets the timer).
+ */
+export const BATTLE_TIME_THRESHOLD = 20;
+
+/**
+ * Stalemate detection timeout in seconds.
+ * If no damage is dealt for this duration after the first damage event,
+ * the battle is considered a stalemate and switches to Phase 2 behavior
+ * (unconditional speed-up) regardless of battle time.
+ */
+export const STALEMATE_TIMEOUT = 5;
+
+// =============================================================================
 // VISUAL EFFECTS - PARCHMENT THEME
 // =============================================================================
 

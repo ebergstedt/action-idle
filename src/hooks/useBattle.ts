@@ -121,6 +121,7 @@ export function useBattle(options: UseBattleOptions = {}): UseBattleReturn {
     highestWave: 1,
     gold: 0,
     outcome: 'pending',
+    timeScale: 1,
   });
   const [stats, setStats] = useState<BattleStatistics>(EMPTY_STATS);
   const [selectedUnitIds, setSelectedUnitIds] = useState<string[]>([]);
@@ -196,10 +197,16 @@ export function useBattle(options: UseBattleOptions = {}): UseBattleReturn {
     }
   }, []);
 
+  // Sync battle speed to engine (for additive speed calculation)
+  useEffect(() => {
+    if (engineRef.current) {
+      engineRef.current.setBattleSpeed(battleSpeed);
+    }
+  }, [battleSpeed]);
+
   // Use game loop hook
   useBattleLoop({
     isRunning: state.isRunning,
-    battleSpeed,
     onTick: handleTick,
   });
 
