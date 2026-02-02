@@ -492,9 +492,13 @@ export class UnitEntity extends BaseEntity {
       this.retargetCooldown = 0; // Can immediately acquire new target
     }
 
-    // Check if unit should permanently enter seek mode
-    if (!this.seekMode && this.isDeepInEnemyZone()) {
-      this.seekMode = true;
+    // Check if unit should permanently enter seek mode:
+    // 1. All enemy castles destroyed, OR
+    // 2. Deep in enemy zone (original condition)
+    if (!this.seekMode) {
+      if (this.areAllEnemyCastlesDestroyed() || this.isDeepInEnemyZone()) {
+        this.seekMode = true;
+      }
     }
 
     // In seek mode, recheck for closer targets (with cooldown)
@@ -539,7 +543,7 @@ export class UnitEntity extends BaseEntity {
       return;
     }
 
-    // Not in seek mode and nothing in aggro range - will march forward
+    // Not in seek mode and nothing in aggro range - will march toward closest castle
   }
 
   /**
@@ -613,6 +617,62 @@ export class UnitEntity extends BaseEntity {
     return nearest;
   }
 
+  /**
+   * Find the closest living enemy castle.
+   * Returns null if all enemy castles are destroyed.
+   */
+  private findClosestEnemyCastle(): IDamageable | null {
+    const world = this.getBattleWorld();
+    if (!world) return null;
+
+    const enemyCastles = world.getEnemyCastlesOf(this);
+    let closest: IDamageable | null = null;
+    let closestDist = Infinity;
+
+    for (const castle of enemyCastles) {
+      // Skip destroyed castles
+      if (castle.isDestroyed() || castle.health <= 0) continue;
+      const dist = this.position.distanceTo(castle.position);
+      if (dist < closestDist) {
+        closestDist = dist;
+        closest = castle;
+      }
+    }
+
+    return closest;
+  }
+
+  /**
+   * Check if all enemy castles have been destroyed.
+   * Returns true if initial count > 0 and current count is 0.
+   */
+  private areAllEnemyCastlesDestroyed(): boolean {
+    const world = this.getBattleWorld();
+    if (!world) return false;
+
+    const enemyTeam = this.team === 'player' ? 'enemy' : 'player';
+    const initialCount = world.getInitialCastleCount(enemyTeam);
+    const currentCount = world.getEnemyCastlesOf(this).length;
+
+    // All destroyed if there were castles initially and none remain
+    return initialCount > 0 && currentCount === 0;
+  }
+
+  /**
+   * Check if any enemy castle has been destroyed.
+   * Compares current living castle count to initial count.
+   */
+  private hasAnyEnemyCastleBeenDestroyed(): boolean {
+    const world = this.getBattleWorld();
+    if (!world) return false;
+
+    const enemyTeam = this.team === 'player' ? 'enemy' : 'player';
+    const initialCount = world.getInitialCastleCount(enemyTeam);
+    const currentCount = world.getEnemyCastlesOf(this).length;
+
+    return currentCount < initialCount;
+  }
+
   private updateCombat(delta: number): void {
     // Update cooldown
     if (this.attackCooldown > 0) {
@@ -674,16 +734,40 @@ export class UnitEntity extends BaseEntity {
   }
 
   /**
-   * March straight forward toward enemy deployment zone.
-   * Player units move up (decreasing Y), enemy units move down (increasing Y).
+   * March toward enemy territory.
+   * - Before any castle destroyed: march straight forward (team-based direction)
+   * - After a castle destroyed: march toward closest remaining castle
    */
   private marchForward(delta: number): void {
     const world = this.getBattleWorld();
     if (!world) return;
 
-    // Determine forward direction based on team
-    const forwardY = this.team === 'player' ? -1 : 1;
-    const forwardDir = new Vector2(0, forwardY);
+    let forwardDir: Vector2;
+
+    // Only march toward specific castle after one has been destroyed
+    if (this.hasAnyEnemyCastleBeenDestroyed()) {
+      const closestCastle = this.findClosestEnemyCastle();
+      if (closestCastle) {
+        // March toward the closest remaining castle
+        const toCastle = closestCastle.position.subtract(this.position);
+        const dist = toCastle.magnitude();
+        if (dist > MIN_MOVE_DISTANCE) {
+          forwardDir = toCastle.normalize();
+        } else {
+          // Already at castle position, default to team direction
+          const forwardY = this.team === 'player' ? -1 : 1;
+          forwardDir = new Vector2(0, forwardY);
+        }
+      } else {
+        // No castles left - fall back to team direction (shouldn't happen, we'd be in seek mode)
+        const forwardY = this.team === 'player' ? -1 : 1;
+        forwardDir = new Vector2(0, forwardY);
+      }
+    } else {
+      // No castle destroyed yet - march straight forward based on team
+      const forwardY = this.team === 'player' ? -1 : 1;
+      forwardDir = new Vector2(0, forwardY);
+    }
 
     // Apply ally avoidance while marching
     const allies = world.getAlliesOf(this);

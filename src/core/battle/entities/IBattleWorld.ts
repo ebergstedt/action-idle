@@ -35,6 +35,7 @@ export interface IBattleWorld extends IEntityWorld {
   getCastles(): readonly CastleEntity[];
   getCastlesByTeam(team: UnitTeam): CastleEntity[];
   getEnemyCastlesOf(unit: UnitEntity): CastleEntity[];
+  getInitialCastleCount(team: UnitTeam): number;
 
   // Combat helpers
   isPathBlocked(from: Vector2, to: Vector2, excludeUnit: UnitEntity): boolean;

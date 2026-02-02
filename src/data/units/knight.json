@@ -6,7 +6,7 @@
   "tier": 1,
   "baseStats": {
     "maxHealth": 80,
-    "moveSpeed": 50,
+    "moveSpeed": 25,
     "armor": 0,
     "melee": {
       "damage": 20,
@@ -17,7 +17,7 @@
   },
   "visuals": {
     "shape": "circle",
-    "baseSize": 18,
+    "baseSize": 9,
     "colorKey": "knight",
     "walkAnimation": "bounce"
   },

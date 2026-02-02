@@ -175,7 +175,7 @@ export const BASE_PROJECTILE_SPEED = 300;
 /**
  * Distance from target at which projectile is considered to have hit.
  */
-export const PROJECTILE_HIT_RADIUS = 10;
+export const PROJECTILE_HIT_RADIUS = 5;
 
 /**
  * Radius around impact point that receives splash damage.
@@ -416,7 +416,7 @@ export const MIN_BOX_SELECT_SIZE = 10;
 /**
  * Padding added to unit hitbox for click detection (pixels).
  */
-export const HITBOX_PADDING = 12;
+export const HITBOX_PADDING = 6;
 
 // =============================================================================
 // FORMATION CONFIGURATION

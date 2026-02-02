@@ -211,21 +211,392 @@ Wave 100: 109,000 HP, 1,700 DPS, 11 enemies
 
 ---
 
-## Offline Progression
+## Idle Mechanics (Model A: Wave-Based Rewards)
 
-When player returns after being away:
+The idle layer sits on top of the auto-battler. Battles generate rewards; rewards fuel upgrades; upgrades enable harder battles. The player can be active (watching, adjusting) or idle (AFK farming) and still progress.
 
-**Calculation**:
+### Architecture Overview
+
 ```
-Offline Gold = (Gold per wave at farming wave) × (Offline hours) × 60 × 0.5
-
-Example: Farming wave 50 for 8 hours
-= 60 gold × 8 × 60 × 0.5 = 14,400 gold
+┌─────────────────────────────────────────────────────────────────┐
+│                        IDLE LAYER                               │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────────────┐  │
+│  │   Offline    │  │   Prestige   │  │     Milestones       │  │
+│  │  Simulation  │  │    System    │  │   & Achievements     │  │
+│  └──────┬───────┘  └──────┬───────┘  └──────────┬───────────┘  │
+│         │                 │                      │              │
+│         ▼                 ▼                      ▼              │
+│  ┌────────────────────────────────────────────────────────────┐│
+│  │                    ECONOMY ENGINE                          ││
+│  │  Gold balance, upgrade costs, unlock gates, multipliers    ││
+│  └────────────────────────────────────────────────────────────┘│
+│                              ▲                                  │
+└──────────────────────────────┼──────────────────────────────────┘
+                               │
+┌──────────────────────────────┼──────────────────────────────────┐
+│                        BATTLE LAYER                             │
+│                              │                                  │
+│  ┌──────────────┐    ┌──────┴───────┐    ┌──────────────────┐  │
+│  │ BattleEngine │───▶│ Wave Clear   │───▶│  Gold Reward     │  │
+│  │   (combat)   │    │   Event      │    │  (lump sum)      │  │
+│  └──────────────┘    └──────────────┘    └──────────────────┘  │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
-**Cap**: Maximum 24 hours of offline gains
+### Core Principle: Event-Driven Rewards
 
-**Design Intent**: Reward returning players without making active play pointless. The 0.5 multiplier ensures active play is still 2x more efficient.
+Unlike classic idle games (currency/second), rewards come from **discrete events**:
+
+| Event | Reward | Frequency |
+|-------|--------|-----------|
+| Wave Clear | Gold (scaled by wave) | Every 10-60 seconds |
+| Boss Kill | Gold + Gems + Loot chance | Every 10 waves |
+| Milestone | One-time gold bonus | At wave 10, 25, 50, 100... |
+| Death | Nothing (but no loss) | Variable |
+| Offline Return | Simulated wave clears | Once per session |
+
+---
+
+## Currency System
+
+### Primary Currency: Gold
+
+**Source**: Wave clears (only)
+**Sinks**: Squad purchases, upgrades
+**Display**: Standard notation up to 999,999 → then 1.00M, 1.00B, etc.
+
+```
+Gold per wave = BASE_GOLD × (1 + wave × WAVE_SCALING)
+
+Constants:
+  BASE_GOLD = 10
+  WAVE_SCALING = 0.1
+
+Examples:
+  Wave 1:   10 × (1 + 0.1) = 11 gold
+  Wave 10:  10 × (1 + 1.0) = 20 gold
+  Wave 50:  10 × (1 + 5.0) = 60 gold
+  Wave 100: 10 × (1 + 10)  = 110 gold
+  Wave 500: 10 × (1 + 50)  = 510 gold
+```
+
+### Secondary Currency: Gems (Future)
+
+**Source**: Boss kills, milestones, prestige
+**Sinks**: Premium unlocks, cosmetics, time skips
+**Design Intent**: Rare currency for meaningful choices, not pay-to-win
+
+```
+Gems per boss = floor(bossWave / 10)
+
+Boss at wave 10:  1 gem
+Boss at wave 50:  5 gems
+Boss at wave 100: 10 gems
+```
+
+### Tertiary Currency: Soul Shards (Prestige)
+
+**Source**: Prestige reset only
+**Sinks**: Permanent upgrades
+**Formula**: See Prestige System section
+
+---
+
+## Offline Progression (Detailed)
+
+When player returns after being away, simulate farming at their **farming wave** (not highest wave).
+
+### Calculation
+
+```
+offlineWaves = min(offlineSeconds / avgClearTime, maxOfflineWaves)
+offlineGold = offlineWaves × goldPerWave × OFFLINE_EFFICIENCY
+
+Constants:
+  OFFLINE_EFFICIENCY = 0.5      # Active play is 2x better
+  maxOfflineWaves = 1440        # 24 hours at 1 wave/min
+  avgClearTime = 60 seconds     # Assume 1 wave/minute for simplicity
+
+Example: 8 hours offline, farming wave 50
+  offlineSeconds = 8 × 3600 = 28,800
+  offlineWaves = min(28800 / 60, 1440) = 480 waves
+  goldPerWave = 60
+  offlineGold = 480 × 60 × 0.5 = 14,400 gold
+```
+
+### Edge Cases
+
+| Scenario | Behavior |
+|----------|----------|
+| First launch ever | No offline rewards |
+| < 1 minute offline | No rewards (prevent exploit) |
+| Died before going offline | Simulate at respawn wave |
+| Push mode when offline | Auto-switch to farm mode |
+| Game was backgrounded | Same as offline (mobile) |
+
+### Offline Return UI
+
+```
+┌─────────────────────────────────────────┐
+│         Welcome Back, Commander!        │
+│                                         │
+│   You were away for 8h 23m              │
+│                                         │
+│   Your army defended wave 50            │
+│   Waves cleared: 480                    │
+│   Gold earned: 14,400                   │
+│                                         │
+│   [  Collect & Continue  ]              │
+│                                         │
+└─────────────────────────────────────────┘
+```
+
+### Offline Upgrades (Future)
+
+Prestige upgrades can improve offline gains:
+- **Efficient Farming**: +10% offline efficiency per level (cap: 80%)
+- **Extended Patrol**: +2 hours max offline time per level (cap: 48h)
+- **Offline Push**: Army attempts to push 1 wave per hour while offline
+
+---
+
+## Prestige System
+
+Reset progress for permanent multipliers. Available after reaching wave 100.
+
+### When to Prestige
+
+The game calculates **potential Soul Shards** based on highest wave:
+
+```
+soulShards = floor((highestWave - 100) / 10) × (1 + prestigeCount × 0.1)
+
+First prestige at wave 150:
+  shards = floor((150 - 100) / 10) × 1.0 = 5 shards
+
+Fifth prestige at wave 200:
+  shards = floor((200 - 100) / 10) × 1.5 = 15 shards
+```
+
+**Design Intent**: Later prestiges are more rewarding. Encourages pushing further before reset.
+
+### What Resets
+
+| Resets | Keeps |
+|--------|-------|
+| Gold | Soul Shards |
+| Wave progress | Prestige upgrades |
+| Squad count | Achievements |
+| Squad levels | Unlocked unit types |
+| Current wave | Statistics |
+
+### What Persists (Prestige Upgrades)
+
+Permanent upgrades purchased with Soul Shards:
+
+| Upgrade | Cost | Effect | Max Level |
+|---------|------|--------|-----------|
+| **Gold Rush** | 1 shard | +10% gold per wave | 10 |
+| **Army Reserves** | 2 shards | Start with 1 free squad | 5 |
+| **Veteran Training** | 3 shards | Squads start at level 2 | 3 |
+| **Efficient Farming** | 2 shards | +10% offline efficiency | 3 |
+| **Battle Hardened** | 5 shards | +5% all squad stats | 10 |
+| **Quick Start** | 3 shards | Start at wave 10/20/30 | 3 |
+| **Death Defiance** | 5 shards | 10% chance to survive lethal | 5 |
+| **Boss Hunter** | 4 shards | +25% boss gold reward | 5 |
+
+### Prestige UI
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    PRESTIGE AVAILABLE                       │
+│                                                             │
+│   Highest Wave: 157                                         │
+│   Soul Shards Earned: 5                                     │
+│                                                             │
+│   You will lose:                                            │
+│     • 45,230 Gold                                           │
+│     • 12 Squads                                             │
+│     • Wave progress                                         │
+│                                                             │
+│   You will gain:                                            │
+│     • 5 Soul Shards (total: 12)                             │
+│     • Permanent power increase                              │
+│                                                             │
+│   ┌─────────────────┐    ┌─────────────────┐               │
+│   │  Keep Playing   │    │    Prestige     │               │
+│   └─────────────────┘    └─────────────────┘               │
+│                                                             │
+│   Tip: Reach wave 170 for 7 shards (+2 more)               │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Optimal Prestige Timing
+
+Players should prestige when time-to-next-shard exceeds time-to-regain-progress:
+
+```
+Rule of thumb: Prestige when stuck for 10+ minutes at highest wave
+```
+
+---
+
+## Milestone System
+
+One-time rewards for reaching wave thresholds. Provides pacing and goals.
+
+### Wave Milestones
+
+| Wave | Gold Reward | Unlock |
+|------|-------------|--------|
+| 10 | 100 | Tutorial complete |
+| 25 | 500 | Knight unit |
+| 50 | 2,000 | Healer unit |
+| 75 | 5,000 | — |
+| 100 | 10,000 | Prestige available |
+| 150 | 25,000 | — |
+| 200 | 50,000 | — |
+| 250+ | wave × 200 | Every 50 waves |
+
+### Achievements (Future)
+
+Long-term goals with gem rewards:
+
+| Achievement | Requirement | Reward |
+|-------------|-------------|--------|
+| First Blood | Clear wave 1 | 1 gem |
+| Army Builder | Own 10 squads | 5 gems |
+| Survivor | Die 10 times | 5 gems |
+| Centurion | Reach wave 100 | 10 gems |
+| Speed Demon | Clear wave 50 in under 30 min | 10 gems |
+| Idle Master | Collect 100k offline gold | 15 gems |
+| Prestige I-X | Prestige N times | N × 5 gems |
+
+---
+
+## Unlock System
+
+Units and features gate behind wave progress.
+
+### Unit Unlocks
+
+| Unit | Unlock Condition | Design Reason |
+|------|------------------|---------------|
+| Warrior | Wave 1 (start) | Core tank |
+| Archer | Wave 1 (start) | Core DPS |
+| Knight | Wave 25 | Mid-game bruiser option |
+| Healer | Wave 50 | Late-game sustain |
+| (Future units) | Wave 100+ | Post-prestige variety |
+
+### Feature Unlocks
+
+| Feature | Unlock | Design Reason |
+|---------|--------|---------------|
+| Farm Mode | Wave 1 | Always available |
+| Push Mode | Wave 5 | After tutorial |
+| Squad Upgrades | Wave 10 | After first wall |
+| Prestige | Wave 100 | End of first run |
+| Gems | First boss (wave 10) | Rare currency intro |
+
+---
+
+## Retention Mechanics
+
+### Daily Login (Future)
+
+Consecutive login rewards reset if day missed:
+
+| Day | Reward |
+|-----|--------|
+| 1 | 500 gold |
+| 2 | 1,000 gold |
+| 3 | 1 gem |
+| 4 | 2,500 gold |
+| 5 | 2 gems |
+| 6 | 5,000 gold |
+| 7 | 5 gems + bonus chest |
+
+### Session Hooks
+
+| Hook | Trigger | Purpose |
+|------|---------|---------|
+| Offline reward popup | On return | Re-engagement |
+| "Almost there!" | 90% to next milestone | Push motivation |
+| Prestige reminder | Stuck for 5 min | Suggest reset |
+| Boss incoming | Wave 9, 19, 29... | Anticipation |
+
+---
+
+## Implementation Bridge: Battle → Economy
+
+### Event Flow
+
+```typescript
+// BattleEngine emits events
+battleEngine.on('wave_cleared', (event: WaveClearedEvent) => {
+  const gold = calculateWaveGold(event.wave);
+  economyEngine.addGold(gold);
+
+  if (event.wave % 10 === 0) {
+    const gems = calculateBossGems(event.wave);
+    economyEngine.addGems(gems);
+  }
+
+  checkMilestones(event.wave);
+});
+
+battleEngine.on('death', (event: DeathEvent) => {
+  // No gold loss, just respawn logic
+  battleEngine.setWave(Math.max(1, state.highestWave - 5));
+  battleEngine.setMode('farm');
+});
+```
+
+### State Structure
+
+```typescript
+interface IdleState {
+  // Currencies
+  gold: Decimal;
+  gems: number;
+  soulShards: number;
+
+  // Progress
+  currentWave: number;
+  highestWave: number;
+  mode: 'farm' | 'push';
+
+  // Squads (moved from battle)
+  squads: Squad[];
+
+  // Prestige
+  prestigeCount: number;
+  prestigeUpgrades: Record<string, number>;
+
+  // Tracking
+  totalGoldEarned: Decimal;
+  totalWavesCleared: number;
+  totalDeaths: number;
+  totalPlayTime: number;
+  lastOnlineTime: number;
+
+  // Unlocks
+  unlockedUnits: string[];
+  unlockedFeatures: string[];
+  completedMilestones: number[];
+  achievements: string[];
+}
+```
+
+### Save Points
+
+Auto-save triggers:
+- Every 30 seconds
+- On wave clear
+- On purchase
+- On prestige
+- On app background/close
 
 ---
 
@@ -253,14 +624,40 @@ Example: Farming wave 50 for 8 hours
 
 ---
 
-## Future Features (v2+)
+## Future Features
 
-1. **Prestige System**: Reset progress for permanent multipliers
-2. **Unit Abilities**: Active skills (archer volley, warrior shield)
-3. **Enemy Variety**: Demon types with unique behaviors
-4. **Boss Waves**: Every 10th wave has a boss
-5. **Equipment**: Gear drops that buff specific units
-6. **Formations**: Position units in battle for bonuses
+### v1.0 - Core Loop
+- [x] Auto-battler combat
+- [x] Farm/Push modes
+- [ ] Gold economy
+- [ ] Squad purchasing
+- [ ] Squad upgrades
+- [ ] Offline progression
+- [ ] Wave milestones
+
+### v1.5 - Prestige
+- [ ] Prestige system (fully designed above)
+- [ ] Soul Shard currency
+- [ ] Permanent upgrades
+- [ ] Prestige UI
+
+### v2.0 - Depth
+- [ ] **Boss Waves**: Every 10th wave has a boss with bonus rewards
+- [ ] **Gems Currency**: Rare currency from bosses/achievements
+- [ ] **Achievements**: Long-term goals with gem rewards
+- [ ] **Daily Login**: Consecutive login rewards
+
+### v3.0 - Variety
+- [ ] **Unit Abilities**: Active skills (archer volley, warrior shield)
+- [ ] **Enemy Variety**: Demon types with unique behaviors (fast, tanky, ranged)
+- [ ] **Equipment**: Gear drops that buff specific units
+- [ ] **Formations**: Position units in battle for bonuses
+
+### v4.0 - Meta
+- [ ] **New Unit Types**: Post-prestige units (Mage, Cavalry, Siege)
+- [ ] **Challenge Modes**: Special rules for bonus rewards
+- [ ] **Leaderboards**: Highest wave, fastest prestige
+- [ ] **Endless Mode**: Scaling difficulty for whale players
 
 ---
 

@@ -54,6 +54,8 @@ export class BattleWorld implements IEntityWorld, IBattleWorld, IWorldEventEmitt
   private nextDamageNumberId = 1;
   private arenaBounds: EntityBounds | null = null;
   private worldEvents = new WorldEventEmitter();
+  /** Track initial castle counts per team to detect when castles are destroyed */
+  private initialCastleCounts = new Map<UnitTeam, number>();
 
   // === Entity Management ===
 
@@ -89,6 +91,10 @@ export class BattleWorld implements IEntityWorld, IBattleWorld, IWorldEventEmitt
     castle.init();
     this.castles.push(castle);
     this.worldEvents.emitWorld({ type: 'entity_added', entity: castle });
+
+    // Track initial castle count per team
+    const currentCount = this.initialCastleCounts.get(castle.team) ?? 0;
+    this.initialCastleCounts.set(castle.team, currentCount + 1);
 
     // Subscribe to castle death to spawn shockwave
     castle.on('killed', (event: KilledEvent) => {
@@ -217,6 +223,7 @@ export class BattleWorld implements IEntityWorld, IBattleWorld, IWorldEventEmitt
     this.nextProjectileId = 1;
     this.nextShockwaveId = 1;
     this.nextDamageNumberId = 1;
+    this.initialCastleCounts.clear();
   }
 
   // === Main Update Loop ===
@@ -400,6 +407,14 @@ export class BattleWorld implements IEntityWorld, IBattleWorld, IWorldEventEmitt
 
   getEnemyCastlesOf(unit: UnitEntity): CastleEntity[] {
     return this.castles.filter((c) => c.team !== unit.team && !c.isDestroyed() && c.health > 0);
+  }
+
+  /**
+   * Get the initial number of castles for a team (before any were destroyed).
+   * Used to detect when castles have been destroyed.
+   */
+  getInitialCastleCount(team: UnitTeam): number {
+    return this.initialCastleCounts.get(team) ?? 0;
   }
 
   // === Damageable Queries (Units + Castles) ===

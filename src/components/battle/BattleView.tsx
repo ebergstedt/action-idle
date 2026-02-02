@@ -401,7 +401,7 @@ function ControlsPanel({
   onReset,
   onSpeedChange,
 }: ControlsPanelProps) {
-  const speeds: BattleSpeed[] = [0.5, 1, 5];
+  const speeds: BattleSpeed[] = [0.5, 1, 2];
 
   return (
     <div className="flex flex-col gap-4" style={styles.text}>

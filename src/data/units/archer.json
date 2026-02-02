@@ -6,7 +6,7 @@
   "tier": 1,
   "baseStats": {
     "maxHealth": 50,
-    "moveSpeed": 30,
+    "moveSpeed": 15,
     "armor": 0,
     "melee": {
       "damage": 8,
@@ -21,7 +21,7 @@
   },
   "visuals": {
     "shape": "triangle",
-    "baseSize": 16,
+    "baseSize": 8,
     "colorKey": "archer",
     "walkAnimation": "bounce"
   },

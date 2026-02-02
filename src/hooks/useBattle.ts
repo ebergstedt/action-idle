@@ -14,7 +14,7 @@ import {
 import { Vector2 } from '../core/physics/Vector2';
 import { unitDefinitions } from '../data/units';
 
-export type BattleSpeed = 0.5 | 1 | 5;
+export type BattleSpeed = 0.5 | 1 | 2;
 
 export interface UseBattleReturn {
   state: BattleState;

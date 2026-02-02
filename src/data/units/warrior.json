@@ -6,7 +6,7 @@
   "tier": 1,
   "baseStats": {
     "maxHealth": 100,
-    "moveSpeed": 40,
+    "moveSpeed": 20,
     "armor": 0,
     "melee": {
       "damage": 15,
@@ -17,7 +17,7 @@
   },
   "visuals": {
     "shape": "square",
-    "baseSize": 20,
+    "baseSize": 10,
     "colorKey": "warrior",
     "walkAnimation": "bounce"
   },
