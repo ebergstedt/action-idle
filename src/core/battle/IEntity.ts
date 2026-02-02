@@ -93,14 +93,7 @@ export interface IEntity {
  * Event types that entities can emit.
  * Maps to Godot signals.
  */
-export type EntityEventType =
-  | 'spawned'
-  | 'destroyed'
-  | 'damaged'
-  | 'healed'
-  | 'attacked'
-  | 'killed'
-  | 'moved';
+export type EntityEventType = 'spawned' | 'destroyed' | 'damaged' | 'attacked' | 'killed' | 'moved';
 
 /**
  * World-level event types.
@@ -145,16 +138,6 @@ export interface DamagedEvent extends BaseEntityEvent<'damaged'> {
 }
 
 /**
- * Entity was healed.
- */
-export interface HealedEvent extends BaseEntityEvent<'healed'> {
-  healer?: IEntity;
-  amount: number;
-  previousHealth: number;
-  currentHealth: number;
-}
-
-/**
  * Entity performed an attack.
  * - entity: The attacker
  * - target: Who was attacked
@@ -189,7 +172,6 @@ export type EntityEvent =
   | SpawnedEvent
   | DestroyedEvent
   | DamagedEvent
-  | HealedEvent
   | AttackedEvent
   | KilledEvent
   | MovedEvent;
@@ -226,7 +208,6 @@ export interface EntityEventMap {
   spawned: SpawnedEvent;
   destroyed: DestroyedEvent;
   damaged: DamagedEvent;
-  healed: HealedEvent;
   attacked: AttackedEvent;
   killed: KilledEvent;
   moved: MovedEvent;

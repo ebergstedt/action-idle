@@ -3,14 +3,18 @@
  *
  * Displays a stamped wax seal when the battle ends.
  * Victory shows a green seal, defeat shows a red seal.
+ *
+ * Uses extracted hooks for SRP:
+ * - useAutoBattleCountdown: Timer logic
+ * - getOutcomeText: Text mapping from core
  */
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import type { BattleOutcome } from '../../core/battle';
+import { getOutcomeText, getOutcomeStyle } from '../../core/battle/OutcomePresentation';
 import {
   OVERLAY_SHOW_DELAY_MS,
   OVERLAY_STAMP_DELAY_MS,
-  AUTO_BATTLE_COUNTDOWN_SECONDS,
   WAX_SEAL_SVG_SIZE,
   WAX_SEAL_PRESTAMP_SCALE,
   WAX_SEAL_PRESTAMP_ROTATION,
@@ -19,6 +23,7 @@ import {
   WAX_SEAL_PANEL_DURATION,
 } from '../../core/battle/BattleConfig';
 import { WAX_SEAL_COLORS, UI_COLORS, hexToRgba } from '../../core/theme/colors';
+import { useAutoBattleCountdown } from '../../hooks/useAutoBattleCountdown';
 
 interface WaxSealOverlayProps {
   outcome: BattleOutcome;
@@ -37,7 +42,19 @@ export function WaxSealOverlay({
 }: WaxSealOverlayProps) {
   const [isVisible, setIsVisible] = useState(false);
   const [isStamped, setIsStamped] = useState(false);
-  const [countdown, setCountdown] = useState(AUTO_BATTLE_COUNTDOWN_SECONDS);
+
+  // Stable callback for countdown hook
+  const handleCountdownComplete = useCallback(() => {
+    onDismiss?.();
+  }, [onDismiss]);
+
+  // Use extracted countdown hook (SRP: timer logic in one place)
+  const { countdown } = useAutoBattleCountdown({
+    autoBattle: autoBattle ?? false,
+    outcome,
+    isReady: isStamped,
+    onComplete: handleCountdownComplete,
+  });
 
   // Animate in when outcome changes to non-pending
   useEffect(() => {
@@ -55,74 +72,19 @@ export function WaxSealOverlay({
     } else {
       setIsVisible(false);
       setIsStamped(false);
-      setCountdown(AUTO_BATTLE_COUNTDOWN_SECONDS);
     }
   }, [outcome]);
-
-  // Auto-battle countdown timer
-  const countdownRef = useRef(AUTO_BATTLE_COUNTDOWN_SECONDS);
-  const hasTriggeredDismissRef = useRef(false);
-
-  useEffect(() => {
-    // Reset refs when outcome changes
-    if (outcome === 'pending') {
-      countdownRef.current = AUTO_BATTLE_COUNTDOWN_SECONDS;
-      hasTriggeredDismissRef.current = false;
-    }
-  }, [outcome]);
-
-  useEffect(() => {
-    if (!autoBattle || outcome === 'pending' || !isStamped) return;
-
-    // Reset countdown state when starting
-    countdownRef.current = AUTO_BATTLE_COUNTDOWN_SECONDS;
-    setCountdown(AUTO_BATTLE_COUNTDOWN_SECONDS);
-
-    const intervalId = setInterval(() => {
-      countdownRef.current -= 1;
-      setCountdown(countdownRef.current);
-
-      if (countdownRef.current <= 0 && !hasTriggeredDismissRef.current) {
-        hasTriggeredDismissRef.current = true;
-        clearInterval(intervalId);
-        onDismiss?.();
-      }
-    }, 1000);
-
-    return () => {
-      clearInterval(intervalId);
-    };
-  }, [autoBattle, outcome, isStamped, onDismiss]);
 
   if (outcome === 'pending' || !isVisible) {
     return null;
   }
 
-  const sealColors =
-    outcome === 'player_victory'
-      ? WAX_SEAL_COLORS.victory
-      : outcome === 'enemy_victory'
-        ? WAX_SEAL_COLORS.defeat
-        : WAX_SEAL_COLORS.draw;
+  // Get outcome text from core (Godot-portable)
+  const outcomeText = getOutcomeText(outcome, waveNumber ?? 0);
+  const outcomeStyle = getOutcomeStyle(outcome);
 
-  const title =
-    outcome === 'player_victory' ? 'Victory' : outcome === 'enemy_victory' ? 'Defeat' : 'Draw';
-
-  const subtitle =
-    outcome === 'player_victory'
-      ? 'The enemy has been vanquished!'
-      : outcome === 'enemy_victory'
-        ? 'Your forces have fallen...'
-        : 'Both armies have been destroyed.';
-
-  const waveInfo =
-    outcome === 'player_victory'
-      ? `Advancing to Wave ${(waveNumber ?? 0) + 1}`
-      : outcome === 'enemy_victory'
-        ? waveNumber && waveNumber > 1
-          ? `Retreating to Wave ${waveNumber - 1}`
-          : 'Defending Wave 1'
-        : '';
+  // Map style to colors
+  const sealColors = outcomeStyle ? WAX_SEAL_COLORS[outcomeStyle] : WAX_SEAL_COLORS.draw;
 
   return (
     <div
@@ -169,7 +131,7 @@ export function WaxSealOverlay({
             letterSpacing: '0.15em',
           }}
         >
-          {title}
+          {outcomeText?.title}
         </h2>
 
         {/* Subtitle */}
@@ -181,7 +143,7 @@ export function WaxSealOverlay({
             fontStyle: 'italic',
           }}
         >
-          {subtitle}
+          {outcomeText?.subtitle}
         </p>
 
         {/* Gold earned (victory only) */}
@@ -199,7 +161,7 @@ export function WaxSealOverlay({
         )}
 
         {/* Wave transition info */}
-        {waveInfo && (
+        {outcomeText?.waveInfo && (
           <p
             className="text-sm"
             style={{
@@ -207,7 +169,7 @@ export function WaxSealOverlay({
               fontWeight: 'bold',
             }}
           >
-            {waveInfo}
+            {outcomeText.waveInfo}
           </p>
         )}
 

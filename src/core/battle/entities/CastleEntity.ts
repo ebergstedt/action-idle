@@ -107,6 +107,8 @@ export class CastleEntity extends BaseEntity {
   }
 
   override isDestroyed(): boolean {
-    return this._destroyed || this.health <= 0;
+    // Rely solely on _destroyed flag set by takeDamage() when health reaches 0.
+    // This ensures the 'killed' event is emitted before isDestroyed() returns true.
+    return this._destroyed;
   }
 }

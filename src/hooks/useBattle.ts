@@ -65,6 +65,12 @@ export interface UseBattleReturn {
   selectUnits: (unitIds: string[]) => void;
   setBattleSpeed: (speed: BattleSpeed) => void;
   setAutoBattle: (enabled: boolean) => void;
+  /**
+   * Toggle auto-battle on/off.
+   * If enabling and battle is not running, automatically starts the battle.
+   * This consolidates auto-battle toggle logic in one place.
+   */
+  toggleAutoBattle: () => void;
   setWave: (wave: number) => void;
   /** Handle battle outcome - awards gold, transitions wave. Returns result. */
   handleBattleOutcome: () => BattleOutcomeResult | null;
@@ -310,6 +316,17 @@ export function useBattle(options: UseBattleOptions = {}): UseBattleReturn {
     }
   }, []);
 
+  // Auto-battle toggle - consolidates toggle + auto-start logic
+  const toggleAutoBattle = useCallback(() => {
+    const newValue = !autoBattle;
+    setAutoBattle(newValue);
+    // If enabling auto-battle and battle is not running, start it
+    if (newValue && engineRef.current && !engineRef.current.getState().isRunning) {
+      engineRef.current.start();
+      setState({ ...engineRef.current.getState() });
+    }
+  }, [autoBattle, setAutoBattle]);
+
   // Battle outcome handling
   const handleBattleOutcome = useCallback((): BattleOutcomeResult | null => {
     if (!engineRef.current) return null;
@@ -385,6 +402,7 @@ export function useBattle(options: UseBattleOptions = {}): UseBattleReturn {
     selectUnits,
     setBattleSpeed,
     setAutoBattle,
+    toggleAutoBattle,
     setWave,
     handleBattleOutcome,
     getWaveGoldReward,

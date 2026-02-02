@@ -5,22 +5,13 @@
  * Orchestrates canvas, overlays, and control panel.
  */
 
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 import { useBattle } from '../../hooks/useBattle';
+import { useArenaSizing } from '../../hooks/useArenaSizing';
 import { BattleCanvas } from './BattleCanvas';
 import { WaxSealOverlay } from './WaxSealOverlay';
 import { UnitInfoPanel } from './UnitInfoPanel';
 import { ControlsPanel } from './ControlsPanel';
-import {
-  MIN_ARENA_WIDTH,
-  MIN_ARENA_HEIGHT,
-  ARENA_ASPECT_RATIO,
-  ARENA_SIZE_STABLE_DELAY_MS,
-  DEFAULT_ARENA_WIDTH,
-  DEFAULT_ARENA_HEIGHT,
-  ARENA_CONTAINER_PADDING_V,
-  ARENA_CONTAINER_PADDING_H,
-} from '../../core/battle/BattleConfig';
 import { getUniformSelectionUnit } from '../../core/battle/SelectionManager';
 import { UI_COLORS } from '../../core/theme/colors';
 
@@ -45,63 +36,15 @@ export function BattleView() {
     selectUnit,
     selectUnits,
     setBattleSpeed,
-    setAutoBattle,
+    toggleAutoBattle,
     setWave,
     getWaveGoldReward,
     handleOutcomeAndContinue,
   } = useBattle();
 
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [arenaSize, setArenaSize] = useState({
-    width: DEFAULT_ARENA_WIDTH,
-    height: DEFAULT_ARENA_HEIGHT,
-  });
-
-  const [isArenaSizeStable, setIsArenaSizeStable] = useState(false);
+  // Use extracted arena sizing hook (SRP: sizing logic in one place)
+  const { arenaSize, isArenaSizeStable, containerRef } = useArenaSizing();
   const hasSpawnedRef = useRef(false);
-  const sizeStableTimeoutRef = useRef<number | null>(null);
-
-  // Calculate arena size based on container
-  useEffect(() => {
-    const updateSize = () => {
-      if (containerRef.current) {
-        const container = containerRef.current;
-        const rect = container.getBoundingClientRect();
-        const availableHeight = rect.height - ARENA_CONTAINER_PADDING_V;
-        const availableWidth = rect.width - ARENA_CONTAINER_PADDING_H;
-
-        const width = Math.max(MIN_ARENA_WIDTH, availableWidth);
-        const height = Math.max(
-          MIN_ARENA_HEIGHT,
-          Math.min(availableHeight, width * ARENA_ASPECT_RATIO)
-        );
-
-        setArenaSize({ width, height });
-
-        // Mark size as stable after a short delay
-        if (sizeStableTimeoutRef.current) {
-          clearTimeout(sizeStableTimeoutRef.current);
-        }
-        sizeStableTimeoutRef.current = window.setTimeout(() => {
-          setIsArenaSizeStable(true);
-        }, ARENA_SIZE_STABLE_DELAY_MS);
-      }
-    };
-
-    const observer = new ResizeObserver(updateSize);
-    if (containerRef.current) {
-      observer.observe(containerRef.current);
-    }
-
-    setTimeout(updateSize, 0);
-
-    return () => {
-      observer.disconnect();
-      if (sizeStableTimeoutRef.current) {
-        clearTimeout(sizeStableTimeoutRef.current);
-      }
-    };
-  }, []);
 
   // Auto-spawn units once arena size is stable and settings are loaded
   useEffect(() => {
@@ -123,15 +66,6 @@ export function BattleView() {
     reset();
     hasSpawnedRef.current = false;
   }, [reset]);
-
-  const handleAutoBattleToggle = useCallback(() => {
-    const newValue = !autoBattle;
-    setAutoBattle(newValue);
-    // If enabling auto-battle and not currently running, start the battle
-    if (newValue && !state.isRunning) {
-      start();
-    }
-  }, [autoBattle, setAutoBattle, state.isRunning, start]);
 
   // Handle outcome dismiss - delegates to hook for outcome processing and auto-battle flow
   const handleOutcomeDismiss = useCallback(() => {
@@ -190,7 +124,7 @@ export function BattleView() {
             onReset={handleReset}
             onSpeedChange={setBattleSpeed}
             onWaveChange={setWave}
-            onAutoBattleToggle={handleAutoBattleToggle}
+            onAutoBattleToggle={toggleAutoBattle}
           />
         )}
       </div>

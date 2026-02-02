@@ -46,12 +46,18 @@ export function useBattleSettings(adapter: IPersistenceAdapter): UseBattleSettin
 
   // Load settings on mount
   useEffect(() => {
-    loadBattleSettings(adapter).then((settings) => {
-      setAutoBattleState(settings.autoBattle);
-      setBattleSpeedState(settings.battleSpeed as BattleSpeed);
-      loadedSettingsRef.current = settings;
-      setSettingsLoaded(true);
-    });
+    loadBattleSettings(adapter)
+      .then((settings) => {
+        setAutoBattleState(settings.autoBattle);
+        setBattleSpeedState(settings.battleSpeed as BattleSpeed);
+        loadedSettingsRef.current = settings;
+        setSettingsLoaded(true);
+      })
+      .catch((err) => {
+        // Log error but proceed with defaults to avoid blocking the app
+        console.error('Failed to load battle settings:', err);
+        setSettingsLoaded(true);
+      });
   }, [adapter]);
 
   const setBattleSpeed = useCallback((speed: BattleSpeed) => {

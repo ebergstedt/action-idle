@@ -21,6 +21,9 @@ export * from './IEntity';
 export * from './entities';
 export * from './BattleStats';
 
+// Presentation helpers (Godot-portable)
+export * from './OutcomePresentation';
+
 // Input and interaction (Godot-portable)
 export * from './ISelectable';
 export * from './SelectionManager';
