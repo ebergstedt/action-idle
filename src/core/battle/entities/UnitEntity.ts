@@ -49,7 +49,7 @@ import {
 import { clampToArenaInPlace } from '../BoundsEnforcer';
 import { IDamageable, IMeleeTarget } from '../IEntity';
 import { applyShuffle } from '../shuffle';
-import { AttackMode, UnitRenderData, UnitStats, UnitTeam, UnitType } from '../types';
+import { AttackMode, UnitRenderData, UnitStats, UnitTeam, UnitType, UnitShape } from '../types';
 import { BaseEntity } from './BaseEntity';
 import { IBattleWorld } from './IBattleWorld';
 
@@ -63,7 +63,7 @@ export interface UnitData {
   health: number;
   stats: UnitStats;
   color: string;
-  shape: 'circle' | 'square' | 'triangle';
+  shape: UnitShape;
   size: number;
   /** Squad identifier - units spawned together share the same squadId */
   squadId: string;
@@ -90,6 +90,8 @@ export interface UnitData {
   walkAnimationTime: number;
   // Walk animation type ID (e.g., 'bounce', 'none')
   walkAnimation: string;
+  // If true, shows a targeting laser when aiming (for snipers)
+  hasAimingLaser: boolean;
 }
 
 /**
@@ -128,7 +130,7 @@ export class UnitEntity extends BaseEntity {
   get color(): string {
     return this.data.color;
   }
-  get shape(): 'circle' | 'square' | 'triangle' {
+  get shape(): UnitShape {
     return this.data.shape;
   }
   get target(): IDamageable | null {
@@ -204,6 +206,28 @@ export class UnitEntity extends BaseEntity {
   }
   get walkAnimation(): string {
     return this.data.walkAnimation;
+  }
+  get hasAimingLaser(): boolean {
+    return this.data.hasAimingLaser;
+  }
+
+  /**
+   * Get the position this unit is aiming at (for laser rendering).
+   * Returns null if not aiming, doesn't have aiming laser, or target is out of range.
+   */
+  getAimingTarget(): Vector2 | null {
+    if (!this.hasAimingLaser) return null;
+    if (!this.target) return null;
+    // Only aim when in ranged mode (not melee)
+    const { ranged } = this.stats;
+    if (!ranged) return null;
+    // Check distance to target
+    const distToTarget = this.position.distanceTo(this.target.position);
+    // Not in melee range
+    if (distToTarget <= MELEE_ATTACK_RANGE_THRESHOLD + this.size) return null;
+    // Must be within ranged attack range
+    if (distToTarget > ranged.range) return null;
+    return this.target.position;
   }
 
   /**
@@ -546,6 +570,7 @@ export class UnitEntity extends BaseEntity {
       deathFadeTimer: this.deathFadeTimer,
       walkAnimationTime: this.walkAnimationTime,
       walkAnimation: this.walkAnimation,
+      aimingAt: this.getAimingTarget(),
     };
   }
 
@@ -978,7 +1003,7 @@ export class UnitEntity extends BaseEntity {
       // Direct damage
       target.takeDamage(modifiedDamage, this);
     } else {
-      // Spawn projectile
+      // Spawn projectile with attack mode's projectile properties
       const world = this.getBattleWorld();
       if (world) {
         world.spawnProjectile(
@@ -987,7 +1012,9 @@ export class UnitEntity extends BaseEntity {
           modifiedDamage,
           this.team,
           this, // Pass source unit for damage attribution
-          getProjectileColor(this.team)
+          getProjectileColor(this.team),
+          attackMode.projectileSpeed,
+          attackMode.splashRadius
         );
       }
     }

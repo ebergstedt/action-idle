@@ -33,6 +33,8 @@ export interface ProjectileData {
   sourceTeam: UnitTeam;
   sourceUnit: UnitEntity | null;
   color: string;
+  /** Splash/AoE damage radius (0 = single target) */
+  splashRadius: number;
 }
 
 /**
@@ -64,6 +66,9 @@ export class ProjectileEntity extends BaseEntity {
   }
   get color(): string {
     return this.data.color;
+  }
+  get splashRadius(): number {
+    return this.data.splashRadius;
   }
 
   /**
@@ -124,8 +129,24 @@ export class ProjectileEntity extends BaseEntity {
       return;
     }
 
-    // Find the closest enemy damageable within hit radius (single target, no splash)
     const damageables = world.getDamageables();
+
+    // AoE/Splash damage: hit all enemies within splash radius
+    if (this.splashRadius > 0) {
+      for (const target of damageables) {
+        if (target.team === this.sourceTeam) continue;
+
+        const dist = target.position.distanceTo(this.target);
+        const hitRange = target.size + this.splashRadius;
+        if (dist <= hitRange) {
+          target.takeDamage(this.damage, this.sourceUnit ?? undefined);
+        }
+      }
+      this.markDestroyed();
+      return;
+    }
+
+    // Single target: find the closest enemy damageable within hit radius
     let closestTarget: (typeof damageables)[0] | null = null;
     let closestDist = Infinity;
 
@@ -152,6 +173,8 @@ export class ProjectileEntity extends BaseEntity {
 /**
  * Factory function to create a projectile with scaled speed.
  * @param arenaHeight - Arena height for scaling projectile speed
+ * @param projectileSpeed - Override base projectile speed (optional)
+ * @param splashRadius - AoE damage radius, 0 = single target (optional)
  */
 export function createProjectile(
   id: string,
@@ -161,14 +184,18 @@ export function createProjectile(
   sourceTeam: UnitTeam,
   sourceUnit: UnitEntity | null,
   color: string,
-  arenaHeight: number = REFERENCE_ARENA_HEIGHT
+  arenaHeight: number = REFERENCE_ARENA_HEIGHT,
+  projectileSpeed?: number,
+  splashRadius: number = 0
 ): ProjectileEntity {
+  const baseSpeed = projectileSpeed ?? BASE_PROJECTILE_SPEED;
   return new ProjectileEntity(id, position, {
     target,
-    speed: scaleValue(BASE_PROJECTILE_SPEED, arenaHeight),
+    speed: scaleValue(baseSpeed, arenaHeight),
     damage,
     sourceTeam,
     sourceUnit,
     color,
+    splashRadius: scaleValue(splashRadius, arenaHeight),
   });
 }

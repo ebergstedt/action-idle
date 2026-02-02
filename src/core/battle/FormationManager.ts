@@ -223,7 +223,7 @@ import {
  * Unit types currently supported in formations.
  * Matches the unit IDs in /src/data/units/*.json
  */
-export type UnitType = 'warrior' | 'archer' | 'knight';
+export type UnitType = 'warrior' | 'archer' | 'knight' | 'arclight' | 'marksman' | 'void_eye';
 
 /**
  * A unit placement within a legacy FormationTemplate.
@@ -722,27 +722,33 @@ export function selectAlliedPatternForWave(
 
 // Legacy formation template (kept for backward compatibility)
 /**
- * Classic battle formation: Warriors front, Archers back, Knights on flanks.
- * 10 squads total: 4 Hounds, 4 Fangs, 2 Crawlers
+ * Classic battle formation with all T1 units.
+ * 12 squads total: 2 Hounds (front), 2 Fangs (back), 2 Crawlers (flanks),
+ * 2 Arclights (back), 2 Marksmen (back), 2 Void Eyes (flanks)
  * @deprecated Use calculateDeterministicAlliedPositions instead
  */
 export const CLASSIC_FORMATION: FormationTemplate = {
   id: 'classic',
   name: 'Classic Battle Line',
   placements: [
-    // Front line - 4 Hounds (warriors)
-    { type: 'warrior', relativePosition: new Vector2(-0.3, 0) },
-    { type: 'warrior', relativePosition: new Vector2(-0.1, 0) },
-    { type: 'warrior', relativePosition: new Vector2(0.1, 0) },
-    { type: 'warrior', relativePosition: new Vector2(0.3, 0) },
-    // Back line - 4 Fangs (archers)
-    { type: 'archer', relativePosition: new Vector2(-0.3, 0.5) },
-    { type: 'archer', relativePosition: new Vector2(-0.1, 0.5) },
-    { type: 'archer', relativePosition: new Vector2(0.1, 0.5) },
-    { type: 'archer', relativePosition: new Vector2(0.3, 0.5) },
+    // Front line - 2 Hounds (warriors)
+    { type: 'warrior', relativePosition: new Vector2(-0.15, 0) },
+    { type: 'warrior', relativePosition: new Vector2(0.15, 0) },
+    // Back line - 2 Fangs (archers)
+    { type: 'archer', relativePosition: new Vector2(-0.25, 0.5) },
+    { type: 'archer', relativePosition: new Vector2(0.25, 0.5) },
+    // Back line - 2 Arclights (artillery)
+    { type: 'arclight', relativePosition: new Vector2(-0.1, 0.65) },
+    { type: 'arclight', relativePosition: new Vector2(0.1, 0.65) },
+    // Back line - 2 Marksmen (snipers)
+    { type: 'marksman', relativePosition: new Vector2(-0.35, 0.55) },
+    { type: 'marksman', relativePosition: new Vector2(0.35, 0.55) },
     // Flanks - 2 Crawlers (knights)
     { type: 'knight', relativePosition: new Vector2(-0.5, 0.25) },
     { type: 'knight', relativePosition: new Vector2(0.5, 0.25) },
+    // Flanks - 2 Void Eyes (scouts)
+    { type: 'void_eye', relativePosition: new Vector2(-0.45, 0.1) },
+    { type: 'void_eye', relativePosition: new Vector2(0.45, 0.1) },
   ],
 };
 
@@ -777,21 +783,23 @@ export function calculateAlliedSpawnPositions(
 }
 
 /**
- * Gets the default allied composition.
- * 10 squads: 4 Warriors (front), 4 Archers (back), 2 Knights (flank)
+ * Gets the default allied composition with all T1 units.
+ * 12 squads: 2 of each T1 unit type
  */
 export function getDefaultAlliedComposition(): UnitType[] {
   return [
     'warrior',
     'warrior',
-    'warrior',
-    'warrior',
     'archer',
     'archer',
-    'archer',
-    'archer',
+    'arclight',
+    'arclight',
+    'marksman',
+    'marksman',
     'knight',
     'knight',
+    'void_eye',
+    'void_eye',
   ];
 }
 
@@ -1043,20 +1051,22 @@ export function calculateEnemySpawnPositions(
 
 /**
  * Default enemy composition for wave 1.
- * 10 squads: 4 Hounds, 4 Fangs, 2 Crawlers
+ * 12 squads: 2 of each T1 unit type
  */
 export function getDefaultEnemyComposition(): UnitType[] {
   return [
     'warrior',
     'warrior',
-    'warrior',
-    'warrior',
     'archer',
     'archer',
-    'archer',
-    'archer',
+    'arclight',
+    'arclight',
+    'marksman',
+    'marksman',
     'knight',
     'knight',
+    'void_eye',
+    'void_eye',
   ];
 }
 

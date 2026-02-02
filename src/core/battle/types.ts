@@ -13,7 +13,7 @@
 
 import { Vector2 } from '../physics/Vector2';
 import { MAX_UNIT_SCALE, MIN_UNIT_SCALE, REFERENCE_ARENA_HEIGHT } from './BattleConfig';
-import type { UnitTeam as UnitTeamType } from './units/types';
+import type { UnitTeam as UnitTeamType, UnitShape as UnitShapeType } from './units/types';
 import type { DamageNumberRenderData } from './entities/DamageNumberEntity';
 
 // Re-export for convenience
@@ -43,7 +43,7 @@ type UnitTeam = UnitTeamType;
  * Render data unit type identifier.
  * @deprecated Use UnitDefinition.id instead
  */
-export type UnitType = 'warrior' | 'archer' | 'knight';
+export type UnitType = string;
 
 /**
  * Render data attack type.
@@ -59,6 +59,10 @@ export interface AttackMode {
   damage: number;
   attackSpeed: number;
   range: number;
+  /** Projectile speed override (uses BASE_PROJECTILE_SPEED if not set) */
+  projectileSpeed?: number;
+  /** Splash/AoE damage radius (0 or undefined = single target) */
+  splashRadius?: number;
 }
 
 /**
@@ -102,7 +106,7 @@ export interface UnitRenderData {
   target: UnitRenderData | null;
   attackCooldown: number;
   color: string;
-  shape: 'circle' | 'square' | 'triangle';
+  shape: UnitShapeType;
   size: number;
   shuffleDirection: Vector2 | null;
   shuffleTimer: number;
@@ -117,6 +121,8 @@ export interface UnitRenderData {
   walkAnimationTime: number;
   /** Walk animation type ID (e.g., 'bounce', 'none') */
   walkAnimation: string;
+  /** Target position for aiming laser (null if not aiming or no laser) */
+  aimingAt: Vector2 | null;
 }
 
 /**

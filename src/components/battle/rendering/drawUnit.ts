@@ -69,6 +69,23 @@ export function drawUnitShadow(ctx: CanvasRenderingContext2D, unit: UnitRenderDa
       ctx.closePath();
       ctx.fill();
       break;
+    case 'triangle_down':
+      ctx.beginPath();
+      ctx.moveTo(0, size);
+      ctx.lineTo(-size, -size);
+      ctx.lineTo(size, -size);
+      ctx.closePath();
+      ctx.fill();
+      break;
+    case 'diamond':
+      ctx.beginPath();
+      ctx.moveTo(0, -size);
+      ctx.lineTo(size, 0);
+      ctx.lineTo(0, size);
+      ctx.lineTo(-size, 0);
+      ctx.closePath();
+      ctx.fill();
+      break;
   }
 
   ctx.restore();
@@ -166,6 +183,25 @@ export function drawUnitBody(
       ctx.fill();
       ctx.stroke();
       break;
+    case 'triangle_down':
+      ctx.beginPath();
+      ctx.moveTo(0, size);
+      ctx.lineTo(-size, -size);
+      ctx.lineTo(size, -size);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+      break;
+    case 'diamond':
+      ctx.beginPath();
+      ctx.moveTo(0, -size);
+      ctx.lineTo(size, 0);
+      ctx.lineTo(0, size);
+      ctx.lineTo(-size, 0);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+      break;
   }
 
   // Hit flash overlay - white flash when unit takes damage
@@ -189,6 +225,23 @@ export function drawUnitBody(
         ctx.moveTo(0, -size);
         ctx.lineTo(-size, size);
         ctx.lineTo(size, size);
+        ctx.closePath();
+        ctx.fill();
+        break;
+      case 'triangle_down':
+        ctx.beginPath();
+        ctx.moveTo(0, size);
+        ctx.lineTo(-size, -size);
+        ctx.lineTo(size, -size);
+        ctx.closePath();
+        ctx.fill();
+        break;
+      case 'diamond':
+        ctx.beginPath();
+        ctx.moveTo(0, -size);
+        ctx.lineTo(size, 0);
+        ctx.lineTo(0, size);
+        ctx.lineTo(-size, 0);
         ctx.closePath();
         ctx.fill();
         break;

@@ -1,0 +1,39 @@
+{
+  "id": "void_eye",
+  "name": "Void Eye",
+  "description": "Mysterious scout unit. Fast attacks and high mobility for reconnaissance and harassment.",
+  "category": "scout",
+  "tier": 1,
+  "formationRole": "flank",
+  "wavePermit": 1,
+  "reference": {
+    "source": "Custom",
+    "unit": "Void Eye",
+    "wiki": ""
+  },
+  "baseStats": {
+    "maxHealth": 200,
+    "moveSpeed": 14,
+    "armor": 0,
+    "attackInterval": 0.8,
+    "squadSize": 6,
+    "melee": {
+      "damage": 45,
+      "attackSpeed": 1.25,
+      "range": 15
+    },
+    "ranged": {
+      "damage": 35,
+      "attackSpeed": 1.25,
+      "range": 50
+    }
+  },
+  "visuals": {
+    "shape": "circle",
+    "baseSize": 5,
+    "colorKey": "void_eye",
+    "walkAnimation": "bounce"
+  },
+  "innateAbilities": [],
+  "unlockRequirements": []
+}

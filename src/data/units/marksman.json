@@ -1,0 +1,41 @@
+{
+  "id": "marksman",
+  "name": "Marksman",
+  "description": "Elite sniper unit. Extreme range and devastating single-target damage.",
+  "category": "ranged",
+  "tier": 1,
+  "formationRole": "back",
+  "wavePermit": 1,
+  "reference": {
+    "source": "Mechabellum",
+    "unit": "Marksman",
+    "wiki": "https://mechabellum.wiki/index.php/Unit_Overview"
+  },
+  "baseStats": {
+    "maxHealth": 1622,
+    "moveSpeed": 8,
+    "armor": 0,
+    "attackInterval": 3.1,
+    "squadSize": 1,
+    "melee": {
+      "damage": 100,
+      "attackSpeed": 0.32,
+      "range": 15
+    },
+    "ranged": {
+      "damage": 2329,
+      "attackSpeed": 0.32,
+      "range": 140,
+      "projectileSpeed": 450
+    }
+  },
+  "visuals": {
+    "shape": "triangle_down",
+    "baseSize": 8,
+    "colorKey": "marksman",
+    "walkAnimation": "bounce",
+    "aimingLaser": true
+  },
+  "innateAbilities": [],
+  "unlockRequirements": []
+}

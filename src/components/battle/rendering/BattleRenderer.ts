@@ -22,6 +22,7 @@ import { drawShockwave } from './drawEffects';
 import { drawSelectionBox } from './drawSelection';
 import { drawParchmentBackground, drawVignette } from './drawBackground';
 import { drawInkSplatters } from './drawInkSplatter';
+import { drawAimingLaser } from './drawLaser';
 import type { DustParticle, InkSplatter } from '../../../core/battle/particles';
 
 /**
@@ -125,7 +126,14 @@ export function renderBattle(context: RenderContext): void {
     drawProjectile(ctx, proj, height);
   }
 
-  // 7. Unit shadows (drawn first so they're behind all units)
+  // 7. Aiming lasers (drawn before units so they appear underneath)
+  for (const unit of state.units) {
+    if (unit.aimingAt) {
+      drawAimingLaser(ctx, unit);
+    }
+  }
+
+  // 8. Unit shadows (drawn first so they're behind all units)
   for (const unit of state.units) {
     drawUnitShadow(ctx, unit);
   }

@@ -19,7 +19,7 @@ export type UnitTeam = 'player' | 'enemy';
 /**
  * Unit category for grouping and upgrade targeting.
  */
-export type UnitCategory = 'infantry' | 'ranged' | 'cavalry';
+export type UnitCategory = 'infantry' | 'ranged' | 'cavalry' | 'artillery' | 'scout';
 
 /**
  * Formation role determines where a unit is positioned in enemy formations.
@@ -32,7 +32,7 @@ export type FormationRole = 'front' | 'back' | 'flank';
 /**
  * Visual shape for rendering.
  */
-export type UnitShape = 'circle' | 'square' | 'triangle';
+export type UnitShape = 'circle' | 'square' | 'triangle' | 'triangle_down' | 'diamond';
 
 /**
  * Attack mode stats (melee or ranged).
@@ -41,6 +41,13 @@ export interface AttackModeStats {
   damage: number;
   attackSpeed: number; // attacks per second
   range: number; // pixels - melee ~35, ranged ~200
+  /** Projectile speed override (uses BASE_PROJECTILE_SPEED if not set) */
+  projectileSpeed?: number;
+  /**
+   * Splash/AoE damage radius (0 or undefined = single target).
+   * Note: Values are ~80% smaller than Mechabellum equivalents due to smaller arena scale.
+   */
+  splashRadius?: number;
 }
 
 /**
@@ -85,6 +92,10 @@ export interface UnitVisuals {
    * Defaults to 'bounce' if not specified.
    */
   walkAnimation?: string;
+  /**
+   * If true, shows a targeting laser when aiming at enemies (for snipers).
+   */
+  aimingLaser?: boolean;
 }
 
 /**

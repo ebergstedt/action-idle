@@ -381,7 +381,7 @@ export class BattleEngine {
     // Use provided squadId or generate one for solo units
     const finalSquadId = squadId ?? `squad_${this.nextSquadId++}`;
     const data: UnitData = {
-      type: definition.id as 'warrior' | 'archer' | 'knight',
+      type: definition.id,
       team,
       health: stats.maxHealth,
       stats,
@@ -402,6 +402,7 @@ export class BattleEngine {
       deathFadeTimer: -1, // -1 means alive
       walkAnimationTime: 0, // Walk animation starts at time 0
       walkAnimation: visuals.walkAnimation ?? DEFAULT_WALK_ANIMATION,
+      hasAimingLaser: visuals.aimingLaser ?? false,
     };
 
     const entity = new UnitEntity(id, position.clone(), data);

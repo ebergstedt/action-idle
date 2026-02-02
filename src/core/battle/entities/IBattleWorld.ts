@@ -47,7 +47,9 @@ export interface IBattleWorld extends IEntityWorld {
     damage: number,
     sourceTeam: UnitTeam,
     sourceUnit: UnitEntity | null,
-    color: string
+    color: string,
+    projectileSpeed?: number,
+    splashRadius?: number
   ): void;
 
   // Damage number spawning

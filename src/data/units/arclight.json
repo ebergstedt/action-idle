@@ -1,0 +1,41 @@
+{
+  "id": "arclight",
+  "name": "Arclight",
+  "description": "Single artillery unit. Fast-firing AoE attacks devastate groups of enemies.",
+  "category": "artillery",
+  "tier": 1,
+  "formationRole": "back",
+  "wavePermit": 1,
+  "reference": {
+    "source": "Mechabellum",
+    "unit": "Arclight",
+    "wiki": "https://mechabellum.wiki/index.php/Unit_Overview"
+  },
+  "baseStats": {
+    "maxHealth": 4813,
+    "moveSpeed": 7,
+    "armor": 0,
+    "attackInterval": 0.9,
+    "squadSize": 1,
+    "melee": {
+      "damage": 50,
+      "attackSpeed": 1.11,
+      "range": 15
+    },
+    "ranged": {
+      "damage": 347,
+      "attackSpeed": 1.11,
+      "range": 95,
+      "projectileSpeed": 150,
+      "splashRadius": 7
+    }
+  },
+  "visuals": {
+    "shape": "diamond",
+    "baseSize": 10,
+    "colorKey": "arclight",
+    "walkAnimation": "bounce"
+  },
+  "innateAbilities": [],
+  "unlockRequirements": []
+}

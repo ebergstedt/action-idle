@@ -195,7 +195,7 @@ export function getTeamName(team: Team): string {
 // UNIT TYPE COLORS - Variations of Team Base Color
 // =============================================================================
 
-export type UnitType = 'warrior' | 'archer' | 'knight';
+export type UnitType = 'warrior' | 'archer' | 'knight' | 'arclight' | 'marksman' | 'void_eye';
 
 export interface UnitTypeColors {
   player: string;
@@ -229,6 +229,21 @@ export const UNIT_TYPE_COLORS: Record<UnitType, UnitTypeColors> = {
   knight: {
     player: '#008000', // Medium green (darker but still visible)
     enemy: '#820000', // Maroon (darker)
+  },
+  // Arclight - artillery, blueish tint (heavy firepower)
+  arclight: {
+    player: '#2E8B57', // Sea green (blue-green tint)
+    enemy: '#B22222', // Firebrick (orange-red tint)
+  },
+  // Marksman - sniper, purple tint (precision)
+  marksman: {
+    player: '#3CB371', // Medium sea green (teal tint)
+    enemy: '#DC143C', // Crimson (pink-red tint)
+  },
+  // Void Eye - scout, cyan tint (mysterious/ethereal)
+  void_eye: {
+    player: '#20B2AA', // Light sea green (cyan tint)
+    enemy: '#FF4500', // Orange red (fiery tint)
   },
 } as const;
 

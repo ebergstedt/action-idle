@@ -500,7 +500,9 @@ export class BattleWorld implements IEntityWorld, IBattleWorld, IWorldEventEmitt
     damage: number,
     sourceTeam: UnitTeam,
     sourceUnit: UnitEntity | null,
-    color: string
+    color: string,
+    projectileSpeed?: number,
+    splashRadius?: number
   ): void {
     const id = `proj_${this.nextProjectileId++}`;
     const arenaHeight = this.arenaBounds?.height ?? REFERENCE_ARENA_HEIGHT;
@@ -512,7 +514,9 @@ export class BattleWorld implements IEntityWorld, IBattleWorld, IWorldEventEmitt
       sourceTeam,
       sourceUnit,
       color,
-      arenaHeight
+      arenaHeight,
+      projectileSpeed,
+      splashRadius ?? 0
     );
     this.addProjectile(projectile);
   }
