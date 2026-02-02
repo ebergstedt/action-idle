@@ -7,7 +7,7 @@
  * Godot equivalent: A singleton or autoload that tracks selected units.
  */
 
-import { Unit } from './types';
+import { ISelectable } from './ISelectable';
 
 export interface SelectionState {
   selectedIds: string[];
@@ -84,8 +84,8 @@ export function getSelectionCount(state: SelectionState): number {
  * Selects all units matching a predicate.
  */
 export function selectAllMatching(
-  units: Unit[],
-  predicate: (unit: Unit) => boolean
+  units: ISelectable[],
+  predicate: (unit: ISelectable) => boolean
 ): SelectionState {
   const matching = units.filter(predicate).map((u) => u.id);
   return { selectedIds: matching };
@@ -94,7 +94,7 @@ export function selectAllMatching(
 /**
  * Selects all units of the same type and team as the given unit.
  */
-export function selectAllOfType(units: Unit[], referenceUnit: Unit): SelectionState {
+export function selectAllOfType(units: ISelectable[], referenceUnit: ISelectable): SelectionState {
   return selectAllMatching(
     units,
     (u) => u.type === referenceUnit.type && u.team === referenceUnit.team
@@ -104,7 +104,7 @@ export function selectAllOfType(units: Unit[], referenceUnit: Unit): SelectionSt
 /**
  * Selects all units in the same squad as the given unit.
  */
-export function selectSquad(units: Unit[], referenceUnit: Unit): SelectionState {
+export function selectSquad(units: ISelectable[], referenceUnit: ISelectable): SelectionState {
   return selectAllMatching(units, (u) => u.squadId === referenceUnit.squadId);
 }
 
@@ -118,4 +118,31 @@ export function pruneSelection(
   const pruned = state.selectedIds.filter((id) => existingUnitIds.has(id));
   if (pruned.length === state.selectedIds.length) return state;
   return { selectedIds: pruned };
+}
+
+/**
+ * Check if all selected units are the same type and team (uniform selection).
+ * Returns the representative unit if uniform, null otherwise.
+ *
+ * @param selectedIds - Currently selected unit IDs
+ * @param units - All available units
+ * @returns The first selected unit if all selected are same type/team, null otherwise
+ */
+export function getUniformSelectionUnit<T extends ISelectable>(
+  selectedIds: string[],
+  units: T[]
+): T | null {
+  if (selectedIds.length === 0) return null;
+
+  // Get all selected units
+  const selectedUnits = units.filter((u) => selectedIds.includes(u.id));
+  if (selectedUnits.length === 0) return null;
+
+  // Check if all selected units are same type and team
+  const firstUnit = selectedUnits[0];
+  const isUniform = selectedUnits.every(
+    (u) => u.type === firstUnit.type && u.team === firstUnit.team
+  );
+
+  return isUniform ? firstUnit : null;
 }

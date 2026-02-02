@@ -3,6 +3,9 @@
  *
  * Displays active buff/debuff modifiers on a unit.
  * Shows icon, name, effects, and remaining duration.
+ *
+ * Uses a table-driven approach for extensibility - add new modifiers
+ * to MODIFIER_DISPLAY_INFO without modifying display logic.
  */
 
 import { UI_COLORS, DEBUFF_COLORS, hexToRgba } from '../../core/theme/colors';
@@ -26,33 +29,53 @@ interface ModifierInfo {
 }
 
 /**
+ * Modifier display information lookup table.
+ * Add new modifiers here - no switch statements needed.
+ *
+ * Key: sourceId from the modifier system
+ * Value: Display properties for the modifier
+ */
+const MODIFIER_DISPLAY_INFO: Record<string, ModifierInfo> = {
+  castle_death_shockwave: {
+    name: 'Castle Collapse',
+    icon: 'X',
+    effects: [
+      `${Math.abs(SHOCKWAVE_DEBUFF_MOVE_SPEED * 100)}% Move Speed`,
+      `${Math.abs(SHOCKWAVE_DEBUFF_DAMAGE * 100)}% Damage`,
+    ],
+    bgColor: hexToRgba(DEBUFF_COLORS.shockwave, 0.2),
+    iconBgColor: DEBUFF_COLORS.shockwave,
+    textColor: UI_COLORS.black,
+  },
+};
+
+/**
+ * Default display info for unknown modifiers.
+ */
+const DEFAULT_MODIFIER_INFO: ModifierInfo = {
+  name: 'Unknown',
+  icon: '?',
+  effects: ['Unknown effect'],
+  bgColor: 'rgba(128, 128, 128, 0.2)',
+  iconBgColor: '#808080',
+  textColor: UI_COLORS.black,
+};
+
+/**
  * Get display info for a modifier based on its source ID.
- * Maps modifier source IDs to human-readable display data.
+ * Uses table lookup with fallback to default info.
  */
 function getModifierDisplayInfo(sourceId: string): ModifierInfo {
-  switch (sourceId) {
-    case 'castle_death_shockwave':
-      return {
-        name: 'Castle Collapse',
-        icon: 'X',
-        effects: [
-          `${Math.abs(SHOCKWAVE_DEBUFF_MOVE_SPEED * 100)}% Move Speed`,
-          `${Math.abs(SHOCKWAVE_DEBUFF_DAMAGE * 100)}% Damage`,
-        ],
-        bgColor: hexToRgba(DEBUFF_COLORS.shockwave, 0.2),
-        iconBgColor: DEBUFF_COLORS.shockwave,
-        textColor: UI_COLORS.black,
-      };
-    default:
-      return {
-        name: sourceId,
-        icon: '?',
-        effects: ['Unknown effect'],
-        bgColor: 'rgba(128, 128, 128, 0.2)',
-        iconBgColor: '#808080',
-        textColor: UI_COLORS.black,
-      };
+  const info = MODIFIER_DISPLAY_INFO[sourceId];
+  if (info) {
+    return info;
   }
+
+  // Return default info with the sourceId as the name for debugging
+  return {
+    ...DEFAULT_MODIFIER_INFO,
+    name: sourceId,
+  };
 }
 
 export function ModifierDisplay({ sourceId, remainingDuration }: ModifierDisplayProps) {

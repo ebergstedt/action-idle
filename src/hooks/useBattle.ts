@@ -1,3 +1,12 @@
+/**
+ * Battle Hook
+ *
+ * Main orchestration hook for the battle system.
+ * Composes useBattleSettings, useBattleLoop, and engine management.
+ *
+ * SRP: Orchestrates battle components, delegates to focused hooks.
+ */
+
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   BattleEngine,
@@ -12,15 +21,12 @@ import {
   UnitRegistry,
   ZONE_HEIGHT_PERCENT,
 } from '../core/battle';
-import {
-  BattleSettingsData,
-  loadBattleSettings,
-  saveBattleSettings,
-} from '../core/battle/BattleSettings';
 import type { IPersistenceAdapter } from '../core/persistence/IPersistenceAdapter';
 import { LocalStorageAdapter } from '../adapters/LocalStorageAdapter';
 import { Vector2 } from '../core/physics/Vector2';
 import { unitDefinitions } from '../data/units';
+import { useBattleSettings, BattleSpeed } from './useBattleSettings';
+import { useBattleLoop } from './useBattleLoop';
 
 // Default persistence adapter for browser - Godot will inject a different one
 let persistenceAdapter: IPersistenceAdapter = new LocalStorageAdapter();
@@ -33,7 +39,7 @@ export function setBattlePersistenceAdapter(adapter: IPersistenceAdapter): void 
   persistenceAdapter = adapter;
 }
 
-export type BattleSpeed = 0.5 | 1 | 2;
+export type { BattleSpeed };
 
 export interface UseBattleReturn {
   state: BattleState;
@@ -76,8 +82,11 @@ const EMPTY_STATS: BattleStatistics = {
 };
 
 export function useBattle(): UseBattleReturn {
+  // Core engine refs
   const engineRef = useRef<BattleEngine | null>(null);
   const statsRef = useRef<BattleStats | null>(null);
+
+  // Battle state
   const [state, setState] = useState<BattleState>({
     units: [],
     projectiles: [],
@@ -93,36 +102,23 @@ export function useBattle(): UseBattleReturn {
   });
   const [stats, setStats] = useState<BattleStatistics>(EMPTY_STATS);
   const [selectedUnitIds, setSelectedUnitIds] = useState<string[]>([]);
-  const [battleSpeed, setBattleSpeedState] = useState<BattleSpeed>(1);
-  const [autoBattle, setAutoBattleState] = useState(false);
-  const [settingsLoaded, setSettingsLoaded] = useState(false);
-  const battleSpeedRef = useRef<BattleSpeed>(1);
-  const arenaSizeRef = useRef<{ width: number; height: number } | null>(null);
 
-  // Keep ref in sync for use in game loop
-  useEffect(() => {
-    battleSpeedRef.current = battleSpeed;
-  }, [battleSpeed]);
+  // Use settings hook for persistence
+  const {
+    battleSpeed,
+    autoBattle,
+    settingsLoaded,
+    setBattleSpeed,
+    setAutoBattle,
+    saveSettingsWithState,
+    getLoadedSettings,
+  } = useBattleSettings(persistenceAdapter);
 
-  // Initialize engine with registry and load settings
+  // Initialize engine
   useEffect(() => {
     const registry = createUnitRegistry();
     engineRef.current = new BattleEngine(registry);
     statsRef.current = new BattleStats();
-
-    // Load saved settings
-    loadBattleSettings(persistenceAdapter).then((settings) => {
-      setAutoBattleState(settings.autoBattle);
-      setBattleSpeedState(settings.battleSpeed as BattleSpeed);
-      // Apply wave and gold to engine
-      if (engineRef.current) {
-        engineRef.current.setWave(settings.waveNumber);
-        engineRef.current.setHighestWave(settings.highestWave);
-        engineRef.current.setGold(settings.gold);
-        setState({ ...engineRef.current.getState() });
-      }
-      setSettingsLoaded(true);
-    });
 
     return () => {
       statsRef.current?.detach();
@@ -131,27 +127,23 @@ export function useBattle(): UseBattleReturn {
     };
   }, []);
 
-  // Save settings when they change
-  const saveSettings = useCallback(() => {
-    if (!engineRef.current || !settingsLoaded) return;
-    const engineState = engineRef.current.getState();
-    const settings: BattleSettingsData = {
-      version: 1,
-      autoBattle,
-      battleSpeed,
-      waveNumber: engineState.waveNumber,
-      highestWave: engineState.highestWave,
-      gold: engineState.gold,
-    };
-    saveBattleSettings(persistenceAdapter, settings).catch((err) => {
-      console.error('Failed to save settings:', err);
-    });
-  }, [autoBattle, battleSpeed, settingsLoaded]);
+  // Apply loaded settings to engine once both are ready
+  useEffect(() => {
+    if (!settingsLoaded || !engineRef.current) return;
+
+    const settings = getLoadedSettings();
+    if (settings) {
+      engineRef.current.setWave(settings.waveNumber);
+      engineRef.current.setHighestWave(settings.highestWave);
+      engineRef.current.setGold(settings.gold);
+      setState({ ...engineRef.current.getState() });
+    }
+  }, [settingsLoaded, getLoadedSettings]);
 
   // Save settings when relevant values change
   useEffect(() => {
-    if (settingsLoaded) {
-      saveSettings();
+    if (settingsLoaded && engineRef.current) {
+      saveSettingsWithState(state.waveNumber, state.highestWave, state.gold);
     }
   }, [
     autoBattle,
@@ -160,43 +152,31 @@ export function useBattle(): UseBattleReturn {
     state.highestWave,
     state.gold,
     settingsLoaded,
-    saveSettings,
+    saveSettingsWithState,
   ]);
 
-  // Game loop
-  useEffect(() => {
-    if (!state.isRunning) return;
+  // Game loop tick handler
+  const handleTick = useCallback((scaledDelta: number) => {
+    if (engineRef.current) {
+      engineRef.current.tick(scaledDelta);
+      setState({ ...engineRef.current.getState() });
 
-    let lastTime = performance.now();
-    let frameId: number;
-
-    const loop = (currentTime: number) => {
-      const delta = (currentTime - lastTime) / 1000; // Convert to seconds
-      lastTime = currentTime;
-
-      if (engineRef.current) {
-        // Apply battle speed multiplier
-        const scaledDelta = delta * battleSpeedRef.current;
-        engineRef.current.tick(scaledDelta);
-        setState({ ...engineRef.current.getState() });
-
-        // Update stats
-        if (statsRef.current) {
-          statsRef.current.updateDuration(scaledDelta);
-          setStats({ ...statsRef.current.getStats() });
-        }
+      // Update stats
+      if (statsRef.current) {
+        statsRef.current.updateDuration(scaledDelta);
+        setStats({ ...statsRef.current.getStats() });
       }
+    }
+  }, []);
 
-      frameId = requestAnimationFrame(loop);
-    };
+  // Use game loop hook
+  useBattleLoop({
+    isRunning: state.isRunning,
+    battleSpeed,
+    onTick: handleTick,
+  });
 
-    frameId = requestAnimationFrame(loop);
-
-    return () => {
-      cancelAnimationFrame(frameId);
-    };
-  }, [state.isRunning]);
-
+  // Battle control functions
   const start = useCallback(() => {
     if (engineRef.current) {
       engineRef.current.start();
@@ -226,11 +206,9 @@ export function useBattle(): UseBattleReturn {
     }
   }, []);
 
+  // Wave spawning
   const spawnWave = useCallback((arenaWidth: number, arenaHeight: number) => {
     if (!engineRef.current) return;
-
-    // Save arena size for respawning after victory/defeat
-    arenaSizeRef.current = { width: arenaWidth, height: arenaHeight };
 
     const engine = engineRef.current;
     const bounds = {
@@ -250,14 +228,13 @@ export function useBattle(): UseBattleReturn {
     // Spawn castles for both teams
     engine.spawnCastles();
 
-    // Spawn allied army using formation (each spawn creates a full squad)
-    // Note: BattleStats auto-subscribes to new units via world events
+    // Spawn allied army using formation
     const alliedPositions = calculateAlliedSpawnPositions(CLASSIC_FORMATION, bounds);
     for (const spawn of alliedPositions) {
       engine.spawnSquad(spawn.type, 'player', spawn.position, arenaHeight);
     }
 
-    // Spawn enemy army (each spawn creates a full squad)
+    // Spawn enemy army
     const waveNumber = engine.getState().waveNumber;
     const enemyComposition = getEnemyCompositionForWave(waveNumber);
     const enemyPositions = calculateEnemySpawnPositions(enemyComposition, bounds);
@@ -278,6 +255,7 @@ export function useBattle(): UseBattleReturn {
     }
   }, []);
 
+  // Unit movement
   const moveUnit = useCallback((unitId: string, position: Vector2) => {
     if (engineRef.current) {
       engineRef.current.moveUnit(unitId, position);
@@ -294,6 +272,7 @@ export function useBattle(): UseBattleReturn {
     }
   }, []);
 
+  // Selection
   const selectUnit = useCallback((unitId: string | null) => {
     setSelectedUnitIds(unitId ? [unitId] : []);
   }, []);
@@ -302,6 +281,7 @@ export function useBattle(): UseBattleReturn {
     setSelectedUnitIds(unitIds);
   }, []);
 
+  // Wave management
   const setWave = useCallback((wave: number) => {
     if (engineRef.current) {
       engineRef.current.setWave(wave);
@@ -309,14 +289,7 @@ export function useBattle(): UseBattleReturn {
     }
   }, []);
 
-  const setBattleSpeed = useCallback((speed: BattleSpeed) => {
-    setBattleSpeedState(speed);
-  }, []);
-
-  const setAutoBattle = useCallback((enabled: boolean) => {
-    setAutoBattleState(enabled);
-  }, []);
-
+  // Battle outcome handling
   const handleBattleOutcome = useCallback((): BattleOutcomeResult | null => {
     if (!engineRef.current) return null;
     const result = engineRef.current.handleBattleOutcome();

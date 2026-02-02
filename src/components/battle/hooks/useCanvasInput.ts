@@ -8,7 +8,7 @@
  */
 
 import { useState, useRef, useCallback, useEffect, RefObject } from 'react';
-import type { UnitRenderData } from '../../../core/battle';
+import type { ISelectable } from '../../../core/battle';
 import { ZONE_HEIGHT_PERCENT } from '../../../core/battle';
 import { DRAG_BOUNDS_MARGIN } from '../../../core/battle/BattleConfig';
 import { Vector2 } from '../../../core/physics/Vector2';
@@ -33,7 +33,7 @@ import {
 
 export interface UseCanvasInputProps {
   canvasRef: RefObject<HTMLCanvasElement | null>;
-  units: UnitRenderData[];
+  units: ISelectable[];
   selectedUnitIds: string[];
   width: number;
   height: number;
@@ -95,6 +95,55 @@ export function useCanvasInput({
     [canvasRef]
   );
 
+  // Shared logic: Process mouse move for drag or box select
+  const processMoveEvent = useCallback(
+    (pos: Vector2) => {
+      // Handle box selection
+      if (boxSelectSession) {
+        setBoxSelectSession(updateBoxSelect(boxSelectSession, pos));
+        return;
+      }
+
+      // Handle unit dragging
+      if (!isDragging || !dragSessionRef.current) return;
+
+      const session = dragSessionRef.current;
+      const bounds = getDragBounds();
+
+      if (isMultiDrag(session) && onUnitsMove) {
+        const result = calculateDragPositions(session, pos, bounds, units);
+        onUnitsMove(result.moves);
+      } else if (onUnitMove) {
+        const newPos = calculateSingleDragPosition(session, pos, bounds);
+        if (newPos) {
+          onUnitMove(session.anchorUnitId, newPos);
+        }
+      }
+    },
+    [isDragging, boxSelectSession, getDragBounds, units, onUnitMove, onUnitsMove]
+  );
+
+  // Shared logic: Process mouse up for ending drag or finalizing selection
+  const processUpEvent = useCallback(() => {
+    // Finalize box selection
+    if (boxSelectSession) {
+      if (isBoxSelectActive(boxSelectSession)) {
+        // Box was large enough - select units inside
+        const box = getSelectionBox(boxSelectSession);
+        const selectedIds = getUnitsInBox(box, units);
+        onSelectUnits?.(selectedIds);
+      } else {
+        // Box was too small (just a click) - clear selection
+        onSelectUnit?.(null);
+      }
+      setBoxSelectSession(null);
+    }
+
+    // End unit drag
+    setIsDragging(false);
+    dragSessionRef.current = null;
+  }, [boxSelectSession, units, onSelectUnit, onSelectUnits]);
+
   // Input: Mouse down - start selection, drag, or box select
   const handleMouseDown = useCallback(
     (e: React.MouseEvent<HTMLCanvasElement>) => {
@@ -147,105 +196,29 @@ export function useCanvasInput({
     [getMousePos, units, onSelectUnits]
   );
 
-  // Input: Mouse move - handle dragging or box selection
+  // Input: Mouse move - delegates to shared logic
   const handleMouseMove = useCallback(
     (e: React.MouseEvent<HTMLCanvasElement>) => {
-      const pos = getMousePos(e);
-
-      // Handle box selection
-      if (boxSelectSession) {
-        setBoxSelectSession(updateBoxSelect(boxSelectSession, pos));
-        return;
-      }
-
-      // Handle unit dragging
-      if (!isDragging || !dragSessionRef.current) return;
-
-      const session = dragSessionRef.current;
-      const bounds = getDragBounds();
-
-      if (isMultiDrag(session) && onUnitsMove) {
-        const result = calculateDragPositions(session, pos, bounds, units);
-        onUnitsMove(result.moves);
-      } else if (onUnitMove) {
-        const newPos = calculateSingleDragPosition(session, pos, bounds);
-        if (newPos) {
-          onUnitMove(session.anchorUnitId, newPos);
-        }
-      }
+      processMoveEvent(getMousePos(e));
     },
-    [isDragging, boxSelectSession, getMousePos, getDragBounds, units, onUnitMove, onUnitsMove]
+    [getMousePos, processMoveEvent]
   );
 
-  // Input: Mouse up - end drag or finalize box selection
+  // Input: Mouse up - delegates to shared logic
   const handleMouseUp = useCallback(() => {
-    // Finalize box selection
-    if (boxSelectSession) {
-      if (isBoxSelectActive(boxSelectSession)) {
-        // Box was large enough - select units inside
-        const box = getSelectionBox(boxSelectSession);
-        const selectedIds = getUnitsInBox(box, units);
-        onSelectUnits?.(selectedIds);
-      } else {
-        // Box was too small (just a click) - clear selection
-        onSelectUnit?.(null);
-      }
-
-      setBoxSelectSession(null);
-      return;
-    }
-
-    // End unit drag
-    setIsDragging(false);
-    dragSessionRef.current = null;
-  }, [boxSelectSession, units, onSelectUnit, onSelectUnits]);
+    processUpEvent();
+  }, [processUpEvent]);
 
   // Document-level event handlers for capturing mouse events outside canvas
   useEffect(() => {
     if (!isDragging && !boxSelectSession) return;
 
     const handleDocumentMouseMove = (e: MouseEvent) => {
-      const pos = getMousePos(e);
-
-      // Handle box selection
-      if (boxSelectSession) {
-        setBoxSelectSession(updateBoxSelect(boxSelectSession, pos));
-        return;
-      }
-
-      // Handle unit dragging
-      if (!isDragging || !dragSessionRef.current) return;
-
-      const session = dragSessionRef.current;
-      const bounds = getDragBounds();
-
-      if (isMultiDrag(session) && onUnitsMove) {
-        const result = calculateDragPositions(session, pos, bounds, units);
-        onUnitsMove(result.moves);
-      } else if (onUnitMove) {
-        const newPos = calculateSingleDragPosition(session, pos, bounds);
-        if (newPos) {
-          onUnitMove(session.anchorUnitId, newPos);
-        }
-      }
+      processMoveEvent(getMousePos(e));
     };
 
     const handleDocumentMouseUp = () => {
-      // Finalize box selection
-      if (boxSelectSession) {
-        if (isBoxSelectActive(boxSelectSession)) {
-          const box = getSelectionBox(boxSelectSession);
-          const selectedIds = getUnitsInBox(box, units);
-          onSelectUnits?.(selectedIds);
-        } else {
-          onSelectUnit?.(null);
-        }
-        setBoxSelectSession(null);
-      }
-
-      // End unit drag
-      setIsDragging(false);
-      dragSessionRef.current = null;
+      processUpEvent();
     };
 
     // Add document-level listeners
@@ -256,17 +229,7 @@ export function useCanvasInput({
       document.removeEventListener('mousemove', handleDocumentMouseMove);
       document.removeEventListener('mouseup', handleDocumentMouseUp);
     };
-  }, [
-    isDragging,
-    boxSelectSession,
-    getMousePos,
-    getDragBounds,
-    units,
-    onUnitMove,
-    onUnitsMove,
-    onSelectUnit,
-    onSelectUnits,
-  ]);
+  }, [isDragging, boxSelectSession, getMousePos, processMoveEvent, processUpEvent]);
 
   return {
     isDragging,

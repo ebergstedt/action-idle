@@ -15,7 +15,10 @@ import {
   MIN_ARENA_WIDTH,
   MIN_ARENA_HEIGHT,
   ARENA_ASPECT_RATIO,
+  ARENA_SIZE_STABLE_DELAY_MS,
+  AUTO_BATTLE_START_DELAY_MS,
 } from '../../core/battle/BattleConfig';
+import { getUniformSelectionUnit } from '../../core/battle/SelectionManager';
 import { UI_COLORS } from '../../core/theme/colors';
 
 // Parchment theme styles
@@ -75,7 +78,7 @@ export function BattleView() {
         }
         sizeStableTimeoutRef.current = window.setTimeout(() => {
           setIsArenaSizeStable(true);
-        }, 100);
+        }, ARENA_SIZE_STABLE_DELAY_MS);
       }
     };
 
@@ -103,22 +106,8 @@ export function BattleView() {
   }, [isArenaSizeStable, settingsLoaded, arenaSize, state.units.length, spawnWave]);
 
   // Show unit info panel for squad selection (all selected units same type/team)
-  const selectedUnit = (() => {
-    if (selectedUnitIds.length === 0) return null;
-
-    // Get all selected units
-    const selectedUnits = state.units.filter((u) => selectedUnitIds.includes(u.id));
-    if (selectedUnits.length === 0) return null;
-
-    // Check if all selected units are same type and team (squad)
-    const firstUnit = selectedUnits[0];
-    const isSquadSelection = selectedUnits.every(
-      (u) => u.type === firstUnit.type && u.team === firstUnit.team
-    );
-
-    // Show panel for squad selection (same type/team) - use first unit as representative
-    return isSquadSelection ? firstUnit : null;
-  })();
+  // Uses core function to determine if selection is uniform
+  const selectedUnit = getUniformSelectionUnit(selectedUnitIds, state.units);
 
   const handleStartBattle = useCallback(() => {
     start();
@@ -149,7 +138,7 @@ export function BattleView() {
       // Small delay to let the reset/spawn complete
       setTimeout(() => {
         start();
-      }, 100);
+      }, AUTO_BATTLE_START_DELAY_MS);
     }
   }, [handleBattleOutcome, handleReset, autoBattle, start]);
 

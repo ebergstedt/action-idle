@@ -7,6 +7,11 @@
 
 import { useEffect, useState } from 'react';
 import type { BattleOutcome } from '../../core/battle';
+import {
+  OVERLAY_SHOW_DELAY_MS,
+  OVERLAY_STAMP_DELAY_MS,
+  AUTO_BATTLE_COUNTDOWN_SECONDS,
+} from '../../core/battle/BattleConfig';
 import { WAX_SEAL_COLORS, UI_COLORS, hexToRgba } from '../../core/theme/colors';
 
 interface WaxSealOverlayProps {
@@ -16,8 +21,6 @@ interface WaxSealOverlayProps {
   autoBattle?: boolean;
   onDismiss?: () => void;
 }
-
-const AUTO_BATTLE_COUNTDOWN_SECONDS = 3;
 
 export function WaxSealOverlay({
   outcome,
@@ -39,9 +42,9 @@ export function WaxSealOverlay({
         // Stamp animation after overlay fades in
         const stampTimer = setTimeout(() => {
           setIsStamped(true);
-        }, 300);
+        }, OVERLAY_STAMP_DELAY_MS);
         return () => clearTimeout(stampTimer);
-      }, 500);
+      }, OVERLAY_SHOW_DELAY_MS);
       return () => clearTimeout(showTimer);
     } else {
       setIsVisible(false);

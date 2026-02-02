@@ -142,14 +142,29 @@ export function tickModifiers(
 }
 
 /**
+ * Default time provider using Date.now().
+ * Can be replaced for testing or Godot port.
+ */
+export type TimeProvider = () => number;
+export const defaultTimeProvider: TimeProvider = () => Date.now();
+
+/**
  * Creates an active modifier from a modifier definition.
+ *
+ * @param modifier - The modifier definition
+ * @param source - Source type of the modifier
+ * @param sourceId - Unique identifier for the source
+ * @param duration - Optional duration in seconds (undefined = permanent)
+ * @param stacks - Number of stacks (default: 1)
+ * @param timeProvider - Function to get current time (default: Date.now)
  */
 export function createActiveModifier(
   modifier: Modifier,
   source: ActiveModifier['source'],
   sourceId: string,
   duration?: number,
-  stacks: number = 1
+  stacks: number = 1,
+  timeProvider: TimeProvider = defaultTimeProvider
 ): ActiveModifier {
   return {
     modifier,
@@ -157,7 +172,7 @@ export function createActiveModifier(
     sourceId,
     duration,
     stacks,
-    appliedAt: Date.now(),
+    appliedAt: timeProvider(),
   };
 }
 

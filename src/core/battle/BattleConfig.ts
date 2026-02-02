@@ -928,6 +928,35 @@ export const DUST_UPWARD_VELOCITY_RANDOM = 40;
 export const GHOST_HEALTH_SNAP_THRESHOLD = 0.1;
 
 // =============================================================================
+// UI TIMING & ANIMATIONS
+// =============================================================================
+
+/**
+ * Delay before showing the victory/defeat overlay (milliseconds).
+ */
+export const OVERLAY_SHOW_DELAY_MS = 500;
+
+/**
+ * Delay before stamping animation on overlay (milliseconds).
+ */
+export const OVERLAY_STAMP_DELAY_MS = 300;
+
+/**
+ * Delay before auto-battle starts the next battle (milliseconds).
+ */
+export const AUTO_BATTLE_START_DELAY_MS = 100;
+
+/**
+ * Delay before considering arena size stable for spawning (milliseconds).
+ */
+export const ARENA_SIZE_STABLE_DELAY_MS = 100;
+
+/**
+ * Auto-battle countdown duration in seconds.
+ */
+export const AUTO_BATTLE_COUNTDOWN_SECONDS = 3;
+
+// =============================================================================
 // PERSISTENCE & AUTOSAVE
 // =============================================================================
 

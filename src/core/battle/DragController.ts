@@ -15,7 +15,7 @@ import {
   OVERLAP_BASE_PUSH,
   OVERLAP_PUSH_FACTOR,
 } from './BattleConfig';
-import { Unit } from './types';
+import { ISelectable } from './ISelectable';
 
 export interface DragSession {
   /** The unit that was clicked to initiate the drag */
@@ -51,7 +51,7 @@ export function startDrag(
   anchorUnitId: string,
   mousePos: Vector2,
   unitIds: string[],
-  units: Unit[]
+  units: ISelectable[]
 ): DragSession {
   const initialPositions = new Map<string, Vector2>();
 
@@ -82,7 +82,7 @@ export function calculateDragPositions(
   session: DragSession,
   currentMousePos: Vector2,
   bounds: DragBounds,
-  allUnits: Unit[]
+  allUnits: ISelectable[]
 ): DragResult {
   const delta = currentMousePos.subtract(session.startMousePos);
   const moves: Array<{ unitId: string; position: Vector2 }> = [];
@@ -178,7 +178,7 @@ export function calculateSingleDragPosition(
 function resolveOverlaps(
   pos: Vector2,
   size: number,
-  staticUnits: Unit[],
+  staticUnits: ISelectable[],
   maxIterations: number
 ): Vector2 {
   let result = pos;

@@ -22,6 +22,7 @@ export * from './entities';
 export * from './BattleStats';
 
 // Input and interaction (Godot-portable)
+export * from './ISelectable';
 export * from './SelectionManager';
 export * from './DragController';
 export * from './BoxSelectController';
