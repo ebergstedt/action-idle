@@ -89,10 +89,10 @@ export const MAX_FRAME_DELTA = 0.1;
 export const IDLE_DAMAGE_TIMEOUT = 2;
 
 /**
- * Speed increase per timeout period (0.4 = 40% faster).
+ * Speed increase per timeout period (0.5 = 50% faster).
  * Stacks additively until MAX_IDLE_SPEED_BONUS is reached.
  */
-export const IDLE_SPEED_INCREMENT = 0.4;
+export const IDLE_SPEED_INCREMENT = 0.5;
 
 /**
  * Maximum speed bonus from idle speed-up (10.0 = 1000% bonus).
