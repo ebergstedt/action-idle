@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { useBattle, BattleSpeed } from '../../hooks/useBattle';
 import { BattleCanvas } from './BattleCanvas';
 import { WaxSealOverlay } from './WaxSealOverlay';
@@ -45,6 +45,9 @@ export function BattleView() {
     selectUnit,
     selectUnits,
     setBattleSpeed,
+    setWave,
+    handleBattleOutcome,
+    getWaveGoldReward,
   } = useBattle();
 
   const containerRef = useRef<HTMLDivElement>(null);
@@ -112,15 +115,23 @@ export function BattleView() {
   const selectedUnit =
     selectedUnitIds.length === 1 ? state.units.find((u) => u.id === selectedUnitIds[0]) : null;
 
-  const handleStartBattle = () => {
+  const handleStartBattle = useCallback(() => {
     start();
-  };
+  }, [start]);
 
-  const handleReset = () => {
+  const handleReset = useCallback(() => {
     reset();
     // Let the useEffect handle respawning when units.length becomes 0
     hasSpawnedRef.current = false;
-  };
+  }, [reset]);
+
+  // Handle outcome dismiss - delegates to engine for gold/wave logic, then resets
+  const handleOutcomeDismiss = useCallback(() => {
+    // Engine handles all outcome logic (gold award, wave transition)
+    handleBattleOutcome();
+    // Reset and respawn for next battle
+    handleReset();
+  }, [handleBattleOutcome, handleReset]);
 
   return (
     <div className="flex gap-4 h-full">
@@ -140,7 +151,12 @@ export function BattleView() {
           onSelectUnits={selectUnits}
         />
         {/* Victory/Defeat Overlay */}
-        <WaxSealOverlay outcome={state.outcome} onDismiss={handleReset} />
+        <WaxSealOverlay
+          outcome={state.outcome}
+          goldEarned={state.outcome === 'player_victory' ? getWaveGoldReward() : 0}
+          waveNumber={state.waveNumber}
+          onDismiss={handleOutcomeDismiss}
+        />
       </div>
 
       {/* Right side - Info Panel */}
@@ -152,10 +168,14 @@ export function BattleView() {
             isRunning={state.isRunning}
             hasStarted={state.hasStarted}
             battleSpeed={battleSpeed}
+            waveNumber={state.waveNumber}
+            highestWave={state.highestWave}
+            gold={state.gold}
             onStart={handleStartBattle}
             onStop={stop}
             onReset={handleReset}
             onSpeedChange={setBattleSpeed}
+            onWaveChange={setWave}
           />
         )}
       </div>
@@ -386,29 +406,88 @@ interface ControlsPanelProps {
   isRunning: boolean;
   hasStarted: boolean;
   battleSpeed: BattleSpeed;
+  waveNumber: number;
+  highestWave: number;
+  gold: number;
   onStart: () => void;
   onStop: () => void;
   onReset: () => void;
   onSpeedChange: (speed: BattleSpeed) => void;
+  onWaveChange: (wave: number) => void;
 }
 
 function ControlsPanel({
   isRunning,
   hasStarted,
   battleSpeed,
+  waveNumber,
+  highestWave,
+  gold,
   onStart,
   onStop,
   onReset,
   onSpeedChange,
+  onWaveChange,
 }: ControlsPanelProps) {
   const speeds: BattleSpeed[] = [0.5, 1, 2];
 
+  // Format gold with commas
+  const formatGold = (amount: number) => amount.toLocaleString();
+
   return (
     <div className="flex flex-col gap-4" style={styles.text}>
-      <h3 className="text-lg font-bold" style={styles.textDark}>
-        Battle Controls
-      </h3>
+      {/* Gold Display */}
+      <div
+        className="p-3 rounded-lg"
+        style={{ backgroundColor: hexToRgba(UI_COLORS.goldPrimary, 0.2) }}
+      >
+        <div className="flex items-center justify-between">
+          <span className="text-sm font-semibold" style={styles.textFaded}>
+            Gold
+          </span>
+          <span className="text-xl font-bold" style={{ color: UI_COLORS.black }}>
+            {formatGold(gold)}
+          </span>
+        </div>
+      </div>
 
+      {/* Wave Display & Selector */}
+      <div
+        className="p-3 rounded-lg"
+        style={{ backgroundColor: hexToRgba(UI_COLORS.parchmentDark, 0.3) }}
+      >
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-sm font-semibold" style={styles.textFaded}>
+            Wave
+          </span>
+          <span className="text-lg font-bold" style={{ color: UI_COLORS.black }}>
+            {waveNumber}
+          </span>
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => onWaveChange(waveNumber - 1)}
+            disabled={waveNumber <= 1 || hasStarted}
+            className="px-3 py-1 rounded font-bold text-lg disabled:opacity-30"
+            style={styles.buttonSecondary}
+          >
+            -
+          </button>
+          <div className="flex-1 text-center text-sm" style={styles.textFaded}>
+            Best: {highestWave}
+          </div>
+          <button
+            onClick={() => onWaveChange(waveNumber + 1)}
+            disabled={hasStarted}
+            className="px-3 py-1 rounded font-bold text-lg disabled:opacity-30"
+            style={styles.buttonSecondary}
+          >
+            +
+          </button>
+        </div>
+      </div>
+
+      {/* Battle Controls */}
       <div className="flex flex-col gap-2">
         {!isRunning ? (
           <button

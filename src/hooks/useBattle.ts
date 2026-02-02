@@ -4,6 +4,7 @@ import {
   BattleState,
   BattleStats,
   BattleStatistics,
+  BattleOutcomeResult,
   CLASSIC_FORMATION,
   calculateAlliedSpawnPositions,
   calculateEnemySpawnPositions,
@@ -30,6 +31,11 @@ export interface UseBattleReturn {
   selectUnit: (unitId: string | null) => void;
   selectUnits: (unitIds: string[]) => void;
   setBattleSpeed: (speed: BattleSpeed) => void;
+  setWave: (wave: number) => void;
+  /** Handle battle outcome - awards gold, transitions wave. Returns result. */
+  handleBattleOutcome: () => BattleOutcomeResult | null;
+  /** Get gold reward for current wave (display only, doesn't award) */
+  getWaveGoldReward: () => number;
 }
 
 /**
@@ -60,12 +66,15 @@ export function useBattle(): UseBattleReturn {
     isRunning: false,
     hasStarted: false,
     waveNumber: 1,
+    highestWave: 1,
+    gold: 0,
     outcome: 'pending',
   });
   const [stats, setStats] = useState<BattleStatistics>(EMPTY_STATS);
   const [selectedUnitIds, setSelectedUnitIds] = useState<string[]>([]);
   const [battleSpeed, setBattleSpeed] = useState<BattleSpeed>(1);
   const battleSpeedRef = useRef<BattleSpeed>(1);
+  const arenaSizeRef = useRef<{ width: number; height: number } | null>(null);
 
   // Keep ref in sync for use in game loop
   useEffect(() => {
@@ -150,6 +159,9 @@ export function useBattle(): UseBattleReturn {
   const spawnWave = useCallback((arenaWidth: number, arenaHeight: number) => {
     if (!engineRef.current) return;
 
+    // Save arena size for respawning after victory/defeat
+    arenaSizeRef.current = { width: arenaWidth, height: arenaHeight };
+
     const engine = engineRef.current;
     const bounds = {
       width: arenaWidth,
@@ -220,6 +232,25 @@ export function useBattle(): UseBattleReturn {
     setSelectedUnitIds(unitIds);
   }, []);
 
+  const setWave = useCallback((wave: number) => {
+    if (engineRef.current) {
+      engineRef.current.setWave(wave);
+      setState({ ...engineRef.current.getState() });
+    }
+  }, []);
+
+  const handleBattleOutcome = useCallback((): BattleOutcomeResult | null => {
+    if (!engineRef.current) return null;
+    const result = engineRef.current.handleBattleOutcome();
+    setState({ ...engineRef.current.getState() });
+    return result;
+  }, []);
+
+  const getWaveGoldReward = useCallback((): number => {
+    if (!engineRef.current) return 0;
+    return engineRef.current.getWaveGoldReward();
+  }, []);
+
   return {
     state,
     stats,
@@ -234,5 +265,8 @@ export function useBattle(): UseBattleReturn {
     selectUnit,
     selectUnits,
     setBattleSpeed,
+    setWave,
+    handleBattleOutcome,
+    getWaveGoldReward,
   };
 }

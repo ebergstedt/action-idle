@@ -691,3 +691,72 @@ export const SHOCKWAVE_DEBUFF_DAMAGE = -0.3;
  * Duration of shockwave debuff in seconds.
  */
 export const SHOCKWAVE_DEBUFF_DURATION_SECONDS = 15;
+
+// =============================================================================
+// WAVE & ECONOMY SYSTEM
+// =============================================================================
+
+/**
+ * Base gold reward for clearing wave 1.
+ */
+export const BASE_GOLD_PER_WAVE = 10;
+
+/**
+ * Gold scaling per wave level.
+ * Gold = BASE_GOLD_PER_WAVE × (1 + wave × WAVE_GOLD_SCALING)
+ */
+export const WAVE_GOLD_SCALING = 0.1;
+
+/**
+ * Calculate gold reward for clearing a wave.
+ */
+export function calculateWaveGold(waveNumber: number): number {
+  return Math.floor(BASE_GOLD_PER_WAVE * (1 + waveNumber * WAVE_GOLD_SCALING));
+}
+
+/**
+ * Base number of enemy units at wave 1.
+ */
+export const BASE_ENEMY_COUNT = 20;
+
+/**
+ * Additional enemies per wave.
+ */
+export const ENEMIES_PER_WAVE = 2;
+
+/**
+ * Maximum enemy count cap.
+ */
+export const MAX_ENEMY_COUNT = 60;
+
+/**
+ * Calculate enemy count for a wave.
+ */
+export function calculateEnemyCount(waveNumber: number): number {
+  return Math.min(MAX_ENEMY_COUNT, BASE_ENEMY_COUNT + (waveNumber - 1) * ENEMIES_PER_WAVE);
+}
+
+/**
+ * Wave at which knights start appearing in enemy composition.
+ */
+export const KNIGHT_INTRODUCTION_WAVE = 3;
+
+/**
+ * Percentage of knights in composition after introduction (0-1).
+ */
+export const KNIGHT_PERCENTAGE = 0.2;
+
+/**
+ * Percentage of archers in composition (0-1).
+ */
+export const ARCHER_PERCENTAGE = 0.4;
+
+/**
+ * Minimum wave number.
+ */
+export const MIN_WAVE = 1;
+
+/**
+ * Maximum wave number (soft cap for UI).
+ */
+export const MAX_WAVE = 999;

@@ -3,7 +3,7 @@ import { BattleEngine } from './BattleEngine';
 import { UnitRegistry } from './units';
 import { Vector2 } from '../physics/Vector2';
 import { unitDefinitions } from '../../data/units';
-import { REFERENCE_ARENA_HEIGHT } from './BattleConfig';
+import { REFERENCE_ARENA_HEIGHT, calculateWaveGold } from './BattleConfig';
 
 function createTestEngine(): BattleEngine {
   const registry = new UnitRegistry();
@@ -487,5 +487,219 @@ describe('BattleEngine state accessors', () => {
 
     const notFound = engine.getUnitEntity('unit_999');
     expect(notFound).toBeUndefined();
+  });
+});
+
+describe('BattleEngine wave management', () => {
+  it('should start at wave 1', () => {
+    const engine = createTestEngine();
+    expect(engine.getState().waveNumber).toBe(1);
+    expect(engine.getState().highestWave).toBe(1);
+  });
+
+  it('should set wave number', () => {
+    const engine = createTestEngine();
+
+    engine.setWave(5);
+
+    expect(engine.getState().waveNumber).toBe(5);
+    expect(engine.getState().highestWave).toBe(5);
+  });
+
+  it('should track highest wave', () => {
+    const engine = createTestEngine();
+
+    engine.setWave(10);
+    expect(engine.getState().highestWave).toBe(10);
+
+    engine.setWave(5);
+    expect(engine.getState().waveNumber).toBe(5);
+    expect(engine.getState().highestWave).toBe(10); // Highest doesn't decrease
+  });
+
+  it('should clamp wave to minimum 1', () => {
+    const engine = createTestEngine();
+
+    engine.setWave(0);
+    expect(engine.getState().waveNumber).toBe(1);
+
+    engine.setWave(-5);
+    expect(engine.getState().waveNumber).toBe(1);
+  });
+
+  it('should advance to next wave', () => {
+    const engine = createTestEngine();
+
+    engine.nextWave();
+    expect(engine.getState().waveNumber).toBe(2);
+
+    engine.nextWave();
+    expect(engine.getState().waveNumber).toBe(3);
+  });
+
+  it('should go to previous wave', () => {
+    const engine = createTestEngine();
+
+    engine.setWave(5);
+    engine.previousWave();
+    expect(engine.getState().waveNumber).toBe(4);
+  });
+
+  it('should not go below wave 1', () => {
+    const engine = createTestEngine();
+
+    engine.previousWave();
+    expect(engine.getState().waveNumber).toBe(1);
+  });
+});
+
+describe('BattleEngine gold management', () => {
+  it('should start with 0 gold', () => {
+    const engine = createTestEngine();
+    expect(engine.getState().gold).toBe(0);
+  });
+
+  it('should add gold', () => {
+    const engine = createTestEngine();
+
+    engine.addGold(100);
+    expect(engine.getState().gold).toBe(100);
+
+    engine.addGold(50);
+    expect(engine.getState().gold).toBe(150);
+  });
+
+  it('should award wave gold', () => {
+    const engine = createTestEngine();
+
+    const reward = engine.awardWaveGold();
+
+    expect(reward).toBe(calculateWaveGold(1));
+    expect(engine.getState().gold).toBe(reward);
+  });
+
+  it('should get wave gold reward without awarding', () => {
+    const engine = createTestEngine();
+
+    const preview = engine.getWaveGoldReward();
+
+    expect(preview).toBe(calculateWaveGold(1));
+    expect(engine.getState().gold).toBe(0); // Not actually awarded
+  });
+});
+
+describe('BattleEngine handleBattleOutcome', () => {
+  it('should award gold and advance wave on victory', () => {
+    const engine = createTestEngine();
+    engine.setArenaBounds(ARENA_WIDTH, ARENA_HEIGHT);
+
+    // Set up a victory scenario
+    engine.spawnUnit('warrior', 'player', new Vector2(400, 320));
+    engine.spawnUnit('warrior', 'enemy', new Vector2(400, 280));
+
+    const enemyUnit = engine
+      .getWorld()
+      .getUnits()
+      .find((u) => u.team === 'enemy')!;
+    enemyUnit.health = 1;
+
+    engine.start();
+
+    // Tick until victory
+    for (let i = 0; i < 100; i++) {
+      engine.tick(0.1);
+      if (engine.getState().outcome === 'player_victory') break;
+    }
+
+    expect(engine.getState().outcome).toBe('player_victory');
+
+    const result = engine.handleBattleOutcome();
+
+    expect(result.outcome).toBe('player_victory');
+    expect(result.previousWave).toBe(1);
+    expect(result.newWave).toBe(2);
+    expect(result.goldEarned).toBe(calculateWaveGold(1));
+    expect(result.waveChanged).toBe(true);
+    expect(engine.getState().waveNumber).toBe(2);
+    expect(engine.getState().gold).toBe(calculateWaveGold(1));
+  });
+
+  it('should go back one wave on defeat (no gold)', () => {
+    const engine = createTestEngine();
+    engine.setArenaBounds(ARENA_WIDTH, ARENA_HEIGHT);
+
+    // Start at wave 5
+    engine.setWave(5);
+
+    // Set up a defeat scenario
+    engine.spawnUnit('warrior', 'player', new Vector2(400, 320));
+    engine.spawnUnit('warrior', 'enemy', new Vector2(400, 280));
+
+    const playerUnit = engine
+      .getWorld()
+      .getUnits()
+      .find((u) => u.team === 'player')!;
+    playerUnit.health = 1;
+
+    engine.start();
+
+    // Tick until defeat
+    for (let i = 0; i < 100; i++) {
+      engine.tick(0.1);
+      if (engine.getState().outcome === 'enemy_victory') break;
+    }
+
+    expect(engine.getState().outcome).toBe('enemy_victory');
+
+    const result = engine.handleBattleOutcome();
+
+    expect(result.outcome).toBe('enemy_victory');
+    expect(result.previousWave).toBe(5);
+    expect(result.newWave).toBe(4);
+    expect(result.goldEarned).toBe(0);
+    expect(result.waveChanged).toBe(true);
+    expect(engine.getState().waveNumber).toBe(4);
+    expect(engine.getState().gold).toBe(0);
+  });
+
+  it('should stay at wave 1 on defeat (cannot go lower)', () => {
+    const engine = createTestEngine();
+    engine.setArenaBounds(ARENA_WIDTH, ARENA_HEIGHT);
+
+    // Set up a defeat scenario at wave 1
+    engine.spawnUnit('warrior', 'player', new Vector2(400, 320));
+    engine.spawnUnit('warrior', 'enemy', new Vector2(400, 280));
+
+    const playerUnit = engine
+      .getWorld()
+      .getUnits()
+      .find((u) => u.team === 'player')!;
+    playerUnit.health = 1;
+
+    engine.start();
+
+    // Tick until defeat
+    for (let i = 0; i < 100; i++) {
+      engine.tick(0.1);
+      if (engine.getState().outcome === 'enemy_victory') break;
+    }
+
+    const result = engine.handleBattleOutcome();
+
+    expect(result.previousWave).toBe(1);
+    expect(result.newWave).toBe(1);
+    expect(result.waveChanged).toBe(false);
+  });
+
+  it('should stay on same wave on pending (no-op)', () => {
+    const engine = createTestEngine();
+
+    const result = engine.handleBattleOutcome();
+
+    expect(result.outcome).toBe('pending');
+    expect(result.previousWave).toBe(1);
+    expect(result.newWave).toBe(1);
+    expect(result.goldEarned).toBe(0);
+    expect(result.waveChanged).toBe(false);
   });
 });

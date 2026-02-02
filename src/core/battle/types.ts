@@ -162,6 +162,23 @@ export interface ShockwaveRenderData {
 export type BattleOutcome = 'pending' | 'player_victory' | 'enemy_victory' | 'draw';
 
 /**
+ * Result of handling a battle outcome.
+ * Returned by BattleEngine.handleBattleOutcome().
+ */
+export interface BattleOutcomeResult {
+  /** The outcome that was handled */
+  outcome: BattleOutcome;
+  /** Wave number before the transition */
+  previousWave: number;
+  /** Wave number after the transition */
+  newWave: number;
+  /** Gold earned (0 on defeat/draw) */
+  goldEarned: number;
+  /** Whether the wave number changed */
+  waveChanged: boolean;
+}
+
+/**
  * Battle state for React rendering.
  * Contains snapshots of all units and projectiles.
  *
@@ -176,6 +193,8 @@ export interface BattleState {
   isRunning: boolean;
   hasStarted: boolean;
   waveNumber: number;
+  highestWave: number;
+  gold: number;
   outcome: BattleOutcome;
 }
 

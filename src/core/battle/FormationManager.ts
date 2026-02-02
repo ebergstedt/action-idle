@@ -15,6 +15,10 @@ import {
   FORMATION_CENTER_OFFSET,
   ENEMY_SPAWN_MAX_COLS,
   ENEMY_SPAWN_JITTER,
+  calculateEnemyCount,
+  KNIGHT_INTRODUCTION_WAVE,
+  KNIGHT_PERCENTAGE,
+  ARCHER_PERCENTAGE,
 } from './BattleConfig';
 
 export type UnitType = 'warrior' | 'archer' | 'knight';
@@ -176,10 +180,34 @@ export function getDefaultEnemyComposition(): UnitType[] {
 
 /**
  * Scales enemy composition based on wave number.
- * Future: Add more/stronger enemies as waves progress.
+ * - Wave 1-2: Warriors and Archers only
+ * - Wave 3+: Knights introduced
+ * - Enemy count increases each wave
  */
-export function getEnemyCompositionForWave(_waveNumber: number): UnitType[] {
-  // For now, same composition every wave
-  // Future: scale difficulty
-  return getDefaultEnemyComposition();
+export function getEnemyCompositionForWave(waveNumber: number): UnitType[] {
+  const totalEnemies = calculateEnemyCount(waveNumber);
+  const composition: UnitType[] = [];
+
+  // Calculate unit distribution
+  const hasKnights = waveNumber >= KNIGHT_INTRODUCTION_WAVE;
+  const knightCount = hasKnights ? Math.floor(totalEnemies * KNIGHT_PERCENTAGE) : 0;
+  const archerCount = Math.floor(totalEnemies * ARCHER_PERCENTAGE);
+  const warriorCount = totalEnemies - knightCount - archerCount;
+
+  // Add warriors (tanks, front line)
+  for (let i = 0; i < warriorCount; i++) {
+    composition.push('warrior');
+  }
+
+  // Add archers (ranged DPS)
+  for (let i = 0; i < archerCount; i++) {
+    composition.push('archer');
+  }
+
+  // Add knights (bruisers)
+  for (let i = 0; i < knightCount; i++) {
+    composition.push('knight');
+  }
+
+  return composition;
 }

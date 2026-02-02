@@ -27,11 +27,20 @@ import {
   ZONE_CLAMP_MARGIN,
   ZONE_HEIGHT_PERCENT,
   scaleValue,
+  MIN_WAVE,
+  MAX_WAVE,
+  calculateWaveGold,
 } from './BattleConfig';
 import { EntityBounds } from './BoundsEnforcer';
 import { DEFAULT_WALK_ANIMATION } from './animations';
 import { BattleWorld, UnitEntity, UnitData, CastleEntity, CastleData } from './entities';
-import { BattleState, BattleOutcome, getScaledUnitSize, UnitRenderData } from './types';
+import {
+  BattleState,
+  BattleOutcome,
+  BattleOutcomeResult,
+  getScaledUnitSize,
+  UnitRenderData,
+} from './types';
 import { UnitDefinition, UnitTeam } from './units/types';
 import { UnitRegistry } from './units';
 
@@ -47,6 +56,8 @@ export class BattleEngine {
   private isRunning = false;
   private hasStarted = false;
   private waveNumber = 1;
+  private highestWave = 1;
+  private gold = 0;
   private arenaBounds: EntityBounds | null = null;
   private battleOutcome: BattleOutcome = 'pending';
 
@@ -76,6 +87,8 @@ export class BattleEngine {
       isRunning: this.isRunning,
       hasStarted: this.hasStarted,
       waveNumber: this.waveNumber,
+      highestWave: this.highestWave,
+      gold: this.gold,
       outcome: this.battleOutcome,
     };
   }
@@ -103,6 +116,97 @@ export class BattleEngine {
     this.nextUnitId = 1;
     this.nextCastleId = 1;
     this.battleOutcome = 'pending';
+  }
+
+  /**
+   * Set the current wave number.
+   */
+  setWave(wave: number): void {
+    this.waveNumber = Math.max(MIN_WAVE, Math.min(MAX_WAVE, wave));
+    if (this.waveNumber > this.highestWave) {
+      this.highestWave = this.waveNumber;
+    }
+  }
+
+  /**
+   * Advance to the next wave.
+   */
+  nextWave(): void {
+    this.setWave(this.waveNumber + 1);
+  }
+
+  /**
+   * Go back one wave (on defeat).
+   */
+  previousWave(): void {
+    this.setWave(this.waveNumber - 1);
+  }
+
+  /**
+   * Add gold to the player's balance.
+   */
+  addGold(amount: number): void {
+    this.gold += amount;
+  }
+
+  /**
+   * Get current gold balance.
+   */
+  getGold(): number {
+    return this.gold;
+  }
+
+  /**
+   * Award gold for clearing the current wave.
+   */
+  awardWaveGold(): number {
+    const reward = calculateWaveGold(this.waveNumber);
+    this.addGold(reward);
+    return reward;
+  }
+
+  /**
+   * Handle battle outcome - awards gold, adjusts wave, returns result.
+   * Call this when player dismisses the victory/defeat overlay.
+   *
+   * This is the single source of truth for outcome logic.
+   * React layer should only call this and display the result.
+   */
+  handleBattleOutcome(): BattleOutcomeResult {
+    const outcome = this.battleOutcome;
+    const previousWave = this.waveNumber;
+    let goldEarned = 0;
+    let newWave = this.waveNumber;
+
+    if (outcome === 'player_victory') {
+      // Award gold for clearing this wave
+      goldEarned = this.awardWaveGold();
+      // Advance to next wave
+      this.nextWave();
+      newWave = this.waveNumber;
+    } else if (outcome === 'enemy_victory') {
+      // No gold on defeat
+      // Go back one wave (minimum 1)
+      this.previousWave();
+      newWave = this.waveNumber;
+    }
+    // Draw: no gold, stay on same wave
+
+    return {
+      outcome,
+      previousWave,
+      newWave,
+      goldEarned,
+      waveChanged: previousWave !== newWave,
+    };
+  }
+
+  /**
+   * Get the gold reward for the current wave (for display purposes).
+   * Does not actually award the gold.
+   */
+  getWaveGoldReward(): number {
+    return calculateWaveGold(this.waveNumber);
   }
 
   /**

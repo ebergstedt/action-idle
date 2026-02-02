@@ -11,10 +11,17 @@ import { WAX_SEAL_COLORS, UI_COLORS } from '../../core/theme/colors';
 
 interface WaxSealOverlayProps {
   outcome: BattleOutcome;
+  goldEarned?: number;
+  waveNumber?: number;
   onDismiss?: () => void;
 }
 
-export function WaxSealOverlay({ outcome, onDismiss }: WaxSealOverlayProps) {
+export function WaxSealOverlay({
+  outcome,
+  goldEarned,
+  waveNumber,
+  onDismiss,
+}: WaxSealOverlayProps) {
   const [isVisible, setIsVisible] = useState(false);
   const [isStamped, setIsStamped] = useState(false);
 
@@ -57,6 +64,15 @@ export function WaxSealOverlay({ outcome, onDismiss }: WaxSealOverlayProps) {
       : outcome === 'enemy_victory'
         ? 'Your forces have fallen...'
         : 'Both armies have been destroyed.';
+
+  const waveInfo =
+    outcome === 'player_victory'
+      ? `Advancing to Wave ${(waveNumber ?? 0) + 1}`
+      : outcome === 'enemy_victory'
+        ? waveNumber && waveNumber > 1
+          ? `Retreating to Wave ${waveNumber - 1}`
+          : 'Defending Wave 1'
+        : '';
 
   return (
     <div
@@ -115,6 +131,33 @@ export function WaxSealOverlay({ outcome, onDismiss }: WaxSealOverlayProps) {
         >
           {subtitle}
         </p>
+
+        {/* Gold earned (victory only) */}
+        {outcome === 'player_victory' && goldEarned !== undefined && goldEarned > 0 && (
+          <div
+            className="flex items-center gap-2 px-4 py-2 rounded"
+            style={{
+              backgroundColor: 'rgba(218, 165, 32, 0.2)',
+            }}
+          >
+            <span className="text-xl font-bold" style={{ color: UI_COLORS.inkBlack }}>
+              +{goldEarned.toLocaleString()} Gold
+            </span>
+          </div>
+        )}
+
+        {/* Wave transition info */}
+        {waveInfo && (
+          <p
+            className="text-sm"
+            style={{
+              color: UI_COLORS.inkBrown,
+              fontWeight: 'bold',
+            }}
+          >
+            {waveInfo}
+          </p>
+        )}
 
         {/* Click to continue hint */}
         <p
