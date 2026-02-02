@@ -87,9 +87,20 @@ export class ProjectileEntity extends BaseEntity {
   override update(delta: number): void {
     if (this._destroyed) return;
 
+    const distToTarget = this.position.distanceTo(this.target);
+    const moveAmount = this.speed * delta;
+
+    // Check if we'll reach target this frame (prevents overshooting)
+    if (distToTarget <= moveAmount + PROJECTILE_HIT_RADIUS) {
+      // Move to target position and trigger hit
+      this.position = this.target.clone();
+      this.onReachTarget();
+      return;
+    }
+
     // Move toward target
     const direction = this.target.subtract(this.position).normalize();
-    const movement = direction.multiply(this.speed * delta);
+    const movement = direction.multiply(moveAmount);
     this.position = this.position.add(movement);
 
     // Check if out of bounds
@@ -100,12 +111,6 @@ export class ProjectileEntity extends BaseEntity {
         this.markDestroyed();
         return;
       }
-    }
-
-    // Check if reached target
-    const distToTarget = this.position.distanceTo(this.target);
-    if (distToTarget < PROJECTILE_HIT_RADIUS) {
-      this.onReachTarget();
     }
   }
 

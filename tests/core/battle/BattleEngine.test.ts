@@ -254,6 +254,77 @@ describe('BattleEngine castle spawning', () => {
 });
 
 describe('BattleEngine combat', () => {
+  it('should have correct hound stats', () => {
+    const engine = createTestEngine();
+    engine.setArenaBounds(ARENA_WIDTH, ARENA_HEIGHT);
+
+    engine.spawnUnit('hound', 'player', new Vector2(400, 320));
+    const world = engine.getWorld();
+    const unit = world.getUnits()[0];
+
+    // Verify hound has ranged attack, not melee
+    expect(unit.stats.melee).toBeNull();
+    expect(unit.stats.ranged).not.toBeNull();
+    expect(unit.stats.ranged!.range).toBe(70);
+    expect(unit.stats.ranged!.damage).toBe(247);
+  });
+
+  it('should acquire target and fire projectile', () => {
+    const engine = createTestEngine();
+    engine.setArenaBounds(ARENA_WIDTH, ARENA_HEIGHT);
+
+    engine.spawnUnit('hound', 'player', new Vector2(400, 320));
+    engine.spawnUnit('hound', 'enemy', new Vector2(400, 280));
+
+    const world = engine.getWorld();
+    const playerUnit = world.getUnits().find((u) => u.team === 'player')!;
+
+    // Before start, no target
+    expect(playerUnit.target).toBeNull();
+
+    engine.start();
+    engine.tick(0.1);
+
+    // After one tick, should have a target
+    expect(playerUnit.target).not.toBeNull();
+
+    // Projectile should have been spawned
+    const projectiles = world.getProjectiles();
+    expect(projectiles.length).toBeGreaterThan(0);
+  });
+
+  it('should have projectile reach target and deal damage', () => {
+    const engine = createTestEngine();
+    engine.setArenaBounds(ARENA_WIDTH, ARENA_HEIGHT);
+
+    engine.spawnUnit('hound', 'player', new Vector2(400, 320));
+    engine.spawnUnit('hound', 'enemy', new Vector2(400, 280));
+
+    const world = engine.getWorld();
+    const enemyUnit = world.getUnits().find((u) => u.team === 'enemy')!;
+    const initialHealth = enemyUnit.health;
+
+    engine.start();
+    engine.tick(0.1); // Fire projectile
+
+    // Verify projectile was created
+    let projectiles = world.getProjectiles();
+    expect(projectiles.length).toBeGreaterThan(0);
+
+    // Tick until projectile reaches target (distance is 40px, speed is 300px/s)
+    // Should take about 0.13 seconds
+    for (let i = 0; i < 10; i++) {
+      engine.tick(0.05);
+      projectiles = world.getProjectiles();
+    }
+
+    // Projectile should have been destroyed after hitting
+    expect(world.getProjectiles().length).toBe(0);
+
+    // Enemy should have taken damage
+    expect(enemyUnit.health).toBeLessThan(initialHealth);
+  });
+
   it('should deal damage when units attack', () => {
     const engine = createTestEngine();
     engine.setArenaBounds(ARENA_WIDTH, ARENA_HEIGHT);
@@ -293,8 +364,8 @@ describe('BattleEngine combat', () => {
 
     engine.start();
 
-    // Tick until unit dies
-    for (let i = 0; i < 100; i++) {
+    // Tick until unit dies (ranged attacks need more time for projectile travel)
+    for (let i = 0; i < 300; i++) {
       engine.tick(0.1);
       if (world.getEnemyUnits().length === 0) break;
     }
@@ -321,8 +392,8 @@ describe('BattleEngine battle outcome', () => {
 
     engine.start();
 
-    // Tick until battle ends
-    for (let i = 0; i < 100; i++) {
+    // Tick until battle ends (ranged attacks need more time for projectile travel)
+    for (let i = 0; i < 300; i++) {
       engine.tick(0.1);
       if (!engine.getState().isRunning) break;
     }
@@ -346,8 +417,8 @@ describe('BattleEngine battle outcome', () => {
 
     engine.start();
 
-    // Tick until battle ends
-    for (let i = 0; i < 100; i++) {
+    // Tick until battle ends (ranged attacks need more time for projectile travel)
+    for (let i = 0; i < 300; i++) {
       engine.tick(0.1);
       if (!engine.getState().isRunning) break;
     }
@@ -373,8 +444,8 @@ describe('BattleEngine battle outcome', () => {
 
     engine.start();
 
-    // Tick until battle ends
-    for (let i = 0; i < 100; i++) {
+    // Tick until battle ends (ranged attacks need more time for projectile travel)
+    for (let i = 0; i < 300; i++) {
       engine.tick(0.1);
       if (!engine.getState().isRunning) break;
     }
@@ -605,8 +676,8 @@ describe('BattleEngine handleBattleOutcome', () => {
 
     engine.start();
 
-    // Tick until victory
-    for (let i = 0; i < 100; i++) {
+    // Tick until victory (ranged attacks need more time for projectile travel)
+    for (let i = 0; i < 300; i++) {
       engine.tick(0.1);
       if (engine.getState().outcome === 'player_victory') break;
     }
@@ -643,8 +714,8 @@ describe('BattleEngine handleBattleOutcome', () => {
 
     engine.start();
 
-    // Tick until defeat
-    for (let i = 0; i < 100; i++) {
+    // Tick until defeat (ranged attacks need more time for projectile travel)
+    for (let i = 0; i < 300; i++) {
       engine.tick(0.1);
       if (engine.getState().outcome === 'enemy_victory') break;
     }
@@ -678,8 +749,8 @@ describe('BattleEngine handleBattleOutcome', () => {
 
     engine.start();
 
-    // Tick until defeat
-    for (let i = 0; i < 100; i++) {
+    // Tick until defeat (ranged attacks need more time for projectile travel)
+    for (let i = 0; i < 300; i++) {
       engine.tick(0.1);
       if (engine.getState().outcome === 'enemy_victory') break;
     }

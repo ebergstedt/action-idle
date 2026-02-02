@@ -1,8 +1,8 @@
 {
   "id": "hound",
   "name": "Hound",
-  "description": "Shotgun-style melee unit. Powerful AoE attacks at close range.",
-  "category": "infantry",
+  "description": "Ranged shotgun unit. Fast with splash damage at medium range.",
+  "category": "ranged",
   "tier": 1,
   "formationRole": "front",
   "wavePermit": 1,
@@ -17,13 +17,13 @@
     "armor": 0,
     "attackInterval": 2.4,
     "squadSize": 5,
-    "melee": {
+    "melee": null,
+    "ranged": {
       "damage": 247,
       "attackSpeed": 0.42,
-      "range": 15,
+      "range": 70,
       "splashRadius": 6
-    },
-    "ranged": null
+    }
   },
   "visuals": {
     "shape": "square",
