@@ -71,6 +71,17 @@ export function BattleView() {
     setZoomResetKey((prev) => prev + 1);
   }, [reset]);
 
+  // Handle wave change - updates wave and respawns units with new formation
+  const handleWaveChange = useCallback(
+    (wave: number) => {
+      setWave(wave);
+      reset();
+      hasSpawnedRef.current = false;
+      // No zoom reset needed - just changing formation
+    },
+    [setWave, reset]
+  );
+
   // Handle outcome dismiss - delegates to hook for outcome processing and auto-battle flow
   const handleOutcomeDismiss = useCallback(() => {
     handleOutcomeAndContinue(() => {
@@ -130,7 +141,7 @@ export function BattleView() {
             onStop={stop}
             onReset={handleReset}
             onSpeedChange={setBattleSpeed}
-            onWaveChange={setWave}
+            onWaveChange={handleWaveChange}
             onAutoBattleToggle={toggleAutoBattle}
           />
         )}

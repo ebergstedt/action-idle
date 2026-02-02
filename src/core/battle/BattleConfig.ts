@@ -530,13 +530,23 @@ export const ENEMY_SPAWN_JITTER = 0.6;
  * Jitter factor for deterministic enemy formation X positions.
  * Applied as a fraction of unit spacing.
  */
-export const FORMATION_JITTER_X = 0.4;
+export const FORMATION_JITTER_X = 0.15;
 
 /**
  * Jitter factor for deterministic enemy formation Y positions.
  * Applied as a fraction of row height within the zone.
  */
-export const FORMATION_JITTER_Y = 0.4;
+export const FORMATION_JITTER_Y = 0.15;
+
+/**
+ * Maximum units per row before creating additional rows.
+ */
+export const FORMATION_MAX_UNITS_PER_ROW = 6;
+
+/**
+ * Row spacing as fraction of available height for multi-row formations.
+ */
+export const FORMATION_ROW_SPACING = 0.12;
 
 // =============================================================================
 // OVERLAP RESOLUTION
