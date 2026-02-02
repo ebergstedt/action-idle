@@ -8,6 +8,7 @@ import {
   canAffordUpgrade,
 } from './Formulas';
 import { IGameEngine } from './IGameEngine';
+import { ILogger, nullLogger } from '../logging';
 
 /**
  * The core game engine.
@@ -19,10 +20,22 @@ import { IGameEngine } from './IGameEngine';
 export class GameEngine implements IGameEngine {
   private state: GameState;
   private upgrades: UpgradeDefinition[];
+  private logger: ILogger;
 
-  constructor(upgrades: UpgradeDefinition[], initialState?: GameState) {
+  /**
+   * Create a GameEngine.
+   * @param upgrades - Upgrade definitions
+   * @param initialState - Optional initial game state
+   * @param logger - Optional logger for diagnostics (defaults to silent)
+   */
+  constructor(
+    upgrades: UpgradeDefinition[],
+    initialState?: GameState,
+    logger: ILogger = nullLogger
+  ) {
     this.upgrades = upgrades;
     this.state = initialState ?? this.createInitialState();
+    this.logger = logger;
   }
 
   /**
@@ -65,7 +78,7 @@ export class GameEngine implements IGameEngine {
   purchaseUpgrade(upgradeId: string): boolean {
     const upgrade = this.upgrades.find((u) => u.id === upgradeId);
     if (!upgrade) {
-      console.warn(`Upgrade not found: ${upgradeId}`);
+      this.logger.warn(`Upgrade not found: ${upgradeId}`);
       return false;
     }
 

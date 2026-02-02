@@ -11,6 +11,12 @@ import {
   OVERLAY_SHOW_DELAY_MS,
   OVERLAY_STAMP_DELAY_MS,
   AUTO_BATTLE_COUNTDOWN_SECONDS,
+  WAX_SEAL_SVG_SIZE,
+  WAX_SEAL_PRESTAMP_SCALE,
+  WAX_SEAL_PRESTAMP_ROTATION,
+  WAX_SEAL_PANEL_PRESTAMP_SCALE,
+  WAX_SEAL_STAMP_DURATION,
+  WAX_SEAL_PANEL_DURATION,
 } from '../../core/battle/BattleConfig';
 import { WAX_SEAL_COLORS, UI_COLORS, hexToRgba } from '../../core/theme/colors';
 
@@ -134,9 +140,9 @@ export function WaxSealOverlay({
           backgroundColor: UI_COLORS.parchmentBase,
           border: `4px solid ${UI_COLORS.inkBrown}`,
           boxShadow: `0 10px 40px ${hexToRgba(UI_COLORS.black, 0.5)}`,
-          transform: isStamped ? 'scale(1)' : 'scale(0.8)',
+          transform: isStamped ? 'scale(1)' : `scale(${WAX_SEAL_PANEL_PRESTAMP_SCALE})`,
           opacity: isStamped ? 1 : 0,
-          transition: 'transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease-out',
+          transition: `transform ${WAX_SEAL_PANEL_DURATION}s cubic-bezier(0.34, 1.56, 0.64, 1), opacity ${WAX_SEAL_PANEL_DURATION}s ease-out`,
         }}
         onClick={(e) => e.stopPropagation()}
       >
@@ -144,8 +150,10 @@ export function WaxSealOverlay({
         <div
           className="relative"
           style={{
-            transform: isStamped ? 'scale(1) rotate(0deg)' : 'scale(1.5) rotate(-15deg)',
-            transition: 'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)',
+            transform: isStamped
+              ? 'scale(1) rotate(0deg)'
+              : `scale(${WAX_SEAL_PRESTAMP_SCALE}) rotate(${WAX_SEAL_PRESTAMP_ROTATION}deg)`,
+            transition: `transform ${WAX_SEAL_STAMP_DURATION}s cubic-bezier(0.34, 1.56, 0.64, 1)`,
           }}
         >
           <WaxSeal colors={sealColors} symbol={outcome === 'player_victory' ? 'crown' : 'skull'} />
@@ -228,10 +236,8 @@ interface WaxSealProps {
 }
 
 function WaxSeal({ colors, symbol }: WaxSealProps) {
-  const size = 120;
-
   return (
-    <svg width={size} height={size} viewBox="0 0 100 100">
+    <svg width={WAX_SEAL_SVG_SIZE} height={WAX_SEAL_SVG_SIZE} viewBox="0 0 100 100">
       {/* Outer drip effect */}
       <defs>
         <filter id="waxShadow" x="-20%" y="-20%" width="140%" height="140%">

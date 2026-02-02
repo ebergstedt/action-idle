@@ -8,6 +8,7 @@
  */
 
 import type { IPersistenceAdapter } from '../persistence/IPersistenceAdapter';
+import { ILogger, nullLogger } from '../logging';
 
 const SETTINGS_KEY = 'battle_settings';
 const SETTINGS_VERSION = 1;
@@ -46,8 +47,13 @@ export function serializeBattleSettings(settings: BattleSettingsData): string {
 /**
  * Deserialize settings from JSON string.
  * Returns default settings if parsing fails or version mismatch.
+ * @param data - JSON string to parse
+ * @param logger - Optional logger for parse errors (defaults to silent)
  */
-export function deserializeBattleSettings(data: string | null): BattleSettingsData {
+export function deserializeBattleSettings(
+  data: string | null,
+  logger: ILogger = nullLogger
+): BattleSettingsData {
   if (!data) return { ...DEFAULT_BATTLE_SETTINGS };
 
   try {
@@ -75,7 +81,7 @@ export function deserializeBattleSettings(data: string | null): BattleSettingsDa
       gold: typeof parsed.gold === 'number' ? parsed.gold : DEFAULT_BATTLE_SETTINGS.gold,
     };
   } catch {
-    console.warn('Failed to parse battle settings, using defaults');
+    logger.warn('Failed to parse battle settings, using defaults');
     return { ...DEFAULT_BATTLE_SETTINGS };
   }
 }
@@ -93,10 +99,13 @@ export async function saveBattleSettings(
 
 /**
  * Load battle settings using a persistence adapter.
+ * @param adapter - Persistence adapter for loading
+ * @param logger - Optional logger for parse errors
  */
 export async function loadBattleSettings(
-  adapter: IPersistenceAdapter
+  adapter: IPersistenceAdapter,
+  logger?: ILogger
 ): Promise<BattleSettingsData> {
   const data = await adapter.load(SETTINGS_KEY);
-  return deserializeBattleSettings(data);
+  return deserializeBattleSettings(data, logger);
 }

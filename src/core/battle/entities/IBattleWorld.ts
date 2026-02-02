@@ -55,4 +55,7 @@ export interface IBattleWorld extends IEntityWorld {
 
   // Bounds
   getArenaBounds(): EntityBounds | null;
+
+  // ID generation
+  getNextModifierId(): number;
 }

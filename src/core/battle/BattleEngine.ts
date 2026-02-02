@@ -64,9 +64,14 @@ export class BattleEngine {
   private arenaBounds: EntityBounds | null = null;
   private battleOutcome: BattleOutcome = 'pending';
 
-  constructor(registry: UnitRegistry) {
+  /**
+   * Create a new BattleEngine.
+   * @param registry - Unit registry for spawning units
+   * @param world - Optional BattleWorld instance for dependency injection (testing)
+   */
+  constructor(registry: UnitRegistry, world?: BattleWorld) {
     this.registry = registry;
-    this.world = new BattleWorld();
+    this.world = world ?? new BattleWorld();
   }
 
   /**

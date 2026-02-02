@@ -44,8 +44,6 @@ export interface ShockwaveData {
   color: string;
 }
 
-let nextModifierId = 1;
-
 /**
  * Shockwave entity - expanding ring that debuffs enemies.
  */
@@ -149,9 +147,13 @@ export class ShockwaveEntity extends BaseEntity {
    * The debuff sourceTeam is the attacking team (opposite of the destroyed castle's team).
    */
   private applyDebuffToUnit(unit: UnitEntity): void {
+    const world = this.getBattleWorld();
+    if (!world) return;
+
     const attackingTeam = getOppositeTeam(this.sourceTeam);
+    const modifierId = world.getNextModifierId();
     const modifier: TemporaryModifier = {
-      id: `shockwave_debuff_${nextModifierId++}`,
+      id: `shockwave_debuff_${modifierId}`,
       sourceId: 'castle_death_shockwave',
       sourceTeam: attackingTeam, // The attacking team caused this debuff
       moveSpeedMod: SHOCKWAVE_DEBUFF_MOVE_SPEED,

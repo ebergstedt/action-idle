@@ -16,6 +16,10 @@ import {
   MIN_ARENA_HEIGHT,
   ARENA_ASPECT_RATIO,
   ARENA_SIZE_STABLE_DELAY_MS,
+  DEFAULT_ARENA_WIDTH,
+  DEFAULT_ARENA_HEIGHT,
+  ARENA_CONTAINER_PADDING_V,
+  ARENA_CONTAINER_PADDING_H,
 } from '../../core/battle/BattleConfig';
 import { getUniformSelectionUnit } from '../../core/battle/SelectionManager';
 import { UI_COLORS } from '../../core/theme/colors';
@@ -48,7 +52,10 @@ export function BattleView() {
   } = useBattle();
 
   const containerRef = useRef<HTMLDivElement>(null);
-  const [arenaSize, setArenaSize] = useState({ width: 600, height: 600 });
+  const [arenaSize, setArenaSize] = useState({
+    width: DEFAULT_ARENA_WIDTH,
+    height: DEFAULT_ARENA_HEIGHT,
+  });
 
   const [isArenaSizeStable, setIsArenaSizeStable] = useState(false);
   const hasSpawnedRef = useRef(false);
@@ -60,8 +67,8 @@ export function BattleView() {
       if (containerRef.current) {
         const container = containerRef.current;
         const rect = container.getBoundingClientRect();
-        const availableHeight = rect.height - 10;
-        const availableWidth = rect.width - 20;
+        const availableHeight = rect.height - ARENA_CONTAINER_PADDING_V;
+        const availableWidth = rect.width - ARENA_CONTAINER_PADDING_H;
 
         const width = Math.max(MIN_ARENA_WIDTH, availableWidth);
         const height = Math.max(

@@ -1,6 +1,7 @@
 import { IPersistenceAdapter } from './IPersistenceAdapter';
 import { GameState, SerializedGameState, SAVE_VERSION } from '../types/GameState';
 import { deserializeDecimal, serializeDecimal } from '../utils/BigNumber';
+import { ILogger, nullLogger } from '../logging';
 
 const SAVE_KEY = 'action_idle_save';
 
@@ -10,9 +11,16 @@ const SAVE_KEY = 'action_idle_save';
  */
 export class SaveManager {
   private adapter: IPersistenceAdapter;
+  private logger: ILogger;
 
-  constructor(adapter: IPersistenceAdapter) {
+  /**
+   * Create a SaveManager.
+   * @param adapter - Persistence adapter for save/load operations
+   * @param logger - Optional logger for diagnostics (defaults to silent)
+   */
+  constructor(adapter: IPersistenceAdapter, logger: ILogger = nullLogger) {
     this.adapter = adapter;
+    this.logger = logger;
   }
 
   /**
@@ -45,7 +53,7 @@ export class SaveManager {
 
       // Handle save version migrations here if needed
       if (parsed.version !== SAVE_VERSION) {
-        console.warn(`Save version mismatch: expected ${SAVE_VERSION}, got ${parsed.version}`);
+        this.logger.warn(`Save version mismatch: expected ${SAVE_VERSION}, got ${parsed.version}`);
         // Future: add migration logic
       }
 
@@ -56,7 +64,7 @@ export class SaveManager {
         lastTick: parsed.lastTick,
       };
     } catch (error) {
-      console.error('Failed to parse save data:', error);
+      this.logger.error('Failed to parse save data:', error);
       return null;
     }
   }

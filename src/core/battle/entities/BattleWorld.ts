@@ -53,6 +53,7 @@ export class BattleWorld implements IEntityWorld, IBattleWorld, IWorldEventEmitt
   private nextProjectileId = 1;
   private nextShockwaveId = 1;
   private nextDamageNumberId = 1;
+  private nextModifierId = 1;
   private arenaBounds: EntityBounds | null = null;
   private worldEvents = new WorldEventEmitter();
   /** Track initial castle counts per team to detect when castles are destroyed */
@@ -224,6 +225,7 @@ export class BattleWorld implements IEntityWorld, IBattleWorld, IWorldEventEmitt
     this.nextProjectileId = 1;
     this.nextShockwaveId = 1;
     this.nextDamageNumberId = 1;
+    this.nextModifierId = 1;
     this.initialCastleCounts.clear();
   }
 
@@ -547,6 +549,18 @@ export class BattleWorld implements IEntityWorld, IBattleWorld, IWorldEventEmitt
     }
 
     return { over: false, winner: null };
+  }
+
+  // === IWorldEventEmitter Implementation ===
+
+  // === ID Generation ===
+
+  /**
+   * Generate a unique modifier ID.
+   * Used by ShockwaveEntity for shockwave debuffs.
+   */
+  getNextModifierId(): number {
+    return this.nextModifierId++;
   }
 
   // === IWorldEventEmitter Implementation ===

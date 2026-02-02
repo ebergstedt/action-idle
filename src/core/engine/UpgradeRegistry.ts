@@ -8,6 +8,7 @@
  */
 
 import { UpgradeDefinition } from '../types/Upgrade';
+import { ILogger, nullLogger } from '../logging';
 
 /**
  * Registry for upgrade definitions.
@@ -16,6 +17,15 @@ import { UpgradeDefinition } from '../types/Upgrade';
 export class UpgradeRegistry {
   private upgrades: Map<string, UpgradeDefinition> = new Map();
   private upgradeList: UpgradeDefinition[] = [];
+  private logger: ILogger;
+
+  /**
+   * Create an UpgradeRegistry.
+   * @param logger - Optional logger for diagnostics (defaults to silent)
+   */
+  constructor(logger: ILogger = nullLogger) {
+    this.logger = logger;
+  }
 
   /**
    * Register upgrade definitions.
@@ -26,7 +36,7 @@ export class UpgradeRegistry {
   register(definitions: UpgradeDefinition[]): void {
     for (const def of definitions) {
       if (this.upgrades.has(def.id)) {
-        console.warn(`Duplicate upgrade ID: ${def.id}`);
+        this.logger.warn(`Duplicate upgrade ID: ${def.id}`);
       }
       this.upgrades.set(def.id, def);
     }
@@ -75,9 +85,14 @@ export class UpgradeRegistry {
 /**
  * Create and initialize an upgrade registry from JSON data.
  * Convenience function for common use case.
+ * @param definitions - Upgrade definitions to register
+ * @param logger - Optional logger for diagnostics
  */
-export function createUpgradeRegistry(definitions: UpgradeDefinition[]): UpgradeRegistry {
-  const registry = new UpgradeRegistry();
+export function createUpgradeRegistry(
+  definitions: UpgradeDefinition[],
+  logger?: ILogger
+): UpgradeRegistry {
+  const registry = new UpgradeRegistry(logger);
   registry.register(definitions);
   return registry;
 }

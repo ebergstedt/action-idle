@@ -982,3 +982,61 @@ export const MAX_OFFLINE_TIME_SECONDS = 3600;
 export function calculateDPS(damage: number, attackSpeed: number): number {
   return damage * attackSpeed;
 }
+
+// =============================================================================
+// WAX SEAL OVERLAY
+// =============================================================================
+
+/**
+ * Size of the wax seal SVG in pixels.
+ */
+export const WAX_SEAL_SVG_SIZE = 120;
+
+/**
+ * Scale when wax seal is in "pre-stamp" state (before animation).
+ */
+export const WAX_SEAL_PRESTAMP_SCALE = 1.5;
+
+/**
+ * Rotation when wax seal is in "pre-stamp" state (degrees).
+ */
+export const WAX_SEAL_PRESTAMP_ROTATION = -15;
+
+/**
+ * Panel scale when in "pre-stamp" state.
+ */
+export const WAX_SEAL_PANEL_PRESTAMP_SCALE = 0.8;
+
+/**
+ * Stamp animation duration (seconds).
+ */
+export const WAX_SEAL_STAMP_DURATION = 0.4;
+
+/**
+ * Panel animation duration (seconds).
+ */
+export const WAX_SEAL_PANEL_DURATION = 0.3;
+
+// =============================================================================
+// BATTLE VIEW LAYOUT
+// =============================================================================
+
+/**
+ * Default arena width before ResizeObserver updates it.
+ */
+export const DEFAULT_ARENA_WIDTH = 600;
+
+/**
+ * Default arena height before ResizeObserver updates it.
+ */
+export const DEFAULT_ARENA_HEIGHT = 600;
+
+/**
+ * Vertical padding subtracted from container height for arena sizing.
+ */
+export const ARENA_CONTAINER_PADDING_V = 10;
+
+/**
+ * Horizontal padding subtracted from container width for arena sizing.
+ */
+export const ARENA_CONTAINER_PADDING_H = 20;
