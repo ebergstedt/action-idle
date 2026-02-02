@@ -39,14 +39,18 @@ Current focus: **Battle System** - unit spawning, formations, combat mechanics.
 │   ├── battle/             # 🟢 BattleView, BattleCanvas
 │   ├── ui/                 # 🟡 StatsDisplay, UpgradeShop
 │   └── App.tsx
-├── data/
-│   ├── upgrades.json       # 🟡 Upgrade definitions (economy - dormant)
-│   ├── units/              # 🟢 Unit definitions (warrior, archer, knight)
-│   ├── abilities/          # 🟢 Ability definitions (triggers, effects)
-│   ├── battle-upgrades/    # 🟢 Battle upgrade definitions (stat mods)
-│   └── battle/             # 🟢 Battle data initializer
-└── test/
-    └── setup.ts            # Vitest setup (jest-dom matchers)
+└── data/
+    ├── upgrades.json       # 🟡 Upgrade definitions (economy - dormant)
+    ├── units/              # 🟢 Unit definitions (warrior, archer, knight)
+    ├── abilities/          # 🟢 Ability definitions (triggers, effects)
+    ├── battle-upgrades/    # 🟢 Battle upgrade definitions (stat mods)
+    └── battle/             # 🟢 Battle data initializer
+/tests                       # Centralized test folder (mirrors src structure)
+├── setup.ts                # Vitest setup (jest-dom matchers)
+└── core/                   # Tests for /src/core/ modules
+    ├── battle/             # BattleEngine, units, modifiers tests
+    ├── engine/             # GameEngine, Formulas tests
+    └── utils/              # BigNumber tests
 ```
 
 🟢 = Active development | 🟡 = Dormant (future use)
@@ -520,15 +524,15 @@ docker compose build     # Rebuild after dependency changes
 
 Tests use **Vitest** with `jsdom` environment for React components.
 
-- Test files: `*.test.ts` or `*.test.tsx` in `src/`
-- Core tests (`src/core/**/*.test.ts`) are pure TypeScript with no React dependencies
+- Test files live in `/tests/` folder, mirroring `/src/` structure
+- Core tests (`tests/core/**/*.test.ts`) are pure TypeScript with no React dependencies
 - Use `npm run test:core` to validate Godot-portable code in isolation
 
 ### Writing Tests
 
 ```typescript
 import { describe, it, expect } from 'vitest';
-import { Decimal } from '../utils/BigNumber';
+import { Decimal } from '../../../src/core/utils/BigNumber';
 
 describe('MyFunction', () => {
   it('does something', () => {

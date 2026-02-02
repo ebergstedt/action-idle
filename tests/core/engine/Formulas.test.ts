@@ -5,10 +5,10 @@ import {
   calculateTotalProduction,
   calculateCurrencyGain,
   canAffordUpgrade,
-} from './Formulas';
-import { Decimal } from '../utils/BigNumber';
-import { GameState } from '../types/GameState';
-import { UpgradeDefinition } from '../types/Upgrade';
+} from '../../../src/core/engine/Formulas';
+import { Decimal } from '../../../src/core/utils/BigNumber';
+import { GameState } from '../../../src/core/types/GameState';
+import { UpgradeDefinition } from '../../../src/core/types/Upgrade';
 
 describe('Formulas', () => {
   describe('calculateCost', () => {

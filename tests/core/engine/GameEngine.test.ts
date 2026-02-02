@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { GameEngine } from './GameEngine';
-import { Decimal } from '../utils/BigNumber';
-import { UpgradeDefinition } from '../types/Upgrade';
+import { GameEngine } from '../../../src/core/engine/GameEngine';
+import { Decimal } from '../../../src/core/utils/BigNumber';
+import { UpgradeDefinition } from '../../../src/core/types/Upgrade';
 
 const testUpgrades: UpgradeDefinition[] = [
   {

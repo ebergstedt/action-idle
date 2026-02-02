@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { UnitRegistry } from './UnitRegistry';
-import { UnitDefinition } from './types';
+import { UnitRegistry } from '../../../../src/core/battle/units/UnitRegistry';
+import { UnitDefinition } from '../../../../src/core/battle/units/types';
 
 describe('UnitRegistry', () => {
   let registry: UnitRegistry;

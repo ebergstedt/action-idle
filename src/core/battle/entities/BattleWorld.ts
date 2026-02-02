@@ -15,6 +15,7 @@ import {
   ENEMY_PUSH_MULTIPLIER,
   PATH_BLOCK_RADIUS_MULTIPLIER,
   BASE_SEPARATION_FORCE,
+  REFERENCE_ARENA_HEIGHT,
   UNIT_SPACING,
   scaleValue,
 } from '../BattleConfig';
@@ -157,7 +158,7 @@ export class BattleWorld implements IEntityWorld, IBattleWorld, IWorldEventEmitt
    */
   spawnDamageNumber(position: Vector2, amount: number, sourceTeam: UnitTeam): void {
     const id = `dmgnum_${this.nextDamageNumberId++}`;
-    const arenaHeight = this.arenaBounds?.height ?? 600;
+    const arenaHeight = this.arenaBounds?.height ?? REFERENCE_ARENA_HEIGHT;
 
     const data: DamageNumberData = {
       amount,
@@ -266,7 +267,7 @@ export class BattleWorld implements IEntityWorld, IBattleWorld, IWorldEventEmitt
   }
 
   private applySeparation(delta: number): void {
-    const arenaHeight = this.arenaBounds?.height ?? 600;
+    const arenaHeight = this.arenaBounds?.height ?? REFERENCE_ARENA_HEIGHT;
     const separationForce = scaleValue(BASE_SEPARATION_FORCE, arenaHeight);
 
     for (let i = 0; i < this.units.length; i++) {
@@ -465,7 +466,7 @@ export class BattleWorld implements IEntityWorld, IBattleWorld, IWorldEventEmitt
     color: string
   ): void {
     const id = `proj_${this.nextProjectileId++}`;
-    const arenaHeight = this.arenaBounds?.height ?? 600;
+    const arenaHeight = this.arenaBounds?.height ?? REFERENCE_ARENA_HEIGHT;
     const projectile = createProjectile(
       id,
       position,

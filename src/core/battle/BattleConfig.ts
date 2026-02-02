@@ -760,3 +760,84 @@ export const MIN_WAVE = 1;
  * Maximum wave number (soft cap for UI).
  */
 export const MAX_WAVE = 999;
+
+// =============================================================================
+// VISUAL THRESHOLDS
+// =============================================================================
+
+/**
+ * Minimum visual offset magnitude before snapping to zero.
+ * Prevents endless tiny movements from floating point imprecision.
+ */
+export const MIN_VISUAL_OFFSET_THRESHOLD = 0.1;
+
+/**
+ * Minimum vector magnitude for safe normalization.
+ * Below this, use a default direction to avoid division by near-zero.
+ */
+export const MIN_NORMALIZE_THRESHOLD = 0.1;
+
+/**
+ * Time in seconds at which walk animation wraps to prevent floating point issues.
+ */
+export const WALK_ANIMATION_WRAP_TIME = 1000;
+
+// =============================================================================
+// RENDERING CONSTANTS
+// =============================================================================
+
+/**
+ * Ghost health bar decay rate (how much of the difference to close per frame).
+ * Higher value = faster decay. Range 0-1.
+ */
+export const GHOST_HEALTH_DECAY_RATE = 0.08;
+
+/**
+ * Gravity applied to dust particles (pixels per second squared).
+ */
+export const DUST_PARTICLE_GRAVITY = 50;
+
+/**
+ * Fixed frame delta used for particle updates (seconds).
+ */
+export const PARTICLE_FRAME_DELTA = 0.016;
+
+/**
+ * Spacing between horizontal ruled lines on parchment background (pixels).
+ */
+export const PARCHMENT_LINE_SPACING = 40;
+
+/**
+ * Projectile head radius (pixels).
+ */
+export const PROJECTILE_HEAD_RADIUS = 5;
+
+/**
+ * Shockwave ring thickness (pixels).
+ */
+export const SHOCKWAVE_RING_THICKNESS = 8;
+
+/**
+ * Shockwave ring outer glow extra width (pixels).
+ */
+export const SHOCKWAVE_GLOW_WIDTH = 4;
+
+/**
+ * Shockwave inner highlight line width (pixels).
+ */
+export const SHOCKWAVE_HIGHLIGHT_WIDTH = 2;
+
+/**
+ * Minimum shockwave radius before rendering (pixels).
+ */
+export const SHOCKWAVE_MIN_RENDER_RADIUS = 10;
+
+/**
+ * Initial upward velocity component for ink hit splatters (pixels per second).
+ */
+export const INK_HIT_SPLATTER_UPWARD_VELOCITY = -70;
+
+/**
+ * Vignette color RGB values (sepia/brown tone for parchment edges).
+ */
+export const VIGNETTE_COLOR = { r: 60, g: 40, b: 20 };

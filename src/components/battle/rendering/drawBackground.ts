@@ -8,10 +8,12 @@
 import {
   VIGNETTE_INTENSITY,
   VIGNETTE_RADIUS,
+  VIGNETTE_COLOR,
   PARCHMENT_NOISE_DENSITY,
   PARCHMENT_NOISE_OPACITY,
   PARCHMENT_NOISE_SIZE_MIN,
   PARCHMENT_NOISE_SIZE_MAX,
+  PARCHMENT_LINE_SPACING,
 } from '../../../core/battle/BattleConfig';
 import { ARENA_COLORS, UI_COLORS } from '../../../core/theme/colors';
 
@@ -139,7 +141,10 @@ export function drawVignette(ctx: CanvasRenderingContext2D, width: number, heigh
   );
 
   gradient.addColorStop(0, 'rgba(0, 0, 0, 0)');
-  gradient.addColorStop(1, `rgba(60, 40, 20, ${VIGNETTE_INTENSITY})`);
+  gradient.addColorStop(
+    1,
+    `rgba(${VIGNETTE_COLOR.r}, ${VIGNETTE_COLOR.g}, ${VIGNETTE_COLOR.b}, ${VIGNETTE_INTENSITY})`
+  );
 
   ctx.fillStyle = gradient;
   ctx.fillRect(0, 0, width, height);
@@ -173,10 +178,8 @@ function drawPaperLines(ctx: CanvasRenderingContext2D, width: number, height: nu
   ctx.strokeStyle = ARENA_COLORS.gridLine;
   ctx.lineWidth = 1;
 
-  const lineSpacing = 40;
-
   // Horizontal ruled lines
-  for (let y = 0; y < height; y += lineSpacing) {
+  for (let y = 0; y < height; y += PARCHMENT_LINE_SPACING) {
     ctx.beginPath();
     ctx.moveTo(0, y);
     ctx.lineTo(width, y);

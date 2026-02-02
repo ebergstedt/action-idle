@@ -9,6 +9,7 @@ import type { ProjectileRenderData } from '../../../core/battle';
 import {
   BASE_PROJECTILE_TRAIL_LENGTH,
   PROJECTILE_TRAIL_WIDTH,
+  PROJECTILE_HEAD_RADIUS,
   scaleValue,
 } from '../../../core/battle/BattleConfig';
 
@@ -58,7 +59,7 @@ export function drawProjectile(
   ctx.shadowBlur = 8;
 
   ctx.beginPath();
-  ctx.arc(0, 0, 5, 0, Math.PI * 2);
+  ctx.arc(0, 0, PROJECTILE_HEAD_RADIUS, 0, Math.PI * 2);
   ctx.fill();
 
   ctx.restore();

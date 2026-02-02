@@ -5,7 +5,7 @@ import {
   toDecimal,
   serializeDecimal,
   deserializeDecimal,
-} from './BigNumber';
+} from '../../../src/core/utils/BigNumber';
 
 describe('BigNumber utilities', () => {
   describe('formatNumber', () => {

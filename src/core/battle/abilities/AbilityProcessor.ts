@@ -12,6 +12,7 @@ import {
   BASE_ABILITY_RANGE,
   DEFAULT_HEALTH_ABOVE_THRESHOLD,
   DEFAULT_HEALTH_BELOW_THRESHOLD,
+  REFERENCE_ARENA_HEIGHT,
   scaleValue,
 } from '../BattleConfig';
 import { UnitInstance } from '../units/types';
@@ -193,7 +194,7 @@ export class AbilityProcessor {
 
       case 'nearby_allies': {
         const baseRange = effect.range ?? BASE_ABILITY_RANGE;
-        const range = scaleValue(baseRange, state.arenaHeight ?? 600);
+        const range = scaleValue(baseRange, state.arenaHeight ?? REFERENCE_ARENA_HEIGHT);
         return state.units
           .filter(
             (u) =>
@@ -204,7 +205,7 @@ export class AbilityProcessor {
 
       case 'nearby_enemies': {
         const baseRange = effect.range ?? BASE_ABILITY_RANGE;
-        const range = scaleValue(baseRange, state.arenaHeight ?? 600);
+        const range = scaleValue(baseRange, state.arenaHeight ?? REFERENCE_ARENA_HEIGHT);
         return state.units
           .filter(
             (u) =>

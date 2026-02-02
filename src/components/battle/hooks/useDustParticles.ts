@@ -6,7 +6,12 @@
 
 import { useRef, useCallback } from 'react';
 import type { UnitRenderData } from '../../../core/battle';
-import { DUST_SPAWN_INTERVAL, DUST_PARTICLE_LIFETIME } from '../../../core/battle/BattleConfig';
+import {
+  DUST_SPAWN_INTERVAL,
+  DUST_PARTICLE_LIFETIME,
+  PARTICLE_FRAME_DELTA,
+  DUST_PARTICLE_GRAVITY,
+} from '../../../core/battle/BattleConfig';
 import type { DustParticle } from '../rendering';
 
 /**
@@ -67,10 +72,10 @@ export function useDustParticles(): {
 
       // Update existing particles
       dustParticlesRef.current = dustParticlesRef.current.filter((p) => {
-        p.lifetime -= 0.016;
-        p.x += p.vx * 0.016;
-        p.y += p.vy * 0.016;
-        p.vy += 50 * 0.016; // Gravity
+        p.lifetime -= PARTICLE_FRAME_DELTA;
+        p.x += p.vx * PARTICLE_FRAME_DELTA;
+        p.y += p.vy * PARTICLE_FRAME_DELTA;
+        p.vy += DUST_PARTICLE_GRAVITY * PARTICLE_FRAME_DELTA;
         return p.lifetime > 0;
       });
 

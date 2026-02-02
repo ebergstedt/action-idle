@@ -6,7 +6,14 @@
  */
 
 import type { ShockwaveRenderData, DamageNumberRenderData } from '../../../core/battle';
-import { BASE_DAMAGE_NUMBER_FONT_SIZE, scaleValue } from '../../../core/battle/BattleConfig';
+import {
+  BASE_DAMAGE_NUMBER_FONT_SIZE,
+  SHOCKWAVE_MIN_RENDER_RADIUS,
+  SHOCKWAVE_RING_THICKNESS,
+  SHOCKWAVE_GLOW_WIDTH,
+  SHOCKWAVE_HIGHLIGHT_WIDTH,
+  scaleValue,
+} from '../../../core/battle/BattleConfig';
 import { ARENA_COLORS, hexToRgba } from '../../../core/theme/colors';
 
 /**
@@ -22,7 +29,7 @@ export function drawShockwave(
   const { position, currentRadius, color } = shockwave;
 
   // Don't draw if radius is too small (prevents negative radius issues)
-  if (currentRadius < 10) return;
+  if (currentRadius < SHOCKWAVE_MIN_RENDER_RADIUS) return;
 
   ctx.save();
 
@@ -33,9 +40,6 @@ export function drawShockwave(
 
   ctx.translate(position.x, position.y);
 
-  // Constant ring thickness
-  const ringThickness = 8;
-
   // Derive glow colors from the team color
   const glowColor = hexToRgba(color, 0.3);
   const highlightColor = hexToRgba(color, 0.6);
@@ -44,7 +48,7 @@ export function drawShockwave(
   ctx.beginPath();
   ctx.arc(0, 0, currentRadius, 0, Math.PI * 2);
   ctx.strokeStyle = glowColor;
-  ctx.lineWidth = ringThickness + 4;
+  ctx.lineWidth = SHOCKWAVE_RING_THICKNESS + SHOCKWAVE_GLOW_WIDTH;
   ctx.globalAlpha = 1;
   ctx.stroke();
 
@@ -52,15 +56,15 @@ export function drawShockwave(
   ctx.beginPath();
   ctx.arc(0, 0, currentRadius, 0, Math.PI * 2);
   ctx.strokeStyle = color;
-  ctx.lineWidth = ringThickness;
+  ctx.lineWidth = SHOCKWAVE_RING_THICKNESS;
   ctx.globalAlpha = 1;
   ctx.stroke();
 
   // Inner highlight
   ctx.beginPath();
-  ctx.arc(0, 0, currentRadius - ringThickness / 2, 0, Math.PI * 2);
+  ctx.arc(0, 0, currentRadius - SHOCKWAVE_RING_THICKNESS / 2, 0, Math.PI * 2);
   ctx.strokeStyle = highlightColor;
-  ctx.lineWidth = 2;
+  ctx.lineWidth = SHOCKWAVE_HIGHLIGHT_WIDTH;
   ctx.globalAlpha = 1;
   ctx.stroke();
 

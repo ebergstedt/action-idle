@@ -7,6 +7,7 @@
 
 import { useRef, useCallback } from 'react';
 import type { UnitRenderData } from '../../../core/battle';
+import { GHOST_HEALTH_DECAY_RATE } from '../../../core/battle/BattleConfig';
 
 /**
  * Ghost health state for a single unit.
@@ -15,9 +16,6 @@ interface GhostHealthState {
   ghostHealth: number;
   lastHealth: number;
 }
-
-// Decay rate: how much of the difference to close per frame (0-1)
-const GHOST_HEALTH_DECAY_RATE = 0.08;
 
 /**
  * Hook to manage ghost health state for all units.

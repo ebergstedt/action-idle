@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { BattleEngine } from './BattleEngine';
-import { UnitRegistry } from './units';
-import { Vector2 } from '../physics/Vector2';
-import { unitDefinitions } from '../../data/units';
-import { REFERENCE_ARENA_HEIGHT, calculateWaveGold } from './BattleConfig';
+import { BattleEngine } from '../../../src/core/battle/BattleEngine';
+import { UnitRegistry } from '../../../src/core/battle/units';
+import { Vector2 } from '../../../src/core/physics/Vector2';
+import { unitDefinitions } from '../../../src/data/units';
+import { REFERENCE_ARENA_HEIGHT, calculateWaveGold } from '../../../src/core/battle/BattleConfig';
 
 function createTestEngine(): BattleEngine {
   const registry = new UnitRegistry();

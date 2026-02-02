@@ -26,10 +26,13 @@ import {
   MELEE_RANGE_BUFFER,
   MELEE_SIZE_MULTIPLIER,
   MIN_MOVE_DISTANCE,
+  MIN_VISUAL_OFFSET_THRESHOLD,
   PATH_DOT_THRESHOLD,
+  REFERENCE_ARENA_HEIGHT,
   TARGET_SWITCH_COOLDOWN_SECONDS,
   TARGET_SWITCH_DISTANCE_RATIO,
   UNIT_SPACING,
+  WALK_ANIMATION_WRAP_TIME,
   ZONE_HEIGHT_PERCENT,
   scaleValue,
 } from '../BattleConfig';
@@ -219,7 +222,7 @@ export class UnitEntity extends BaseEntity {
    */
   private getArenaHeight(): number {
     const world = this.getBattleWorld();
-    return world?.getArenaBounds()?.height ?? 600;
+    return world?.getArenaBounds()?.height ?? REFERENCE_ARENA_HEIGHT;
   }
 
   /**
@@ -373,7 +376,7 @@ export class UnitEntity extends BaseEntity {
    */
   private decayVisualOffset(delta: number): void {
     const magnitude = this.visualOffset.magnitude();
-    if (magnitude < 0.1) {
+    if (magnitude < MIN_VISUAL_OFFSET_THRESHOLD) {
       this.visualOffset = Vector2.zero();
       return;
     }
@@ -388,9 +391,9 @@ export class UnitEntity extends BaseEntity {
    */
   private advanceWalkAnimation(delta: number): void {
     this.walkAnimationTime += delta;
-    // Keep time in reasonable range to prevent floating point issues (wrap at 1000s)
-    if (this.walkAnimationTime > 1000) {
-      this.walkAnimationTime -= 1000;
+    // Keep time in reasonable range to prevent floating point issues
+    if (this.walkAnimationTime > WALK_ANIMATION_WRAP_TIME) {
+      this.walkAnimationTime -= WALK_ANIMATION_WRAP_TIME;
     }
   }
 

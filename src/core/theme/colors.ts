@@ -78,6 +78,9 @@ export const UI_COLORS = {
   warningYellow: '#FFC107',
   dangerRed: '#F44336',
   infoBlue: '#2196F3',
+
+  // Neutral
+  neutralGray: '#808080',
 } as const;
 
 // =============================================================================

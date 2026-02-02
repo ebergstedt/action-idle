@@ -4,10 +4,10 @@ import {
   computeAllStats,
   cloneBaseStats,
   calculateDamageAfterArmor,
-} from './StatCalculator';
-import { createActiveModifier } from '../modifiers/ModifierCalculator';
-import { Modifier } from '../modifiers/types';
-import { BaseStats } from './types';
+} from '../../../../src/core/battle/units/StatCalculator';
+import { createActiveModifier } from '../../../../src/core/battle/modifiers/ModifierCalculator';
+import { Modifier } from '../../../../src/core/battle/modifiers/types';
+import { BaseStats } from '../../../../src/core/battle/units/types';
 
 describe('StatCalculator', () => {
   const baseStats: BaseStats = {

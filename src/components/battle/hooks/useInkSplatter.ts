@@ -19,6 +19,7 @@ import {
   INK_HIT_SPLATTER_DISTANCE,
   INK_HIT_SPLATTER_SPREAD,
   INK_HIT_SPLATTER_SPEED,
+  INK_HIT_SPLATTER_UPWARD_VELOCITY,
   INK_SPLATTER_GRAVITY,
 } from '../../../core/battle/BattleConfig';
 
@@ -121,7 +122,7 @@ export function useInkSplatter(): {
               x: unit.position.x,
               y: unit.position.y,
               vx: Math.cos(angle) * speed,
-              vy: Math.sin(angle) * speed - 70, // Upward arc
+              vy: Math.sin(angle) * speed + INK_HIT_SPLATTER_UPWARD_VELOCITY,
               size:
                 INK_HIT_SPLATTER_SIZE_MIN +
                 Math.random() * (INK_HIT_SPLATTER_SIZE_MAX - INK_HIT_SPLATTER_SIZE_MIN),

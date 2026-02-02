@@ -7,8 +7,8 @@ import {
   createActiveModifier,
   addOrStackModifier,
   removeModifiersBySource,
-} from './ModifierCalculator';
-import { ActiveModifier, Modifier } from './types';
+} from '../../../../src/core/battle/modifiers/ModifierCalculator';
+import { ActiveModifier, Modifier } from '../../../../src/core/battle/modifiers/types';
 
 describe('ModifierCalculator', () => {
   describe('calculateModifiedStat', () => {
