@@ -35,11 +35,19 @@ import {
   BoxSelectSession,
 } from '../../../core/battle/BoxSelectController';
 
+/** Zoom state for coordinate transformation */
+export interface ZoomState {
+  zoom: number;
+  panX: number;
+  panY: number;
+}
+
 /** Canvas configuration for input handling */
 export interface CanvasConfig {
   canvasRef: RefObject<HTMLCanvasElement | null>;
   width: number;
   height: number;
+  zoomState?: ZoomState;
 }
 
 /** Current selection state */
@@ -79,6 +87,7 @@ export function useCanvasInput({
   selectedUnitIds,
   width,
   height,
+  zoomState,
   onUnitMove,
   onUnitsMove,
   onSelectUnit,
@@ -106,15 +115,26 @@ export function useCanvasInput({
     };
   }, [width, height]);
 
-  /** Get mouse position relative to canvas */
+  /** Get mouse position relative to canvas, accounting for zoom/pan */
   const getMousePos = useCallback(
     (e: MouseEvent | React.MouseEvent): Vector2 => {
       const canvas = canvasRef.current;
       if (!canvas) return new Vector2(0, 0);
       const rect = canvas.getBoundingClientRect();
-      return new Vector2(e.clientX - rect.left, e.clientY - rect.top);
+      // Get screen-space position
+      const screenX = e.clientX - rect.left;
+      const screenY = e.clientY - rect.top;
+
+      // Transform to world-space if zoomed
+      if (zoomState && zoomState.zoom !== 1) {
+        const worldX = (screenX - zoomState.panX) / zoomState.zoom;
+        const worldY = (screenY - zoomState.panY) / zoomState.zoom;
+        return new Vector2(worldX, worldY);
+      }
+
+      return new Vector2(screenX, screenY);
     },
-    [canvasRef]
+    [canvasRef, zoomState]
   );
 
   // ─────────────────────────────────────────────────────────────────────────────

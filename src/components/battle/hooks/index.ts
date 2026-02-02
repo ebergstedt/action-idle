@@ -5,7 +5,7 @@
  */
 
 export { useCanvasInput } from './useCanvasInput';
-export type { UseCanvasInputProps, UseCanvasInputResult } from './useCanvasInput';
+export type { UseCanvasInputProps, UseCanvasInputResult, ZoomState } from './useCanvasInput';
 
 export { useDustParticles } from './useDustParticles';
 

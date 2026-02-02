@@ -7,11 +7,12 @@
  * Godot equivalent: A CanvasLayer or Node2D with _draw() override.
  */
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import type { BattleState } from '../../core/battle';
+import { MIN_ZOOM, MAX_ZOOM, ZOOM_SPEED, DEFAULT_ZOOM } from '../../core/battle/BattleConfig';
 import { Vector2 } from '../../core/physics/Vector2';
 
-import { useCanvasInput } from './hooks/useCanvasInput';
+import { useCanvasInput, ZoomState } from './hooks/useCanvasInput';
 import { useDustParticles } from './hooks/useDustParticles';
 import { useGhostHealth } from './hooks/useGhostHealth';
 import { useInkSplatter } from './hooks/useInkSplatter';
@@ -26,6 +27,8 @@ interface BattleCanvasProps {
   selectedUnitIds?: string[];
   onSelectUnit?: (unitId: string | null) => void;
   onSelectUnits?: (unitIds: string[]) => void;
+  /** Key that changes to trigger zoom reset (e.g., on battle reset) */
+  resetKey?: number;
 }
 
 export function BattleCanvas({
@@ -37,10 +40,64 @@ export function BattleCanvas({
   selectedUnitIds = [],
   onSelectUnit,
   onSelectUnits,
+  resetKey = 0,
 }: BattleCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [animationTime, setAnimationTime] = useState(0);
   const hasSelection = selectedUnitIds.length > 0;
+
+  // Zoom state: level, pan offset (for zooming toward mouse position)
+  const [zoomState, setZoomState] = useState<ZoomState>({
+    zoom: DEFAULT_ZOOM,
+    panX: 0,
+    panY: 0,
+  });
+
+  // Reset zoom when resetKey changes
+  useEffect(() => {
+    setZoomState({ zoom: DEFAULT_ZOOM, panX: 0, panY: 0 });
+  }, [resetKey]);
+
+  // Handle mouse wheel for zoom
+  const handleWheel = useCallback(
+    (e: React.WheelEvent<HTMLCanvasElement>) => {
+      e.preventDefault();
+
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+
+      const rect = canvas.getBoundingClientRect();
+      const mouseX = e.clientX - rect.left;
+      const mouseY = e.clientY - rect.top;
+
+      setZoomState((prev) => {
+        // Calculate new zoom level
+        const zoomDelta = -e.deltaY * ZOOM_SPEED;
+        const newZoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, prev.zoom + zoomDelta * prev.zoom));
+
+        // Calculate the world position under the mouse before zoom
+        const worldX = (mouseX - prev.panX) / prev.zoom;
+        const worldY = (mouseY - prev.panY) / prev.zoom;
+
+        // Calculate new pan to keep mouse position fixed
+        const newPanX = mouseX - worldX * newZoom;
+        const newPanY = mouseY - worldY * newZoom;
+
+        // Clamp pan to keep view within bounds when zoomed
+        const maxPanX = 0;
+        const minPanX = width - width * newZoom;
+        const maxPanY = 0;
+        const minPanY = height - height * newZoom;
+
+        return {
+          zoom: newZoom,
+          panX: Math.max(minPanX, Math.min(maxPanX, newPanX)),
+          panY: Math.max(minPanY, Math.min(maxPanY, newPanY)),
+        };
+      });
+    },
+    [width, height]
+  );
 
   // Custom hooks for input handling and effects
   const { isDragging, boxSelectSession, draggedUnitIds, handlers } = useCanvasInput({
@@ -49,6 +106,7 @@ export function BattleCanvas({
     selectedUnitIds,
     width,
     height,
+    zoomState,
     onUnitMove,
     onUnitsMove,
     onSelectUnit,
@@ -86,6 +144,11 @@ export function BattleCanvas({
     const ghostHealthMap = updateGhostHealth(state.units);
     const inkSplatters = updateSplatters(state.units, state.hasStarted, 0.016);
 
+    // Apply zoom transform
+    ctx.save();
+    ctx.translate(zoomState.panX, zoomState.panY);
+    ctx.scale(zoomState.zoom, zoomState.zoom);
+
     // Render the battle scene
     renderBattle({
       ctx,
@@ -100,6 +163,9 @@ export function BattleCanvas({
       dustParticles,
       inkSplatters,
     });
+
+    // Restore transform
+    ctx.restore();
   }, [
     state,
     width,
@@ -112,6 +178,7 @@ export function BattleCanvas({
     updateParticles,
     updateGhostHealth,
     updateSplatters,
+    zoomState,
   ]);
 
   return (
@@ -126,6 +193,7 @@ export function BattleCanvas({
       onMouseMove={handlers.onMouseMove}
       onMouseUp={handlers.onMouseUp}
       onDoubleClick={handlers.onDoubleClick}
+      onWheel={handleWheel}
       onDragStart={(e) => e.preventDefault()}
     />
   );

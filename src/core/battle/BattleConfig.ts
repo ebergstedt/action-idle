@@ -1086,3 +1086,28 @@ export const ARENA_CONTAINER_PADDING_V = 10;
  * Horizontal padding subtracted from container width for arena sizing.
  */
 export const ARENA_CONTAINER_PADDING_H = 20;
+
+// =============================================================================
+// CAMERA ZOOM
+// =============================================================================
+
+/**
+ * Minimum zoom level (1.0 = no zoom, fits entire arena).
+ */
+export const MIN_ZOOM = 1.0;
+
+/**
+ * Maximum zoom level (3.0 = 3x magnification).
+ */
+export const MAX_ZOOM = 3.0;
+
+/**
+ * Zoom speed factor per scroll wheel delta.
+ * Higher = faster zoom response.
+ */
+export const ZOOM_SPEED = 0.001;
+
+/**
+ * Default zoom level on battle start/reset.
+ */
+export const DEFAULT_ZOOM = 1.0;

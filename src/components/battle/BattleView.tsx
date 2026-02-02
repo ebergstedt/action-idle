@@ -5,7 +5,7 @@
  * Orchestrates canvas, overlays, and control panel.
  */
 
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef, useCallback, useState } from 'react';
 import { useBattle } from '../../hooks/useBattle';
 import { useArenaSizing } from '../../hooks/useArenaSizing';
 import { BattleCanvas } from './BattleCanvas';
@@ -46,6 +46,9 @@ export function BattleView() {
   const { arenaSize, isArenaSizeStable, containerRef } = useArenaSizing();
   const hasSpawnedRef = useRef(false);
 
+  // Reset key for triggering zoom reset
+  const [zoomResetKey, setZoomResetKey] = useState(0);
+
   // Auto-spawn units once arena size is stable and settings are loaded
   useEffect(() => {
     if (isArenaSizeStable && settingsLoaded && state.units.length === 0 && !hasSpawnedRef.current) {
@@ -65,6 +68,7 @@ export function BattleView() {
   const handleReset = useCallback(() => {
     reset();
     hasSpawnedRef.current = false;
+    setZoomResetKey((prev) => prev + 1);
   }, [reset]);
 
   // Handle outcome dismiss - delegates to hook for outcome processing and auto-battle flow
@@ -72,6 +76,8 @@ export function BattleView() {
     handleOutcomeAndContinue(() => {
       // Reset spawned ref so units can spawn again
       hasSpawnedRef.current = false;
+      // Reset zoom for new battle
+      setZoomResetKey((prev) => prev + 1);
     });
   }, [handleOutcomeAndContinue]);
 
@@ -91,6 +97,7 @@ export function BattleView() {
           selectedUnitIds={selectedUnitIds}
           onSelectUnit={selectUnit}
           onSelectUnits={selectUnits}
+          resetKey={zoomResetKey}
         />
         {/* Victory/Defeat Overlay */}
         <WaxSealOverlay
