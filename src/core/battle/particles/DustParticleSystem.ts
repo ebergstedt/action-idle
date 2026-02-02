@@ -14,6 +14,8 @@ import {
   DUST_HORIZONTAL_VELOCITY_RANGE,
   DUST_UPWARD_VELOCITY_BASE,
   DUST_UPWARD_VELOCITY_RANDOM,
+  DUST_SPAWN_PARTICLE_COUNT_MIN,
+  DUST_SPAWN_PARTICLE_COUNT_RANDOM,
 } from '../BattleConfig';
 
 /**
@@ -74,7 +76,8 @@ export function isUnitMoving(
  */
 export function spawnDustParticles(unit: DustSpawnUnit): DustParticle[] {
   const particles: DustParticle[] = [];
-  const particleCount = 2 + Math.floor(Math.random() * 2);
+  const particleCount =
+    DUST_SPAWN_PARTICLE_COUNT_MIN + Math.floor(Math.random() * DUST_SPAWN_PARTICLE_COUNT_RANDOM);
 
   for (let i = 0; i < particleCount; i++) {
     particles.push({

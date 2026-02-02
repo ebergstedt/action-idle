@@ -207,6 +207,12 @@ import {
   FORMATION_GRID_STEP,
   FORMATION_WEDGE_Y_FACTOR,
   scaleValue,
+  PATTERN_VARIATION_CHANCE,
+  ROLE_SWAP_CHANCE,
+  LEGACY_ENEMY_KNIGHT_RATIO,
+  LEGACY_ENEMY_ARCHER_RATIO,
+  ENEMY_ROLE_FRONT_RATIO,
+  ENEMY_ROLE_BACK_RATIO,
 } from './BattleConfig';
 
 // =============================================================================
@@ -584,31 +590,9 @@ export const DEFAULT_ENEMY_PATTERNS: EnemyFormationPattern[] = [
 // These constants and functions control how formations vary between waves.
 // The goal is unpredictability while maintaining tactical coherence.
 
-/**
- * Chance to pick a different pattern than the normal cycle (20%).
- *
- * Why 20%?
- * - High enough to be noticeable (roughly 1 in 5 waves)
- * - Low enough that the cycle is still recognizable
- * - Prevents players from perfectly predicting patterns
- */
-const PATTERN_VARIATION_CHANCE = 0.2;
+// PATTERN_VARIATION_CHANCE imported from BattleConfig
 
-/**
- * Chance to swap formation roles for enemy variety (35%).
- *
- * Why 35%?
- * - Creates noticeable variety (roughly 1 in 3 waves)
- * - Not so high that "normal" formations feel rare
- * - Combined with pattern variation, creates rich variety
- *
- * Effect: When active, unit roles are remapped. For example, if front↔back:
- * - Warriors (naturally 'front') → positioned where 'back' role goes
- * - Archers (naturally 'back') → positioned where 'front' role goes
- *
- * This means archers might lead the charge while warriors hang back!
- */
-const ROLE_SWAP_CHANCE = 0.35;
+// ROLE_SWAP_CHANCE imported from BattleConfig
 
 /**
  * Available role swap configurations.
@@ -1111,10 +1095,10 @@ export function getEnemyCompositionForWave(
 
   // If no registry provided, use legacy fixed ratios
   if (!registry) {
-    // Legacy fallback: fixed percentages
+    // Legacy fallback: fixed percentages from BattleConfig
     const hasKnights = waveNumber >= 3;
-    const knightCount = hasKnights ? Math.floor(totalEnemies * 0.2) : 0;
-    const archerCount = Math.floor(totalEnemies * 0.4);
+    const knightCount = hasKnights ? Math.floor(totalEnemies * LEGACY_ENEMY_KNIGHT_RATIO) : 0;
+    const archerCount = Math.floor(totalEnemies * LEGACY_ENEMY_ARCHER_RATIO);
     const warriorCount = totalEnemies - knightCount - archerCount;
 
     for (let i = 0; i < warriorCount; i++) composition.push('warrior');
@@ -1139,9 +1123,9 @@ export function getEnemyCompositionForWave(
   const flankUnits = availableUnits.filter((u) => u.formationRole === 'flank');
 
   // Calculate counts based on available roles
-  // Base distribution: 40% front, 40% back, 20% flank
-  let frontCount = Math.floor(totalEnemies * 0.4);
-  let backCount = Math.floor(totalEnemies * 0.4);
+  // Base distribution from BattleConfig (40% front, 40% back, 20% flank)
+  let frontCount = Math.floor(totalEnemies * ENEMY_ROLE_FRONT_RATIO);
+  let backCount = Math.floor(totalEnemies * ENEMY_ROLE_BACK_RATIO);
   let flankCount = totalEnemies - frontCount - backCount;
 
   // Adjust if roles are unavailable

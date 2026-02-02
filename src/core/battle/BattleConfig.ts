@@ -1,11 +1,15 @@
 /**
  * Battle Configuration
  *
- * Centralized configuration for all battle system constants.
- * All magic numbers should be defined here for easy tuning.
+ * Centralized configuration for battle system gameplay constants.
+ * Visual/rendering constants are in VisualConfig.ts but re-exported here for backward compatibility.
  *
  * Godot equivalent: Resource file or Autoload with exported variables
  */
+
+// Re-export all visual constants for backward compatibility
+// Existing imports from BattleConfig will continue to work
+export * from './VisualConfig';
 
 // =============================================================================
 // UNIT SPACING & SEPARATION
@@ -117,101 +121,6 @@ export const BATTLE_TIME_THRESHOLD = 20;
 export const STALEMATE_TIMEOUT = 5;
 
 // =============================================================================
-// VISUAL EFFECTS - PARCHMENT THEME
-// =============================================================================
-
-/**
- * Vignette intensity at the edges (0-1).
- * Higher = darker corners.
- */
-export const VIGNETTE_INTENSITY = 0.35;
-
-/**
- * Vignette radius as fraction of arena diagonal.
- * Lower = vignette starts closer to center.
- */
-export const VIGNETTE_RADIUS = 0.7;
-
-/**
- * Parchment noise density (dots per 10000 pixels).
- * Higher = more visible texture.
- */
-export const PARCHMENT_NOISE_DENSITY = 15;
-
-/**
- * Parchment noise opacity (0-1).
- * Subtle is better - this just adds texture.
- */
-export const PARCHMENT_NOISE_OPACITY = 0.08;
-
-/**
- * Parchment noise dot size range [min, max] in pixels.
- */
-export const PARCHMENT_NOISE_SIZE_MIN = 1;
-export const PARCHMENT_NOISE_SIZE_MAX = 2.5;
-
-/**
- * Number of ink splatter particles spawned on unit death.
- */
-export const INK_SPLATTER_COUNT = 8;
-
-/**
- * Ink splatter particle size range [min, max] in pixels.
- */
-export const INK_SPLATTER_SIZE_MIN = 2;
-export const INK_SPLATTER_SIZE_MAX = 8;
-
-/**
- * Ink splatter spread radius from death position.
- */
-export const INK_SPLATTER_SPREAD = 15;
-
-/**
- * Ink splatter lifetime in seconds before fading.
- */
-export const INK_SPLATTER_LIFETIME = 3.0;
-
-/**
- * Ink splatter base opacity. Set to 0.5 so overlapping splatters
- * naturally stack and become darker (source-over blending).
- * - 1 splatter: 0.5 opacity
- * - 2 overlapping: ~0.75 opacity
- * - 3 overlapping: ~0.875 opacity
- */
-export const INK_SPLATTER_OPACITY = 0.5;
-
-/**
- * Number of ink splatter particles spawned on hit.
- */
-export const INK_HIT_SPLATTER_COUNT = 3;
-
-/**
- * Ink hit splatter size range [min, max] in pixels.
- */
-export const INK_HIT_SPLATTER_SIZE_MIN = 1;
-export const INK_HIT_SPLATTER_SIZE_MAX = 3;
-
-/**
- * Ink hit splatter spray distance from unit.
- */
-export const INK_HIT_SPLATTER_DISTANCE = 10;
-
-/**
- * Ink hit splatter spray angle spread (radians).
- */
-export const INK_HIT_SPLATTER_SPREAD = 0.8;
-
-/**
- * Ink hit splatter initial speed (pixels per second).
- */
-export const INK_HIT_SPLATTER_SPEED = 80;
-
-/**
- * Ink splatter gravity (pixels per second squared).
- */
-export const INK_SPLATTER_GRAVITY = 350;
-
-// =============================================================================
 // PROJECTILE CONFIGURATION
 // =============================================================================
 
@@ -267,10 +176,6 @@ export const DEFAULT_SHUFFLE_CONFIG: ShuffleConfig = {
   speedMultiplier: 0.25,
   moveProbability: 0.6,
 };
-
-// =============================================================================
-// TARGETING & COMBAT
-// =============================================================================
 
 // =============================================================================
 // UNIT AI & TARGETING
@@ -392,6 +297,18 @@ export const DIRECTION_CHECK_MULTIPLIER = 3;
  * Higher value = must be more directly in front to trigger avoidance.
  */
 export const PATH_DOT_THRESHOLD = 0.3;
+
+/**
+ * Multiplier for ally avoidance distance check during movement.
+ * Units avoid allies within (minDist * this value).
+ */
+export const ALLY_AVOIDANCE_DISTANCE_MULTIPLIER = 1.2;
+
+/**
+ * Minimum vector magnitude for safe normalization.
+ * Below this, use a default direction to avoid division by near-zero.
+ */
+export const MIN_NORMALIZE_THRESHOLD = 0.1;
 
 // =============================================================================
 // SCALING SYSTEM
@@ -582,6 +499,36 @@ export const FORMATION_GRID_STEP = 15;
 export const FORMATION_WEDGE_Y_FACTOR = 0.1;
 
 // =============================================================================
+// FORMATION VARIETY SYSTEM
+// =============================================================================
+
+/**
+ * Chance to pick a different pattern than the normal cycle (20%).
+ * Creates unpredictability while maintaining tactical coherence.
+ */
+export const PATTERN_VARIATION_CHANCE = 0.2;
+
+/**
+ * Chance to swap formation roles for enemy variety (35%).
+ * When active, unit roles are remapped (e.g., warriors positioned where archers normally go).
+ */
+export const ROLE_SWAP_CHANCE = 0.35;
+
+/**
+ * Legacy enemy composition ratios (when no registry is provided).
+ * Used for backward compatibility with older code paths.
+ */
+export const LEGACY_ENEMY_KNIGHT_RATIO = 0.2;
+export const LEGACY_ENEMY_ARCHER_RATIO = 0.4;
+
+/**
+ * Role-based enemy composition distribution.
+ * Base distribution: 40% front, 40% back, 20% flank.
+ */
+export const ENEMY_ROLE_FRONT_RATIO = 0.4;
+export const ENEMY_ROLE_BACK_RATIO = 0.4;
+
+// =============================================================================
 // OVERLAP RESOLUTION
 // =============================================================================
 
@@ -677,117 +624,6 @@ export const BASE_MELEE_KNOCKBACK_DISTANCE = 6;
  */
 export const MELEE_OFFSET_DECAY_RATE = 12;
 
-/**
- * Duration of the hit flash effect in seconds.
- * Unit flashes white/red briefly when taking damage.
- */
-export const HIT_FLASH_DURATION = 0.15;
-
-/**
- * Duration of the death fade effect in seconds.
- * Unit fades out and shrinks when dying.
- */
-export const DEATH_FADE_DURATION = 0.4;
-
-/**
- * Duration of floating damage numbers in seconds.
- */
-export const DAMAGE_NUMBER_DURATION = 0.8;
-
-/**
- * How far damage numbers float upward (pixels).
- * Scaled by arena size at runtime.
- */
-export const BASE_DAMAGE_NUMBER_FLOAT_DISTANCE = 40;
-
-/**
- * Base font size for damage numbers (pixels).
- * Scaled by arena size at runtime.
- */
-export const BASE_DAMAGE_NUMBER_FONT_SIZE = 16;
-
-/**
- * Base length of projectile trail in pixels.
- * Scaled by arena size at runtime.
- */
-export const BASE_PROJECTILE_TRAIL_LENGTH = 15;
-
-/**
- * Width of projectile trail at its widest point (near projectile).
- */
-export const PROJECTILE_TRAIL_WIDTH = 2;
-
-/**
- * Unit shadow offset (pixels down and right from unit center).
- */
-export const UNIT_SHADOW_OFFSET = 2;
-
-/**
- * Unit shadow opacity (0-1).
- */
-export const UNIT_SHADOW_OPACITY = 0.35;
-
-/**
- * Selection ring pulse speed (cycles per second).
- * 0.333 = one full cycle every 3 seconds.
- */
-export const SELECTION_PULSE_SPEED = 1 / 3;
-
-/**
- * Selection ring pulse intensity (how much the ring grows/shrinks).
- * 0.08 = +/- 8% size variation.
- */
-export const SELECTION_PULSE_INTENSITY = 0.08;
-
-/**
- * Dust particle lifetime in seconds.
- */
-export const DUST_PARTICLE_LIFETIME = 0.4;
-
-/**
- * Dust particle spawn interval in seconds (how often moving units spawn dust).
- */
-export const DUST_SPAWN_INTERVAL = 0.15;
-
-/**
- * Base dust particle size in pixels.
- */
-export const DUST_PARTICLE_SIZE = 3;
-
-/**
- * Multiplier for ally avoidance distance check during movement.
- * Units avoid allies within (minDist * this value).
- */
-export const ALLY_AVOIDANCE_DISTANCE_MULTIPLIER = 1.2;
-
-// =============================================================================
-// BOUNCE ANIMATION
-// =============================================================================
-
-/**
- * How many bounces per second when moving.
- * Higher = faster bounce cycle.
- */
-export const BOUNCE_FREQUENCY = 1.5;
-
-/**
- * Maximum vertical offset (in pixels) at the peak of each bounce.
- * This is the base value, scaled by unit size.
- */
-export const BOUNCE_HEIGHT_MULTIPLIER = 0.25;
-
-/**
- * Amount of horizontal stretch when unit hits the ground (1.0 = no stretch).
- * 1.15 = 15% wider at the bottom of bounce.
- */
-export const BOUNCE_SQUASH_STRETCH_X = 1.15;
-
-/**
- * Amount of vertical squash when unit hits the ground (1.0 = no squash).
- * 0.85 = 15% shorter at the bottom of bounce.
- */
-export const BOUNCE_SQUASH_STRETCH_Y = 0.85;
-
 // =============================================================================
 // SHOCKWAVE CONFIGURATION
 // =============================================================================
@@ -875,156 +711,6 @@ export const MIN_WAVE = 1;
 export const MAX_WAVE = 999;
 
 // =============================================================================
-// VISUAL THRESHOLDS
-// =============================================================================
-
-/**
- * Minimum visual offset magnitude before snapping to zero.
- * Prevents endless tiny movements from floating point imprecision.
- */
-export const MIN_VISUAL_OFFSET_THRESHOLD = 0.1;
-
-/**
- * Minimum vector magnitude for safe normalization.
- * Below this, use a default direction to avoid division by near-zero.
- */
-export const MIN_NORMALIZE_THRESHOLD = 0.1;
-
-/**
- * Time in seconds at which walk animation wraps to prevent floating point issues.
- */
-export const WALK_ANIMATION_WRAP_TIME = 1000;
-
-// =============================================================================
-// RENDERING CONSTANTS
-// =============================================================================
-
-/**
- * Ghost health bar decay rate (how much of the difference to close per frame).
- * Higher value = faster decay. Range 0-1.
- */
-export const GHOST_HEALTH_DECAY_RATE = 0.08;
-
-/**
- * Gravity applied to dust particles (pixels per second squared).
- */
-export const DUST_PARTICLE_GRAVITY = 50;
-
-/**
- * Fixed frame delta used for particle updates (seconds).
- */
-export const PARTICLE_FRAME_DELTA = 0.016;
-
-/**
- * Spacing between horizontal ruled lines on parchment background (pixels).
- */
-export const PARCHMENT_LINE_SPACING = 40;
-
-/**
- * Projectile head radius (pixels).
- */
-export const PROJECTILE_HEAD_RADIUS = 3;
-
-/**
- * Shockwave ring thickness (pixels).
- */
-export const SHOCKWAVE_RING_THICKNESS = 8;
-
-/**
- * Shockwave ring outer glow extra width (pixels).
- */
-export const SHOCKWAVE_GLOW_WIDTH = 4;
-
-/**
- * Shockwave inner highlight line width (pixels).
- */
-export const SHOCKWAVE_HIGHLIGHT_WIDTH = 2;
-
-/**
- * Minimum shockwave radius before rendering (pixels).
- */
-export const SHOCKWAVE_MIN_RENDER_RADIUS = 10;
-
-/**
- * Initial upward velocity component for ink hit splatters (pixels per second).
- */
-export const INK_HIT_SPLATTER_UPWARD_VELOCITY = -40;
-
-/**
- * Vignette color RGB values (sepia/brown tone for parchment edges).
- */
-export const VIGNETTE_COLOR = { r: 60, g: 40, b: 20 };
-
-// =============================================================================
-// PARTICLE PHYSICS - INK SPLATTERS
-// =============================================================================
-
-/**
- * Mean speed multiplier for ink splatter particles.
- * Center of normal distribution for particle speed variation.
- */
-export const INK_SPEED_MULTIPLIER_MEAN = 0.8;
-
-/**
- * Standard deviation for ink splatter speed multiplier.
- * Controls how much particle speeds vary from the mean.
- */
-export const INK_SPEED_MULTIPLIER_STDDEV = 0.25;
-
-/**
- * Minimum speed multiplier for ink splatter particles.
- * Prevents negative or extremely slow particles.
- */
-export const INK_SPEED_MULTIPLIER_MIN = 0.3;
-
-/**
- * Minimum knockback magnitude to determine splatter direction.
- * Below this, use random direction instead.
- */
-export const INK_KNOCKBACK_DIRECTION_THRESHOLD = 0.1;
-
-// =============================================================================
-// PARTICLE PHYSICS - DUST PARTICLES
-// =============================================================================
-
-/**
- * Minimum movement distance (per axis) to consider a unit as "moving".
- * Below this, no dust particles are spawned.
- */
-export const DUST_MOVEMENT_THRESHOLD = 0.1;
-
-/**
- * Y offset below unit for dust particle spawn position.
- */
-export const DUST_SPAWN_Y_OFFSET = 5;
-
-/**
- * Horizontal velocity range for dust particles (pixels per second).
- * Particles spawn with vx in range [-RANGE/2, +RANGE/2].
- */
-export const DUST_HORIZONTAL_VELOCITY_RANGE = 40;
-
-/**
- * Base upward velocity for dust particles (pixels per second).
- */
-export const DUST_UPWARD_VELOCITY_BASE = 20;
-
-/**
- * Additional random upward velocity for dust particles (pixels per second).
- */
-export const DUST_UPWARD_VELOCITY_RANDOM = 40;
-
-// =============================================================================
-// GHOST HEALTH BAR
-// =============================================================================
-
-/**
- * Minimum health difference before snapping ghost health to actual health.
- * Prevents endless tiny visual updates.
- */
-export const GHOST_HEALTH_SNAP_THRESHOLD = 0.1;
-
-// =============================================================================
 // UI TIMING & ANIMATIONS
 // =============================================================================
 
@@ -1079,40 +765,6 @@ export const MAX_OFFLINE_TIME_SECONDS = 3600;
 export function calculateDPS(damage: number, attackSpeed: number): number {
   return damage * attackSpeed;
 }
-
-// =============================================================================
-// WAX SEAL OVERLAY
-// =============================================================================
-
-/**
- * Size of the wax seal SVG in pixels.
- */
-export const WAX_SEAL_SVG_SIZE = 120;
-
-/**
- * Scale when wax seal is in "pre-stamp" state (before animation).
- */
-export const WAX_SEAL_PRESTAMP_SCALE = 1.5;
-
-/**
- * Rotation when wax seal is in "pre-stamp" state (degrees).
- */
-export const WAX_SEAL_PRESTAMP_ROTATION = -15;
-
-/**
- * Panel scale when in "pre-stamp" state.
- */
-export const WAX_SEAL_PANEL_PRESTAMP_SCALE = 0.8;
-
-/**
- * Stamp animation duration (seconds).
- */
-export const WAX_SEAL_STAMP_DURATION = 0.4;
-
-/**
- * Panel animation duration (seconds).
- */
-export const WAX_SEAL_PANEL_DURATION = 0.3;
 
 // =============================================================================
 // BATTLE VIEW LAYOUT
