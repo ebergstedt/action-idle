@@ -68,6 +68,7 @@ export interface AttackMode {
 export interface UnitStats {
   maxHealth: number;
   moveSpeed: number;
+  attackInterval?: number; // seconds between attacks (from Mechabellum)
   melee: AttackMode | null;
   ranged: AttackMode | null;
 }

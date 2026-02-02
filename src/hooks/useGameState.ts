@@ -6,9 +6,8 @@ import { SaveManager } from '../core/persistence/SaveManager';
 import { LocalStorageAdapter } from '../core/persistence/LocalStorageAdapter';
 import { Decimal } from '../core/utils/BigNumber';
 import { useGameLoop } from './useGameLoop';
+import { AUTOSAVE_INTERVAL_MS, MAX_OFFLINE_TIME_SECONDS } from '../core/battle/BattleConfig';
 import upgradesData from '../data/upgrades.json';
-
-const AUTOSAVE_INTERVAL_MS = 30000; // 30 seconds
 
 export interface GameStateHook {
   state: GameState;
@@ -81,10 +80,10 @@ export function useGameState(): GameStateHook {
       if (savedState) {
         engine.setState(savedState);
 
-        // Calculate offline earnings
+        // Calculate offline earnings (capped by MAX_OFFLINE_TIME_SECONDS)
         const now = Date.now();
         const offlineMs = now - savedState.lastTick;
-        const offlineSec = Math.min(offlineMs / 1000, 3600); // Cap at 1 hour
+        const offlineSec = Math.min(offlineMs / 1000, MAX_OFFLINE_TIME_SECONDS);
 
         if (offlineSec > 1) {
           engine.tick(offlineSec);

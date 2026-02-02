@@ -7,7 +7,10 @@
 
 import { useRef, useCallback } from 'react';
 import type { UnitRenderData } from '../../../core/battle';
-import { GHOST_HEALTH_DECAY_RATE } from '../../../core/battle/BattleConfig';
+import {
+  GHOST_HEALTH_DECAY_RATE,
+  GHOST_HEALTH_SNAP_THRESHOLD,
+} from '../../../core/battle/BattleConfig';
 
 /**
  * Ghost health state for a single unit.
@@ -68,7 +71,7 @@ export function useGhostHealth(): {
 
     // No health change - decay ghost toward current
     const diff = ghostState.ghostHealth - unit.health;
-    if (diff > 0.1) {
+    if (diff > GHOST_HEALTH_SNAP_THRESHOLD) {
       const newGhostHealth = ghostState.ghostHealth - diff * GHOST_HEALTH_DECAY_RATE;
       ghostHealthRef.current.set(unit.id, {
         ghostHealth: newGhostHealth,

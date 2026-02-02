@@ -180,19 +180,19 @@ export function useBattle(): UseBattleReturn {
     // Spawn castles for both teams
     engine.spawnCastles();
 
-    // Spawn allied army using formation
+    // Spawn allied army using formation (each spawn creates a full squad)
     // Note: BattleStats auto-subscribes to new units via world events
     const alliedPositions = calculateAlliedSpawnPositions(CLASSIC_FORMATION, bounds);
     for (const spawn of alliedPositions) {
-      engine.spawnUnit(spawn.type, 'player', spawn.position, arenaHeight);
+      engine.spawnSquad(spawn.type, 'player', spawn.position, arenaHeight);
     }
 
-    // Spawn enemy army
+    // Spawn enemy army (each spawn creates a full squad)
     const waveNumber = engine.getState().waveNumber;
     const enemyComposition = getEnemyCompositionForWave(waveNumber);
     const enemyPositions = calculateEnemySpawnPositions(enemyComposition, bounds);
     for (const spawn of enemyPositions) {
-      engine.spawnUnit(spawn.type, 'enemy', spawn.position, arenaHeight);
+      engine.spawnSquad(spawn.type, 'enemy', spawn.position, arenaHeight);
     }
 
     // Resolve any overlapping units after spawning

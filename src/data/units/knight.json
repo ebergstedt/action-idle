@@ -1,16 +1,23 @@
 {
   "id": "knight",
-  "name": "Knight",
-  "description": "A fast cavalry unit with high damage and mobility. Excels at flanking.",
+  "name": "Crawler",
+  "description": "A lightning-fast melee swarm unit. Low health but rapid attacks and high mobility.",
   "category": "cavalry",
   "tier": 1,
+  "reference": {
+    "source": "Mechabellum",
+    "unit": "Crawler",
+    "wiki": "https://mechabellum.wiki/index.php/Unit_Overview"
+  },
   "baseStats": {
-    "maxHealth": 80,
-    "moveSpeed": 25,
+    "maxHealth": 263,
+    "moveSpeed": 16,
     "armor": 0,
+    "attackInterval": 0.6,
+    "squadSize": 24,
     "melee": {
-      "damage": 20,
-      "attackSpeed": 1.2,
+      "damage": 79,
+      "attackSpeed": 1.67,
       "range": 35
     },
     "ranged": null

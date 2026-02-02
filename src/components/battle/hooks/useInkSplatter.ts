@@ -21,6 +21,10 @@ import {
   INK_HIT_SPLATTER_SPEED,
   INK_HIT_SPLATTER_UPWARD_VELOCITY,
   INK_SPLATTER_GRAVITY,
+  INK_SPEED_MULTIPLIER_MEAN,
+  INK_SPEED_MULTIPLIER_STDDEV,
+  INK_SPEED_MULTIPLIER_MIN,
+  INK_KNOCKBACK_DIRECTION_THRESHOLD,
 } from '../../../core/battle/BattleConfig';
 
 /**
@@ -35,14 +39,14 @@ function randomNormal(): number {
 
 /**
  * Generate a random multiplier with normal distribution.
- * Mean of 0.8, with rare high values for far-flying splatters.
- * Clamped to minimum of 0.3 to avoid negative/tiny values.
+ * Uses INK_SPEED_MULTIPLIER_MEAN with rare high values for far-flying splatters.
+ * Clamped to INK_SPEED_MULTIPLIER_MIN to avoid negative/tiny values.
  */
 function randomSpeedMultiplier(): number {
-  // Normal distribution centered at 0.8 with stdDev of 0.25
-  // ~68% between 0.55-1.05 (close), ~95% between 0.3-1.3, rare outliers go further
-  const multiplier = 0.8 + randomNormal() * 0.25;
-  return Math.max(0.3, multiplier);
+  // Normal distribution centered at mean with configured stdDev
+  // ~68% within 1 stdDev, ~95% within 2 stdDev, rare outliers go further
+  const multiplier = INK_SPEED_MULTIPLIER_MEAN + randomNormal() * INK_SPEED_MULTIPLIER_STDDEV;
+  return Math.max(INK_SPEED_MULTIPLIER_MIN, multiplier);
 }
 
 /**
@@ -102,7 +106,7 @@ export function useInkSplatter(): {
           const offsetMag = Math.sqrt(offsetX * offsetX + offsetY * offsetY);
 
           let baseAngle: number;
-          if (offsetMag > 0.1) {
+          if (offsetMag > INK_KNOCKBACK_DIRECTION_THRESHOLD) {
             // Splatter in the direction of knockback (away from attacker)
             baseAngle = Math.atan2(offsetY, offsetX);
           } else {

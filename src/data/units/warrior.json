@@ -1,17 +1,24 @@
 {
   "id": "warrior",
-  "name": "Warrior",
-  "description": "A sturdy melee fighter with high health and consistent damage.",
+  "name": "Hound",
+  "description": "A sturdy short-range assault unit. High health, slow but powerful attacks.",
   "category": "infantry",
   "tier": 1,
+  "reference": {
+    "source": "Mechabellum",
+    "unit": "Hound",
+    "wiki": "https://mechabellum.wiki/index.php/Unit_Overview"
+  },
   "baseStats": {
-    "maxHealth": 100,
-    "moveSpeed": 20,
+    "maxHealth": 897,
+    "moveSpeed": 10,
     "armor": 0,
+    "attackInterval": 2.4,
+    "squadSize": 5,
     "melee": {
-      "damage": 15,
-      "attackSpeed": 1.0,
-      "range": 35
+      "damage": 247,
+      "attackSpeed": 0.42,
+      "range": 70
     },
     "ranged": null
   },

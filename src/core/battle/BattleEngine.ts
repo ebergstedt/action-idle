@@ -11,6 +11,7 @@ import { Vector2 } from '../physics/Vector2';
 import { getCastleColor, getUnitColor } from '../theme/colors';
 import {
   BASE_CASTLE_HORIZONTAL_MARGIN,
+  BASE_SQUAD_UNIT_SPACING,
   CASTLE_MAX_HEALTH,
   CASTLE_SIZE,
   DEFAULT_ARENA_MARGIN,
@@ -23,6 +24,7 @@ import {
   OVERLAP_PUSH_FACTOR,
   RANDOM_DIRECTION_CENTER,
   REFERENCE_ARENA_HEIGHT,
+  SQUAD_MAX_COLUMNS,
   UNIT_SPACING,
   ZONE_CLAMP_MARGIN,
   ZONE_HEIGHT_PERCENT,
@@ -254,6 +256,7 @@ export class BattleEngine {
     const stats = {
       maxHealth: baseStats.maxHealth,
       moveSpeed: baseStats.moveSpeed,
+      attackInterval: baseStats.attackInterval,
       melee: baseStats.melee,
       ranged: baseStats.ranged,
     };
@@ -289,6 +292,63 @@ export class BattleEngine {
     this.world.addUnit(entity);
 
     return entity.toRenderData();
+  }
+
+  /**
+   * Spawn a squad of units from a definition.
+   * Units are arranged in a grid formation centered on the given position.
+   *
+   * @param definitionId - The unit definition ID (e.g., 'warrior', 'archer')
+   * @param team - Which team the squad belongs to
+   * @param centerPosition - Center position for the squad formation
+   * @param arenaHeight - Arena height for size scaling
+   * @returns Array of spawned unit render data
+   */
+  spawnSquad(
+    definitionId: string,
+    team: UnitTeam,
+    centerPosition: Vector2,
+    arenaHeight: number = REFERENCE_ARENA_HEIGHT
+  ): UnitRenderData[] {
+    const definition = this.registry.get(definitionId);
+    const squadSize = definition.baseStats.squadSize ?? 1;
+
+    if (squadSize <= 1) {
+      // Single unit, no squad formation needed
+      return [this.spawnUnitFromDefinition(definition, team, centerPosition, arenaHeight)];
+    }
+
+    const spacing = scaleValue(BASE_SQUAD_UNIT_SPACING, arenaHeight);
+    const cols = Math.min(squadSize, SQUAD_MAX_COLUMNS);
+    const rows = Math.ceil(squadSize / cols);
+
+    // Calculate grid offset so formation is centered
+    const gridWidth = (cols - 1) * spacing;
+    const gridHeight = (rows - 1) * spacing;
+    const startX = centerPosition.x - gridWidth / 2;
+    const startY = centerPosition.y - gridHeight / 2;
+
+    const units: UnitRenderData[] = [];
+    let unitIndex = 0;
+
+    for (let row = 0; row < rows && unitIndex < squadSize; row++) {
+      // Calculate columns for this row (last row may have fewer)
+      const colsInRow = row === rows - 1 ? squadSize - unitIndex : cols;
+      // Center the last row if it has fewer units
+      const rowOffsetX = row === rows - 1 ? ((cols - colsInRow) * spacing) / 2 : 0;
+
+      for (let col = 0; col < colsInRow && unitIndex < squadSize; col++) {
+        const x = startX + rowOffsetX + col * spacing;
+        const y = startY + row * spacing;
+        const position = new Vector2(x, y);
+
+        const unit = this.spawnUnitFromDefinition(definition, team, position, arenaHeight);
+        units.push(unit);
+        unitIndex++;
+      }
+    }
+
+    return units;
   }
 
   /**

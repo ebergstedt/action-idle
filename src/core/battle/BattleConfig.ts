@@ -269,8 +269,9 @@ export const MELEE_RANGE_BUFFER = 20;
 /**
  * Attack range threshold to classify as melee (vs ranged).
  * Attacks with range <= this value are considered melee.
+ * Set to 80 to accommodate Mechabellum "short range" units like Hound (70m).
  */
-export const MELEE_ATTACK_RANGE_THRESHOLD = 50;
+export const MELEE_ATTACK_RANGE_THRESHOLD = 80;
 
 // =============================================================================
 // CASTLE CONFIGURATION
@@ -417,6 +418,22 @@ export const MIN_BOX_SELECT_SIZE = 10;
  * Padding added to unit hitbox for click detection (pixels).
  */
 export const HITBOX_PADDING = 6;
+
+// =============================================================================
+// SQUAD CONFIGURATION
+// =============================================================================
+
+/**
+ * Spacing between units in a squad formation (pixels).
+ * Scaled by arena size at runtime.
+ */
+export const BASE_SQUAD_UNIT_SPACING = 20;
+
+/**
+ * Maximum columns in a squad grid formation.
+ * Squads form rows of up to this many units.
+ */
+export const SQUAD_MAX_COLUMNS = 6;
 
 // =============================================================================
 // FORMATION CONFIGURATION
@@ -715,19 +732,19 @@ export function calculateWaveGold(waveNumber: number): number {
 }
 
 /**
- * Base number of enemy units at wave 1.
+ * Base number of enemy squads at wave 1.
  */
-export const BASE_ENEMY_COUNT = 20;
+export const BASE_ENEMY_COUNT = 10;
 
 /**
- * Additional enemies per wave.
+ * Additional enemy squads per wave.
  */
-export const ENEMIES_PER_WAVE = 2;
+export const ENEMIES_PER_WAVE = 1;
 
 /**
- * Maximum enemy count cap.
+ * Maximum enemy squad count cap.
  */
-export const MAX_ENEMY_COUNT = 60;
+export const MAX_ENEMY_COUNT = 20;
 
 /**
  * Calculate enemy count for a wave.
@@ -841,3 +858,99 @@ export const INK_HIT_SPLATTER_UPWARD_VELOCITY = -70;
  * Vignette color RGB values (sepia/brown tone for parchment edges).
  */
 export const VIGNETTE_COLOR = { r: 60, g: 40, b: 20 };
+
+// =============================================================================
+// PARTICLE PHYSICS - INK SPLATTERS
+// =============================================================================
+
+/**
+ * Mean speed multiplier for ink splatter particles.
+ * Center of normal distribution for particle speed variation.
+ */
+export const INK_SPEED_MULTIPLIER_MEAN = 0.8;
+
+/**
+ * Standard deviation for ink splatter speed multiplier.
+ * Controls how much particle speeds vary from the mean.
+ */
+export const INK_SPEED_MULTIPLIER_STDDEV = 0.25;
+
+/**
+ * Minimum speed multiplier for ink splatter particles.
+ * Prevents negative or extremely slow particles.
+ */
+export const INK_SPEED_MULTIPLIER_MIN = 0.3;
+
+/**
+ * Minimum knockback magnitude to determine splatter direction.
+ * Below this, use random direction instead.
+ */
+export const INK_KNOCKBACK_DIRECTION_THRESHOLD = 0.1;
+
+// =============================================================================
+// PARTICLE PHYSICS - DUST PARTICLES
+// =============================================================================
+
+/**
+ * Minimum movement distance (per axis) to consider a unit as "moving".
+ * Below this, no dust particles are spawned.
+ */
+export const DUST_MOVEMENT_THRESHOLD = 0.1;
+
+/**
+ * Y offset below unit for dust particle spawn position.
+ */
+export const DUST_SPAWN_Y_OFFSET = 5;
+
+/**
+ * Horizontal velocity range for dust particles (pixels per second).
+ * Particles spawn with vx in range [-RANGE/2, +RANGE/2].
+ */
+export const DUST_HORIZONTAL_VELOCITY_RANGE = 40;
+
+/**
+ * Base upward velocity for dust particles (pixels per second).
+ */
+export const DUST_UPWARD_VELOCITY_BASE = 20;
+
+/**
+ * Additional random upward velocity for dust particles (pixels per second).
+ */
+export const DUST_UPWARD_VELOCITY_RANDOM = 40;
+
+// =============================================================================
+// GHOST HEALTH BAR
+// =============================================================================
+
+/**
+ * Minimum health difference before snapping ghost health to actual health.
+ * Prevents endless tiny visual updates.
+ */
+export const GHOST_HEALTH_SNAP_THRESHOLD = 0.1;
+
+// =============================================================================
+// PERSISTENCE & AUTOSAVE
+// =============================================================================
+
+/**
+ * Interval between autosaves in milliseconds.
+ */
+export const AUTOSAVE_INTERVAL_MS = 30000;
+
+/**
+ * Maximum offline time to calculate earnings for (seconds).
+ * Caps offline progression to prevent abuse.
+ */
+export const MAX_OFFLINE_TIME_SECONDS = 3600;
+
+// =============================================================================
+// COMBAT CALCULATIONS
+// =============================================================================
+
+/**
+ * Calculate DPS (damage per second) from damage and attack speed.
+ * Pure function for consistent display across UI.
+ */
+export function calculateDPS(damage: number, attackSpeed: number): number {
+  return damage * attackSpeed;
+}

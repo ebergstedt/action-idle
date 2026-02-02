@@ -26,6 +26,7 @@ import {
   MELEE_RANGE_BUFFER,
   MELEE_SIZE_MULTIPLIER,
   MIN_MOVE_DISTANCE,
+  MIN_NORMALIZE_THRESHOLD,
   MIN_VISUAL_OFFSET_THRESHOLD,
   PATH_DOT_THRESHOLD,
   REFERENCE_ARENA_HEIGHT,
@@ -693,7 +694,8 @@ export class UnitEntity extends BaseEntity {
 
       if (inRange && this.attackCooldown <= 0) {
         this.performAttack(this.target, attackMode);
-        this.attackCooldown = 1 / attackMode.attackSpeed;
+        // Use attackInterval from stats if available, otherwise calculate from attackSpeed
+        this.attackCooldown = this.data.stats.attackInterval ?? 1 / attackMode.attackSpeed;
       }
     }
   }
@@ -874,7 +876,8 @@ export class UnitEntity extends BaseEntity {
       // Apply visual effects for melee combat
       const arenaHeight = this.getArenaHeight();
       const toTarget = target.position.subtract(this.position);
-      const direction = toTarget.magnitude() > 0.1 ? toTarget.normalize() : new Vector2(0, -1);
+      const direction =
+        toTarget.magnitude() > MIN_NORMALIZE_THRESHOLD ? toTarget.normalize() : new Vector2(0, -1);
 
       // Attacker lunges forward
       const lungeDistance = scaleValue(BASE_MELEE_LUNGE_DISTANCE, arenaHeight);

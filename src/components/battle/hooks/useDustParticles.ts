@@ -11,6 +11,11 @@ import {
   DUST_PARTICLE_LIFETIME,
   PARTICLE_FRAME_DELTA,
   DUST_PARTICLE_GRAVITY,
+  DUST_MOVEMENT_THRESHOLD,
+  DUST_SPAWN_Y_OFFSET,
+  DUST_HORIZONTAL_VELOCITY_RANGE,
+  DUST_UPWARD_VELOCITY_BASE,
+  DUST_UPWARD_VELOCITY_RANDOM,
 } from '../../../core/battle/BattleConfig';
 import type { DustParticle } from '../rendering';
 
@@ -42,7 +47,7 @@ export function useDustParticles(): {
         const prevPos = prevPositionsRef.current.get(unit.id);
         const dx = prevPos ? Math.abs(unit.position.x - prevPos.x) : 0;
         const dy = prevPos ? Math.abs(unit.position.y - prevPos.y) : 0;
-        const isMoving = dx > 0.1 || dy > 0.1;
+        const isMoving = dx > DUST_MOVEMENT_THRESHOLD || dy > DUST_MOVEMENT_THRESHOLD;
 
         // Update stored position
         prevPositionsRef.current.set(unit.id, {
@@ -58,9 +63,9 @@ export function useDustParticles(): {
             for (let i = 0; i < particleCount; i++) {
               dustParticlesRef.current.push({
                 x: unit.position.x + (Math.random() - 0.5) * unit.size * 2,
-                y: unit.position.y + unit.size + 5, // Below the unit
-                vx: (Math.random() - 0.5) * 40,
-                vy: -Math.random() * 40 - 20, // Strong upward velocity
+                y: unit.position.y + unit.size + DUST_SPAWN_Y_OFFSET,
+                vx: (Math.random() - 0.5) * DUST_HORIZONTAL_VELOCITY_RANGE,
+                vy: -Math.random() * DUST_UPWARD_VELOCITY_RANDOM - DUST_UPWARD_VELOCITY_BASE,
                 lifetime: DUST_PARTICLE_LIFETIME,
                 maxLifetime: DUST_PARTICLE_LIFETIME,
               });

@@ -42,6 +42,8 @@ export interface BaseStats {
   maxHealth: number;
   moveSpeed: number; // pixels per second
   armor: number; // damage reduction (flat)
+  attackInterval?: number; // seconds between attacks (overrides attackSpeed if present)
+  squadSize?: number; // number of units in a squad (default 1)
   melee: AttackModeStats | null; // null = no melee attack
   ranged: AttackModeStats | null; // null = no ranged attack
 }

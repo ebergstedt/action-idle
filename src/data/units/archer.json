@@ -1,22 +1,29 @@
 {
   "id": "archer",
-  "name": "Archer",
-  "description": "A ranged attacker with high damage but low health. Falls back to weak melee when enemies get close.",
+  "name": "Fang",
+  "description": "A fragile ranged attacker. Slow but keeps enemies at distance. Falls back to weak melee when cornered.",
   "category": "ranged",
   "tier": 1,
+  "reference": {
+    "source": "Mechabellum",
+    "unit": "Fang",
+    "wiki": "https://mechabellum.wiki/index.php/Unit_Overview"
+  },
   "baseStats": {
-    "maxHealth": 50,
-    "moveSpeed": 15,
+    "maxHealth": 117,
+    "moveSpeed": 6,
     "armor": 0,
+    "attackInterval": 1.5,
+    "squadSize": 18,
     "melee": {
-      "damage": 8,
-      "attackSpeed": 0.6,
+      "damage": 20,
+      "attackSpeed": 0.67,
       "range": 35
     },
     "ranged": {
-      "damage": 25,
-      "attackSpeed": 0.8,
-      "range": 200
+      "damage": 63,
+      "attackSpeed": 0.67,
+      "range": 75
     }
   },
   "visuals": {
