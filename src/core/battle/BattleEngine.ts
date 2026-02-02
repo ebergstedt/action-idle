@@ -52,6 +52,24 @@ import {
 } from './types';
 import { UnitDefinition, UnitTeam } from './units/types';
 import { UnitRegistry } from './units';
+import {
+  IUnitEntityFactory,
+  ICastleEntityFactory,
+  DefaultUnitFactory,
+  DefaultCastleFactory,
+} from './factories';
+
+/**
+ * Configuration options for BattleEngine.
+ */
+export interface BattleEngineConfig {
+  /** Custom unit factory (optional, uses default if not provided) */
+  unitFactory?: IUnitEntityFactory;
+  /** Custom castle factory (optional, uses default if not provided) */
+  castleFactory?: ICastleEntityFactory;
+  /** Custom battle world (optional, for testing) */
+  world?: BattleWorld;
+}
 
 /**
  * Battle engine - orchestrates combat simulation.
@@ -60,6 +78,8 @@ import { UnitRegistry } from './units';
 export class BattleEngine {
   private world: BattleWorld;
   private registry: UnitRegistry;
+  private unitFactory: IUnitEntityFactory;
+  private castleFactory: ICastleEntityFactory;
   private nextUnitId = 1;
   private nextCastleId = 1;
   private nextSquadId = 1;
@@ -91,11 +111,13 @@ export class BattleEngine {
   /**
    * Create a new BattleEngine.
    * @param registry - Unit registry for spawning units
-   * @param world - Optional BattleWorld instance for dependency injection (testing)
+   * @param config - Optional configuration with factories and world (for DI/testing)
    */
-  constructor(registry: UnitRegistry, world?: BattleWorld) {
+  constructor(registry: UnitRegistry, config?: BattleEngineConfig) {
     this.registry = registry;
-    this.world = world ?? new BattleWorld();
+    this.world = config?.world ?? new BattleWorld();
+    this.unitFactory = config?.unitFactory ?? new DefaultUnitFactory();
+    this.castleFactory = config?.castleFactory ?? new DefaultCastleFactory();
 
     // Bind event listeners for idle speed-up system
     this.onDamagedListener = this.handleDamaged.bind(this);
@@ -119,8 +141,8 @@ export class BattleEngine {
    * Handle entity added - subscribe to damage events for units.
    */
   private handleEntityAdded(event: EntityAddedEvent): void {
-    if (event.entity instanceof UnitEntity) {
-      this.subscribeToUnit(event.entity);
+    if (event.entity.kind === 'unit') {
+      this.subscribeToUnit(event.entity as UnitEntity);
     }
   }
 
@@ -405,7 +427,7 @@ export class BattleEngine {
       hasAimingLaser: visuals.aimingLaser ?? false,
     };
 
-    const entity = new UnitEntity(id, position.clone(), data);
+    const entity = this.unitFactory.createUnit(id, position.clone(), data);
     this.world.addUnit(entity);
 
     return entity.toRenderData();
@@ -495,7 +517,7 @@ export class BattleEngine {
       color: getCastleColor(team),
     };
 
-    const entity = new CastleEntity(id, position.clone(), data);
+    const entity = this.castleFactory.createCastle(id, position.clone(), data);
     this.world.addCastle(entity);
 
     return entity;

@@ -18,6 +18,7 @@ import {
   scaleValue,
 } from '../BattleConfig';
 import { isOutOfBounds } from '../BoundsEnforcer';
+import { EntityKind } from '../IEntity';
 import { ProjectileRenderData, UnitTeam } from '../types';
 import { BaseEntity } from './BaseEntity';
 import { IBattleWorld } from './IBattleWorld';
@@ -41,6 +42,7 @@ export interface ProjectileData {
  * Projectile entity with movement and hit detection.
  */
 export class ProjectileEntity extends BaseEntity {
+  public readonly kind: EntityKind = 'projectile';
   public data: ProjectileData;
 
   constructor(id: string, position: Vector2, data: ProjectileData) {

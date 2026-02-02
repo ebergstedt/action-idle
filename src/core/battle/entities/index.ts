@@ -14,6 +14,7 @@
 export { EventEmitter, WorldEventEmitter } from './EventEmitter';
 export { BaseEntity, type IEntityWorld } from './BaseEntity';
 export { type IBattleWorld } from './IBattleWorld';
+export type { EntityKind } from '../IEntity';
 
 // Entity implementations
 export { UnitEntity, type UnitData } from './UnitEntity';

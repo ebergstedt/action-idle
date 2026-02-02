@@ -11,6 +11,7 @@
  */
 
 import { Vector2 } from '../../physics/Vector2';
+import { EntityKind } from '../IEntity';
 import { CastleRenderData } from '../types';
 import { UnitTeam } from '../units/types';
 import { BaseEntity } from './BaseEntity';
@@ -30,6 +31,7 @@ export interface CastleData {
  * Castle entity - stationary objective.
  */
 export class CastleEntity extends BaseEntity {
+  public readonly kind: EntityKind = 'castle';
   public data: CastleData;
 
   constructor(id: string, position: Vector2, data: CastleData) {

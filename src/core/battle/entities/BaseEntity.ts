@@ -15,6 +15,7 @@ import {
   EntityEventType,
   EntityEventMap,
   EventListener,
+  EntityKind,
 } from '../IEntity';
 import { EventEmitter } from './EventEmitter';
 
@@ -35,6 +36,7 @@ export interface IEntityWorld {
  */
 export abstract class BaseEntity implements IEntity, IEventEmitter {
   public readonly id: string;
+  public abstract readonly kind: EntityKind;
   public position: Vector2;
 
   protected _destroyed = false;

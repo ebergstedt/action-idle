@@ -47,7 +47,7 @@ import {
   createDefenderDebuff,
 } from '../modifiers/MeleeEngagementDebuff';
 import { clampToArenaInPlace } from '../BoundsEnforcer';
-import { IDamageable, IMeleeTarget } from '../IEntity';
+import { EntityKind, IDamageable, IMeleeTarget } from '../IEntity';
 import { applyShuffle } from '../shuffle';
 import { AttackMode, UnitRenderData, UnitStats, UnitTeam, UnitType, UnitShape } from '../types';
 import { BaseEntity } from './BaseEntity';
@@ -98,6 +98,7 @@ export interface UnitData {
  * Unit entity with full behavior.
  */
 export class UnitEntity extends BaseEntity {
+  public readonly kind: EntityKind = 'unit';
   public data: UnitData;
 
   constructor(id: string, position: Vector2, data: UnitData) {

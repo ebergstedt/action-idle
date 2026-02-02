@@ -21,6 +21,7 @@ import {
   REFERENCE_ARENA_HEIGHT,
   scaleValue,
 } from '../BattleConfig';
+import { EntityKind } from '../IEntity';
 import { ShockwaveRenderData, UnitTeam } from '../types';
 import { BaseEntity } from './BaseEntity';
 import { IBattleWorld } from './IBattleWorld';
@@ -49,6 +50,7 @@ export interface ShockwaveData {
  * Shockwave entity - expanding ring that debuffs enemies.
  */
 export class ShockwaveEntity extends BaseEntity {
+  public readonly kind: EntityKind = 'shockwave';
   public data: ShockwaveData;
 
   constructor(id: string, position: Vector2, data: ShockwaveData) {

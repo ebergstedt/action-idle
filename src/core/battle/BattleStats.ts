@@ -65,9 +65,15 @@ function createEmptyTeamStats(): TeamStats {
 
 /**
  * Type guard to check if an entity is a UnitEntity.
+ * Uses the kind discriminant instead of instanceof for DIP compliance.
  */
 function isUnitEntity(entity: unknown): entity is UnitEntity {
-  return entity instanceof UnitEntity;
+  return (
+    typeof entity === 'object' &&
+    entity !== null &&
+    'kind' in entity &&
+    (entity as { kind: string }).kind === 'unit'
+  );
 }
 
 /**

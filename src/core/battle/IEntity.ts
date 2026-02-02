@@ -15,6 +15,14 @@ import { Vector2 } from '../physics/Vector2';
 import { UnitTeam } from './units/types';
 
 /**
+ * Discriminant for entity types.
+ * Used instead of instanceof checks for DIP compliance.
+ *
+ * Godot equivalent: Node.get_class() or custom "type" property on nodes.
+ */
+export type EntityKind = 'unit' | 'castle' | 'projectile' | 'shockwave' | 'damage_number';
+
+/**
  * Interface for entities that can take damage (units, castles, etc.).
  * Allows projectiles and other damage sources to treat all targets uniformly.
  *
@@ -77,6 +85,13 @@ export interface IMeleeTarget extends IDamageable {
 export interface IEntity {
   /** Unique identifier */
   readonly id: string;
+
+  /**
+   * Entity type discriminant.
+   * Use this instead of instanceof for type checking.
+   * @example entity.kind === 'unit'
+   */
+  readonly kind: EntityKind;
 
   /** Position in world space */
   position: Vector2;

@@ -9,6 +9,7 @@
 
 import { Vector2 } from '../../physics/Vector2';
 import { BASE_DAMAGE_NUMBER_FLOAT_DISTANCE, scaleValue } from '../BattleConfig';
+import { EntityKind } from '../IEntity';
 import { UnitTeam } from '../types';
 import { BaseEntity } from './BaseEntity';
 
@@ -46,6 +47,7 @@ export interface DamageNumberRenderData {
  * Floating damage number entity.
  */
 export class DamageNumberEntity extends BaseEntity {
+  public readonly kind: EntityKind = 'damage_number';
   public data: DamageNumberData;
 
   constructor(id: string, position: Vector2, data: DamageNumberData) {
