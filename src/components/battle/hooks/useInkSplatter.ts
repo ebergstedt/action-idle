@@ -26,27 +26,18 @@ import {
   INK_SPEED_MULTIPLIER_MIN,
   INK_KNOCKBACK_DIRECTION_THRESHOLD,
 } from '../../../core/battle/BattleConfig';
+import { randomMultiplier } from '../../../core/utils/Random';
 
 /**
- * Generate a random number with approximately normal distribution.
- * Uses Box-Muller transform. Returns value centered around 0 with stdDev of 1.
- */
-function randomNormal(): number {
-  const u1 = Math.random();
-  const u2 = Math.random();
-  return Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
-}
-
-/**
- * Generate a random multiplier with normal distribution.
- * Uses INK_SPEED_MULTIPLIER_MEAN with rare high values for far-flying splatters.
- * Clamped to INK_SPEED_MULTIPLIER_MIN to avoid negative/tiny values.
+ * Generate a random speed multiplier with normal distribution.
+ * Uses configured mean with rare high values for far-flying splatters.
  */
 function randomSpeedMultiplier(): number {
-  // Normal distribution centered at mean with configured stdDev
-  // ~68% within 1 stdDev, ~95% within 2 stdDev, rare outliers go further
-  const multiplier = INK_SPEED_MULTIPLIER_MEAN + randomNormal() * INK_SPEED_MULTIPLIER_STDDEV;
-  return Math.max(INK_SPEED_MULTIPLIER_MIN, multiplier);
+  return randomMultiplier(
+    INK_SPEED_MULTIPLIER_MEAN,
+    INK_SPEED_MULTIPLIER_STDDEV,
+    INK_SPEED_MULTIPLIER_MIN
+  );
 }
 
 /**

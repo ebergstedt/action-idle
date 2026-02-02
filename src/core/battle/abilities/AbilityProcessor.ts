@@ -24,7 +24,7 @@ import {
   ResolvedEffect,
   TriggerType,
 } from './types';
-import { AbilityRegistry } from './AbilityRegistry';
+import { IAbilityRegistry } from './IAbilityRegistry';
 
 /**
  * Configuration for ability processing.
@@ -55,7 +55,7 @@ export class AbilityProcessor {
   private random: () => number;
 
   constructor(
-    private registry: AbilityRegistry,
+    private registry: IAbilityRegistry,
     config: AbilityProcessorConfig = {}
   ) {
     this.random = config.random ?? Math.random;
@@ -283,7 +283,7 @@ export class AbilityProcessor {
  * Creates an AbilityProcessor with the provided registry.
  */
 export function createAbilityProcessor(
-  registry: AbilityRegistry,
+  registry: IAbilityRegistry,
   config?: AbilityProcessorConfig
 ): AbilityProcessor {
   return new AbilityProcessor(registry, config);

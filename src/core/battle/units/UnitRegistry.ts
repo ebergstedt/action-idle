@@ -7,13 +7,14 @@
  * Godot-portable: No React/browser dependencies.
  */
 
+import { IUnitRegistry } from './IUnitRegistry';
 import { UnitCategory, UnitDefinition } from './types';
 
 /**
  * Registry for unit definitions.
  * Provides lookup and filtering capabilities.
  */
-export class UnitRegistry {
+export class UnitRegistry implements IUnitRegistry {
   private definitions: Map<string, UnitDefinition> = new Map();
   private byCategory: Map<UnitCategory, UnitDefinition[]> = new Map();
   private byTier: Map<number, UnitDefinition[]> = new Map();

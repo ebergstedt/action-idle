@@ -11,13 +11,13 @@ import { ActiveModifier, Modifier, ModifierSource } from '../modifiers/types';
 import { createActiveModifier } from '../modifiers/ModifierCalculator';
 import { UnitDefinition } from '../units/types';
 import { BattleUpgradeStates, ComputedUpgradeModifiers } from './types';
-import { BattleUpgradeRegistry } from './BattleUpgradeRegistry';
+import { IBattleUpgradeRegistry } from './IBattleUpgradeRegistry';
 
 /**
  * Applies upgrade effects to units.
  */
 export class UpgradeApplicator {
-  constructor(private registry: BattleUpgradeRegistry) {}
+  constructor(private registry: IBattleUpgradeRegistry) {}
 
   /**
    * Computes all modifiers and abilities for a specific unit type
@@ -187,6 +187,6 @@ export class UpgradeApplicator {
 /**
  * Creates an UpgradeApplicator with the provided registry.
  */
-export function createUpgradeApplicator(registry: BattleUpgradeRegistry): UpgradeApplicator {
+export function createUpgradeApplicator(registry: IBattleUpgradeRegistry): UpgradeApplicator {
   return new UpgradeApplicator(registry);
 }

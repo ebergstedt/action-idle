@@ -91,6 +91,19 @@ export interface UnlockRequirement {
 }
 
 /**
+ * Reference metadata for unit design origins.
+ * Optional attribution for game design inspiration.
+ */
+export interface UnitReference {
+  /** Source game or media */
+  source?: string;
+  /** Original unit name */
+  unit?: string;
+  /** Reference wiki or documentation URL */
+  wiki?: string;
+}
+
+/**
  * Unit Definition - Static template loaded from JSON.
  * Defines what a unit type IS, not its runtime state.
  */
@@ -121,6 +134,9 @@ export interface UnitDefinition {
 
   /** Requirements to unlock this unit type */
   unlockRequirements: UnlockRequirement[];
+
+  /** Optional reference metadata for design attribution */
+  reference?: UnitReference;
 }
 
 /**

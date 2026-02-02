@@ -21,7 +21,11 @@ import {
   DragBounds,
 } from '../../../core/battle/DragController';
 import { findUnitAtPosition } from '../../../core/battle/InputAdapter';
-import { selectAllOfType, selectSquad } from '../../../core/battle/SelectionManager';
+import {
+  selectAllOfType,
+  selectSquad,
+  filterSelectionByTeam,
+} from '../../../core/battle/SelectionManager';
 import {
   startBoxSelect,
   updateBoxSelect,
@@ -189,11 +193,9 @@ export function useCanvasInput({
 
         // Start drag for player units - drag entire squad
         if (clickedUnit.team === 'player') {
+          // Filter to only player units (game logic delegated to core)
           const unitsToMove = isAlreadySelected
-            ? selectedUnitIds.filter((id) => {
-                const unit = units.find((u) => u.id === id);
-                return unit?.team === 'player';
-              })
+            ? filterSelectionByTeam(selectedUnitIds, units, 'player')
             : squadSelection.selectedIds;
 
           const session = startDrag(clickedUnit.id, pos, unitsToMove, units);

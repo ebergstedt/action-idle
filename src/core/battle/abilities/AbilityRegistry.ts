@@ -7,13 +7,14 @@
  * Godot-portable: No React/browser dependencies.
  */
 
+import { IAbilityRegistry } from './IAbilityRegistry';
 import { AbilityDefinition, TriggerType } from './types';
 
 /**
  * Registry for ability definitions.
  * Provides lookup and filtering capabilities.
  */
-export class AbilityRegistry {
+export class AbilityRegistry implements IAbilityRegistry {
   private definitions: Map<string, AbilityDefinition> = new Map();
   private byTrigger: Map<TriggerType, AbilityDefinition[]> = new Map();
 

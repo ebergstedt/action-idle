@@ -7,6 +7,7 @@
  * Godot-portable: No React/browser dependencies.
  */
 
+import { IBattleUpgradeRegistry } from './IBattleUpgradeRegistry';
 import {
   BattleUpgradeDefinition,
   BattleUpgradeStates,
@@ -19,7 +20,7 @@ import {
  * Registry for battle upgrade definitions.
  * Provides lookup, filtering, and cost calculation.
  */
-export class BattleUpgradeRegistry {
+export class BattleUpgradeRegistry implements IBattleUpgradeRegistry {
   private definitions: Map<string, BattleUpgradeDefinition> = new Map();
   private byScope: Map<UpgradeScope, BattleUpgradeDefinition[]> = new Map();
   private byTarget: Map<string, BattleUpgradeDefinition[]> = new Map();

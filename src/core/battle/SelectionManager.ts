@@ -146,3 +146,23 @@ export function getUniformSelectionUnit<T extends ISelectable>(
 
   return isUniform ? firstUnit : null;
 }
+
+/**
+ * Filters selected unit IDs to only include units of a specific team.
+ * Useful for drag operations that should only affect player units.
+ *
+ * @param selectedIds - Currently selected unit IDs
+ * @param units - All available units
+ * @param team - Team to filter by ('player' or 'enemy')
+ * @returns Array of unit IDs that belong to the specified team
+ */
+export function filterSelectionByTeam<T extends ISelectable>(
+  selectedIds: string[],
+  units: T[],
+  team: 'player' | 'enemy'
+): string[] {
+  return selectedIds.filter((id) => {
+    const unit = units.find((u) => u.id === id);
+    return unit?.team === team;
+  });
+}

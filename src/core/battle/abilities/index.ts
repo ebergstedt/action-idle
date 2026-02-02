@@ -5,5 +5,6 @@
  */
 
 export * from './types';
+export type { IAbilityRegistry } from './IAbilityRegistry';
 export * from './AbilityRegistry';
 export * from './AbilityProcessor';
