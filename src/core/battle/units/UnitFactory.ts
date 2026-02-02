@@ -37,7 +37,7 @@ export function generateUnitId(): string {
 
 /**
  * Gets the color for a unit based on team and type.
- * Falls back to warrior color if the color key doesn't match.
+ * Falls back to hound color if the color key doesn't match.
  */
 function getUnitColor(team: UnitTeam, colorKey: string): string {
   // Try to use the color key directly
@@ -45,8 +45,8 @@ function getUnitColor(team: UnitTeam, colorKey: string): string {
   if (unitTypeColors) {
     return unitTypeColors[team];
   }
-  // Fallback to warrior colors
-  return UNIT_TYPE_COLORS.warrior[team];
+  // Fallback to hound colors
+  return UNIT_TYPE_COLORS.hound[team];
 }
 
 /**

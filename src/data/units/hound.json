@@ -1,15 +1,15 @@
 {
-  "id": "warrior",
+  "id": "hound",
   "name": "Hound",
-  "description": "A sturdy short-range assault unit. High health, slow but powerful attacks.",
+  "description": "Shotgun-style melee unit. Powerful AoE attacks at close range.",
   "category": "infantry",
   "tier": 1,
   "formationRole": "front",
   "wavePermit": 1,
   "reference": {
-    "source": "Custom",
+    "source": "Mechabellum",
     "unit": "Hound",
-    "wiki": ""
+    "wiki": "https://mechabellum.wiki/index.php/Unit_Overview"
   },
   "baseStats": {
     "maxHealth": 897,
@@ -20,14 +20,15 @@
     "melee": {
       "damage": 247,
       "attackSpeed": 0.42,
-      "range": 15
+      "range": 15,
+      "splashRadius": 6
     },
     "ranged": null
   },
   "visuals": {
     "shape": "square",
     "baseSize": 7,
-    "colorKey": "warrior",
+    "colorKey": "hound",
     "walkAnimation": "bounce"
   },
   "innateAbilities": [],

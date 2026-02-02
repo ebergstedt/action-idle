@@ -7,18 +7,18 @@
 import type { BattleUpgradeDefinition } from '../../core/battle/upgrades/types';
 
 import globalUpgrades from './global.json';
-import warriorUpgrades from './warrior.json';
-import archerUpgrades from './archer.json';
-import knightUpgrades from './knight.json';
+import houndUpgrades from './hound.json';
+import fangUpgrades from './fang.json';
+import crawlerUpgrades from './crawler.json';
 
 /**
  * All battle upgrade definitions loaded from JSON.
  */
 export const battleUpgradeDefinitions: BattleUpgradeDefinition[] = [
   ...(globalUpgrades as BattleUpgradeDefinition[]),
-  ...(warriorUpgrades as BattleUpgradeDefinition[]),
-  ...(archerUpgrades as BattleUpgradeDefinition[]),
-  ...(knightUpgrades as BattleUpgradeDefinition[]),
+  ...(houndUpgrades as BattleUpgradeDefinition[]),
+  ...(fangUpgrades as BattleUpgradeDefinition[]),
+  ...(crawlerUpgrades as BattleUpgradeDefinition[]),
 ];
 
 /**

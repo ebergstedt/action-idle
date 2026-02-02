@@ -195,7 +195,7 @@ export function getTeamName(team: Team): string {
 // UNIT TYPE COLORS - Variations of Team Base Color
 // =============================================================================
 
-export type UnitType = 'warrior' | 'archer' | 'knight' | 'arclight' | 'marksman' | 'void_eye';
+export type UnitType = 'hound' | 'fang' | 'crawler' | 'arclight' | 'marksman' | 'void_eye';
 
 export interface UnitTypeColors {
   player: string;
@@ -207,26 +207,26 @@ export interface UnitTypeColors {
  * This keeps team identity clear while distinguishing unit types.
  * Variations are CONSISTENT across teams:
  *
- * - Warrior: Base color (standard)
- * - Archer: Lighter shade (ranged = further back, lighter)
- * - Knight: Darker shade (elite = heavier, darker)
+ * - Hound: Base color (standard melee)
+ * - Fang: Lighter shade (ranged = further back, lighter)
+ * - Crawler: Darker shade (swarm = darker)
  *
  * Player (green): #004D00 (dark) -> #006400 (base) -> #228B22 (light)
  * Enemy (red):    #820000 (dark) -> #C80000 (base) -> #FF6464 (light)
  */
 export const UNIT_TYPE_COLORS: Record<UnitType, UnitTypeColors> = {
-  // Warriors - core infantry, uses base team color
-  warrior: {
+  // Hound - melee infantry, uses base team color
+  hound: {
     player: '#00AA00', // Bright green
     enemy: '#C80000', // Base red
   },
-  // Archers - ranged support, lighter shade
-  archer: {
+  // Fang - ranged swarm, lighter shade
+  fang: {
     player: '#32CD32', // Lime green (lighter)
     enemy: '#FF6464', // Coral red (lighter)
   },
-  // Knights - elite cavalry, darker shade
-  knight: {
+  // Crawler - melee swarm, darker shade
+  crawler: {
     player: '#008000', // Medium green (darker but still visible)
     enemy: '#820000', // Maroon (darker)
   },

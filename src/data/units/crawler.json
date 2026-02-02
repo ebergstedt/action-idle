@@ -1,7 +1,7 @@
 {
-  "id": "knight",
+  "id": "crawler",
   "name": "Crawler",
-  "description": "A lightning-fast melee swarm unit. Low health but rapid attacks and high mobility.",
+  "description": "Lightning-fast melee swarm. Low health but rapid attacks and highest mobility.",
   "category": "cavalry",
   "tier": 1,
   "formationRole": "flank",
@@ -27,7 +27,7 @@
   "visuals": {
     "shape": "circle",
     "baseSize": 6,
-    "colorKey": "knight",
+    "colorKey": "crawler",
     "walkAnimation": "bounce"
   },
   "innateAbilities": [],

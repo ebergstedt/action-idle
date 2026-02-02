@@ -54,20 +54,20 @@ export function MapLegend({ className = '' }: MapLegendProps) {
       <div className="space-y-2">
         <LegendEntry
           shape="square"
-          color={UNIT_TYPE_COLORS.warrior.player}
-          name="Warrior"
+          color={UNIT_TYPE_COLORS.hound.player}
+          name="Hound"
           description="Melee tank"
         />
         <LegendEntry
           shape="triangle"
-          color={UNIT_TYPE_COLORS.archer.player}
-          name="Archer"
+          color={UNIT_TYPE_COLORS.fang.player}
+          name="Fang"
           description="Ranged"
         />
         <LegendEntry
           shape="circle"
-          color={UNIT_TYPE_COLORS.knight.player}
-          name="Knight"
+          color={UNIT_TYPE_COLORS.crawler.player}
+          name="Crawler"
           description="Fast melee"
         />
       </div>

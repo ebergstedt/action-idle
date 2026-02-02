@@ -76,8 +76,8 @@
  *    Decision: 35% chance to swap roles (e.g., front↔back) for enemy formations.
  *
  *    Reasoning:
- *    - Prevents predictable "warriors always in front" pattern
- *    - Creates tactical variety (sometimes archers lead, sometimes hang back)
+ *    - Prevents predictable "hounds always in front" pattern
+ *    - Creates tactical variety (sometimes fangs lead, sometimes hang back)
  *    - More interesting for the player to face varied challenges
  *    - Still deterministic (same wave = same swap decision)
  *
@@ -138,9 +138,9 @@
  * FORMATION ROLES (from units/types.ts)
  * =============================================================================
  *
- * - FRONT: Melee units (warriors) - naturally positioned closest to enemy
- * - BACK:  Ranged units (archers) - naturally positioned behind for protection
- * - FLANK: Mobile units (knights) - naturally positioned on sides for maneuvers
+ * - FRONT: Melee units (hounds) - naturally positioned closest to enemy
+ * - BACK:  Ranged units (fangs) - naturally positioned behind for protection
+ * - FLANK: Mobile units (crawlers) - naturally positioned on sides for maneuvers
  *
  * Note: Role swapping can override these natural positions for variety.
  *
@@ -223,7 +223,7 @@ import {
  * Unit types currently supported in formations.
  * Matches the unit IDs in /src/data/units/*.json
  */
-export type UnitType = 'warrior' | 'archer' | 'knight' | 'arclight' | 'marksman' | 'void_eye';
+export type UnitType = 'hound' | 'fang' | 'crawler' | 'arclight' | 'marksman' | 'void_eye';
 
 /**
  * A unit placement within a legacy FormationTemplate.
@@ -553,7 +553,7 @@ export const DEFAULT_ENEMY_PATTERNS: EnemyFormationPattern[] = [
   {
     id: 'left_hammer',
     name: 'Left Hammer',
-    // Heavy left flank - all knights on left, archers spread wide
+    // Heavy left flank - all crawlers on left, fangs spread wide
     front: { yPosition: 0.2, spread: 'line', widthFraction: 0.95 },
     back: { yPosition: 0.55, spread: 'wide', widthFraction: 0.9 },
     flank: { yPosition: 0.12, spread: 'left', widthFraction: 0.45 },
@@ -561,7 +561,7 @@ export const DEFAULT_ENEMY_PATTERNS: EnemyFormationPattern[] = [
   {
     id: 'right_hammer',
     name: 'Right Hammer',
-    // Heavy right flank - all knights on right, archers spread wide
+    // Heavy right flank - all crawlers on right, fangs spread wide
     front: { yPosition: 0.2, spread: 'line', widthFraction: 0.95 },
     back: { yPosition: 0.55, spread: 'wide', widthFraction: 0.9 },
     flank: { yPosition: 0.12, spread: 'right', widthFraction: 0.45 },
@@ -600,8 +600,8 @@ export const DEFAULT_ENEMY_PATTERNS: EnemyFormationPattern[] = [
  * Design rationale:
  * - Empty swap (no change) is included for 25% "normal" chance when swap triggers
  * - front↔back: Most impactful - melee/ranged positions swap
- * - front↔flank: Warriors go to sides, knights go center
- * - back↔flank: Archers spread to flanks, knights group behind
+ * - front↔flank: Warriors go to sides, crawlers go center
+ * - back↔flank: Archers spread to flanks, crawlers group behind
  *
  * Not included: All three roles swapping (too chaotic, loses formation identity)
  */
@@ -731,21 +731,21 @@ export const CLASSIC_FORMATION: FormationTemplate = {
   id: 'classic',
   name: 'Classic Battle Line',
   placements: [
-    // Front line - 2 Hounds (warriors)
-    { type: 'warrior', relativePosition: new Vector2(-0.15, 0) },
-    { type: 'warrior', relativePosition: new Vector2(0.15, 0) },
-    // Back line - 2 Fangs (archers)
-    { type: 'archer', relativePosition: new Vector2(-0.25, 0.5) },
-    { type: 'archer', relativePosition: new Vector2(0.25, 0.5) },
+    // Front line - 2 Hounds (melee tanks)
+    { type: 'hound', relativePosition: new Vector2(-0.15, 0) },
+    { type: 'hound', relativePosition: new Vector2(0.15, 0) },
+    // Back line - 2 Fangs (ranged swarm)
+    { type: 'fang', relativePosition: new Vector2(-0.25, 0.5) },
+    { type: 'fang', relativePosition: new Vector2(0.25, 0.5) },
     // Back line - 2 Arclights (artillery)
     { type: 'arclight', relativePosition: new Vector2(-0.1, 0.65) },
     { type: 'arclight', relativePosition: new Vector2(0.1, 0.65) },
     // Back line - 2 Marksmen (snipers)
     { type: 'marksman', relativePosition: new Vector2(-0.35, 0.55) },
     { type: 'marksman', relativePosition: new Vector2(0.35, 0.55) },
-    // Flanks - 2 Crawlers (knights)
-    { type: 'knight', relativePosition: new Vector2(-0.5, 0.25) },
-    { type: 'knight', relativePosition: new Vector2(0.5, 0.25) },
+    // Flanks - 2 Crawlers (fast melee swarm)
+    { type: 'crawler', relativePosition: new Vector2(-0.5, 0.25) },
+    { type: 'crawler', relativePosition: new Vector2(0.5, 0.25) },
     // Flanks - 2 Void Eyes (scouts)
     { type: 'void_eye', relativePosition: new Vector2(-0.45, 0.1) },
     { type: 'void_eye', relativePosition: new Vector2(0.45, 0.1) },
@@ -788,16 +788,16 @@ export function calculateAlliedSpawnPositions(
  */
 export function getDefaultAlliedComposition(): UnitType[] {
   return [
-    'warrior',
-    'warrior',
-    'archer',
-    'archer',
+    'hound',
+    'hound',
+    'fang',
+    'fang',
     'arclight',
     'arclight',
     'marksman',
     'marksman',
-    'knight',
-    'knight',
+    'crawler',
+    'crawler',
     'void_eye',
     'void_eye',
   ];
@@ -1055,16 +1055,16 @@ export function calculateEnemySpawnPositions(
  */
 export function getDefaultEnemyComposition(): UnitType[] {
   return [
-    'warrior',
-    'warrior',
-    'archer',
-    'archer',
+    'hound',
+    'hound',
+    'fang',
+    'fang',
     'arclight',
     'arclight',
     'marksman',
     'marksman',
-    'knight',
-    'knight',
+    'crawler',
+    'crawler',
     'void_eye',
     'void_eye',
   ];
@@ -1106,14 +1106,14 @@ export function getEnemyCompositionForWave(
   // If no registry provided, use legacy fixed ratios
   if (!registry) {
     // Legacy fallback: fixed percentages from BattleConfig
-    const hasKnights = waveNumber >= 3;
-    const knightCount = hasKnights ? Math.floor(totalEnemies * LEGACY_ENEMY_KNIGHT_RATIO) : 0;
-    const archerCount = Math.floor(totalEnemies * LEGACY_ENEMY_ARCHER_RATIO);
-    const warriorCount = totalEnemies - knightCount - archerCount;
+    const hasCrawlers = waveNumber >= 3;
+    const crawlerCount = hasCrawlers ? Math.floor(totalEnemies * LEGACY_ENEMY_KNIGHT_RATIO) : 0;
+    const fangCount = Math.floor(totalEnemies * LEGACY_ENEMY_ARCHER_RATIO);
+    const houndCount = totalEnemies - crawlerCount - fangCount;
 
-    for (let i = 0; i < warriorCount; i++) composition.push('warrior');
-    for (let i = 0; i < archerCount; i++) composition.push('archer');
-    for (let i = 0; i < knightCount; i++) composition.push('knight');
+    for (let i = 0; i < houndCount; i++) composition.push('hound');
+    for (let i = 0; i < fangCount; i++) composition.push('fang');
+    for (let i = 0; i < crawlerCount; i++) composition.push('crawler');
 
     return composition;
   }
@@ -1123,7 +1123,7 @@ export function getEnemyCompositionForWave(
 
   if (availableUnits.length === 0) {
     // Fallback if no units available (shouldn't happen)
-    for (let i = 0; i < totalEnemies; i++) composition.push('warrior');
+    for (let i = 0; i < totalEnemies; i++) composition.push('hound');
     return composition;
   }
 
@@ -1241,7 +1241,7 @@ export function calculateDeterministicEnemyPositions(
   for (const unitType of composition) {
     const def = registry.tryGet(unitType);
     if (def) {
-      // Apply role swap if active (e.g., warriors might go to 'back' position)
+      // Apply role swap if active (e.g., hounds might go to 'back' position)
       const mappedRole = roleMapper(def.formationRole);
       grouped[mappedRole].push({ type: unitType, def });
     }

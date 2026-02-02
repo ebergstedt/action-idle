@@ -1,14 +1,14 @@
 [
   {
-    "id": "archer_damage_1",
-    "name": "Archer Precision",
-    "description": "Archers deal +4 ranged damage per level.",
+    "id": "fang_damage_1",
+    "name": "Fang Precision",
+    "description": "Fangs deal +4 ranged damage per level.",
     "scope": "unit_type",
-    "targetId": "archer",
+    "targetId": "fang",
     "upgradeType": "stat_modifier",
     "modifiers": [
       {
-        "id": "archer_damage_flat",
+        "id": "fang_damage_flat",
         "target": "ranged.damage",
         "type": "flat",
         "value": 4
@@ -20,15 +20,15 @@
     "prerequisites": []
   },
   {
-    "id": "archer_range_1",
+    "id": "fang_range_1",
     "name": "Long Shot",
-    "description": "Archers gain +20 ranged attack range per level.",
+    "description": "Fangs gain +20 ranged attack range per level.",
     "scope": "unit_type",
-    "targetId": "archer",
+    "targetId": "fang",
     "upgradeType": "stat_modifier",
     "modifiers": [
       {
-        "id": "archer_range_flat",
+        "id": "fang_range_flat",
         "target": "ranged.range",
         "type": "flat",
         "value": 20
@@ -40,11 +40,11 @@
     "prerequisites": []
   },
   {
-    "id": "archer_focused_shot",
+    "id": "fang_focused_shot",
     "name": "Focused Shot Training",
-    "description": "Archers gain the Focused Shot ability.",
+    "description": "Fangs gain the Focused Shot ability.",
     "scope": "unit_type",
-    "targetId": "archer",
+    "targetId": "fang",
     "upgradeType": "ability_grant",
     "abilityId": "focused_shot",
     "baseCost": 250,
@@ -53,7 +53,7 @@
     "prerequisites": [
       {
         "type": "upgrade",
-        "targetId": "archer_damage_1",
+        "targetId": "fang_damage_1",
         "level": 3
       }
     ]

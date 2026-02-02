@@ -336,7 +336,7 @@ export class BattleEngine {
 
   /**
    * Spawn a unit from a definition and add it to the battle.
-   * @param definitionId - The unit definition ID (e.g., 'warrior', 'archer')
+   * @param definitionId - The unit definition ID (e.g., 'hound', 'fang')
    * @param team - Which team the unit belongs to
    * @param position - Spawn position
    * @param arenaHeight - Arena height for size scaling
@@ -374,7 +374,7 @@ export class BattleEngine {
     };
 
     // Get color from theme using colorKey
-    const color = getUnitColor(team, visuals.colorKey as 'warrior' | 'archer' | 'knight');
+    const color = getUnitColor(team, visuals.colorKey as 'hound' | 'fang' | 'crawler');
     const size = getScaledUnitSize(visuals.baseSize, arenaHeight);
 
     const id = `unit_${this.nextUnitId++}`;
@@ -415,7 +415,7 @@ export class BattleEngine {
    * Spawn a squad of units from a definition.
    * Units are arranged in a grid formation centered on the given position.
    *
-   * @param definitionId - The unit definition ID (e.g., 'warrior', 'archer')
+   * @param definitionId - The unit definition ID (e.g., 'hound', 'fang')
    * @param team - Which team the squad belongs to
    * @param centerPosition - Center position for the squad formation
    * @param arenaHeight - Arena height for size scaling

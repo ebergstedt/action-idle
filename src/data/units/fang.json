@@ -1,7 +1,7 @@
 {
-  "id": "archer",
+  "id": "fang",
   "name": "Fang",
-  "description": "A fragile ranged attacker. Slow but keeps enemies at distance. Falls back to weak melee when cornered.",
+  "description": "Fragile ranged swarm. Slow but keeps enemies at distance. Falls back to weak melee when cornered.",
   "category": "ranged",
   "tier": 1,
   "formationRole": "back",
@@ -31,7 +31,7 @@
   "visuals": {
     "shape": "triangle",
     "baseSize": 6,
-    "colorKey": "archer",
+    "colorKey": "fang",
     "walkAnimation": "bounce"
   },
   "innateAbilities": [],

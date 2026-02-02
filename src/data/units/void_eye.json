@@ -1,36 +1,36 @@
 {
   "id": "void_eye",
   "name": "Void Eye",
-  "description": "Mysterious scout unit. Fast attacks and high mobility for reconnaissance and harassment.",
+  "description": "Versatile ranged support unit. Balanced stats with aerial mode potential.",
   "category": "scout",
   "tier": 1,
-  "formationRole": "flank",
+  "formationRole": "back",
   "wavePermit": 1,
   "reference": {
-    "source": "Custom",
+    "source": "Mechabellum",
     "unit": "Void Eye",
-    "wiki": ""
+    "wiki": "https://mechabellum.wiki/index.php/Unit_Overview"
   },
   "baseStats": {
-    "maxHealth": 200,
-    "moveSpeed": 14,
+    "maxHealth": 1522,
+    "moveSpeed": 8,
     "armor": 0,
-    "attackInterval": 0.8,
-    "squadSize": 6,
+    "attackInterval": 3.5,
+    "squadSize": 3,
     "melee": {
-      "damage": 45,
-      "attackSpeed": 1.25,
+      "damage": 200,
+      "attackSpeed": 0.29,
       "range": 15
     },
     "ranged": {
-      "damage": 35,
-      "attackSpeed": 1.25,
-      "range": 50
+      "damage": 947,
+      "attackSpeed": 0.29,
+      "range": 100
     }
   },
   "visuals": {
     "shape": "circle",
-    "baseSize": 5,
+    "baseSize": 7,
     "colorKey": "void_eye",
     "walkAnimation": "bounce"
   },
