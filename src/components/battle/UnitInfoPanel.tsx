@@ -27,10 +27,11 @@ function calculateHealthPercent(health: number, maxHealth: number): number {
 
 interface UnitInfoPanelProps {
   unit: UnitRenderData;
+  squadCount?: number;
   onDeselect: () => void;
 }
 
-export function UnitInfoPanel({ unit, onDeselect }: UnitInfoPanelProps) {
+export function UnitInfoPanel({ unit, squadCount = 1, onDeselect }: UnitInfoPanelProps) {
   const healthPercent = calculateHealthPercent(unit.health, unit.stats.maxHealth);
 
   return (
@@ -38,6 +39,11 @@ export function UnitInfoPanel({ unit, onDeselect }: UnitInfoPanelProps) {
       <div className="flex justify-between items-center">
         <h3 className="text-lg font-bold capitalize" style={{ color: unit.color }}>
           {unit.type}
+          {squadCount > 1 && (
+            <span className="text-sm font-normal ml-2" style={styles.textFaded}>
+              ({squadCount} units)
+            </span>
+          )}
         </h3>
         <button onClick={onDeselect} className="text-sm hover:underline" style={styles.textFaded}>
           Close

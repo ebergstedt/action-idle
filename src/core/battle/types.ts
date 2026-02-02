@@ -94,6 +94,8 @@ export interface UnitRenderData {
   id: string;
   type: UnitType;
   team: UnitTeam;
+  /** Squad identifier - units spawned together share the same squadId */
+  squadId: string;
   position: Vector2;
   health: number;
   stats: UnitStats;

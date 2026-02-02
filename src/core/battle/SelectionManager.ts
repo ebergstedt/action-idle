@@ -102,6 +102,13 @@ export function selectAllOfType(units: Unit[], referenceUnit: Unit): SelectionSt
 }
 
 /**
+ * Selects all units in the same squad as the given unit.
+ */
+export function selectSquad(units: Unit[], referenceUnit: Unit): SelectionState {
+  return selectAllMatching(units, (u) => u.squadId === referenceUnit.squadId);
+}
+
+/**
  * Filters selection to only include units that still exist.
  */
 export function pruneSelection(

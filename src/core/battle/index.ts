@@ -7,6 +7,9 @@ export * from './shuffle';
 export { BattleEngine } from './BattleEngine';
 export * from './BoundsEnforcer';
 
+// Settings persistence (Godot-portable)
+export * from './BattleSettings';
+
 // New modular unit system
 export * from './units';
 export * from './modifiers';

@@ -13,17 +13,22 @@ interface WaxSealOverlayProps {
   outcome: BattleOutcome;
   goldEarned?: number;
   waveNumber?: number;
+  autoBattle?: boolean;
   onDismiss?: () => void;
 }
+
+const AUTO_BATTLE_COUNTDOWN_SECONDS = 3;
 
 export function WaxSealOverlay({
   outcome,
   goldEarned,
   waveNumber,
+  autoBattle,
   onDismiss,
 }: WaxSealOverlayProps) {
   const [isVisible, setIsVisible] = useState(false);
   const [isStamped, setIsStamped] = useState(false);
+  const [countdown, setCountdown] = useState(AUTO_BATTLE_COUNTDOWN_SECONDS);
 
   // Animate in when outcome changes to non-pending
   useEffect(() => {
@@ -41,8 +46,28 @@ export function WaxSealOverlay({
     } else {
       setIsVisible(false);
       setIsStamped(false);
+      setCountdown(AUTO_BATTLE_COUNTDOWN_SECONDS);
     }
   }, [outcome]);
+
+  // Auto-battle countdown timer
+  useEffect(() => {
+    if (!autoBattle || outcome === 'pending' || !isStamped) return;
+
+    // Start countdown after stamp animation completes
+    const countdownInterval = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev <= 1) {
+          clearInterval(countdownInterval);
+          onDismiss?.();
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(countdownInterval);
+  }, [autoBattle, outcome, isStamped, onDismiss]);
 
   if (outcome === 'pending' || !isVisible) {
     return null;
@@ -159,14 +184,14 @@ export function WaxSealOverlay({
           </p>
         )}
 
-        {/* Click to continue hint */}
+        {/* Click to continue hint or auto-battle countdown */}
         <p
           className="text-sm mt-4"
           style={{
             color: UI_COLORS.inkFaded,
           }}
         >
-          Click anywhere to continue
+          {autoBattle ? `Next battle in ${countdown}s...` : 'Click anywhere to continue'}
         </p>
       </div>
     </div>

@@ -55,6 +55,7 @@ export class BattleEngine {
   private registry: UnitRegistry;
   private nextUnitId = 1;
   private nextCastleId = 1;
+  private nextSquadId = 1;
   private isRunning = false;
   private hasStarted = false;
   private waveNumber = 1;
@@ -117,6 +118,7 @@ export class BattleEngine {
     this.hasStarted = false;
     this.nextUnitId = 1;
     this.nextCastleId = 1;
+    this.nextSquadId = 1;
     this.battleOutcome = 'pending';
   }
 
@@ -149,6 +151,20 @@ export class BattleEngine {
    */
   addGold(amount: number): void {
     this.gold += amount;
+  }
+
+  /**
+   * Set gold directly (for loading saved state).
+   */
+  setGold(amount: number): void {
+    this.gold = Math.max(0, amount);
+  }
+
+  /**
+   * Set the highest wave reached (for loading saved state).
+   */
+  setHighestWave(wave: number): void {
+    this.highestWave = Math.max(MIN_WAVE, Math.min(MAX_WAVE, wave));
   }
 
   /**
@@ -248,7 +264,8 @@ export class BattleEngine {
     definition: UnitDefinition,
     team: UnitTeam,
     position: Vector2,
-    arenaHeight: number = REFERENCE_ARENA_HEIGHT
+    arenaHeight: number = REFERENCE_ARENA_HEIGHT,
+    squadId?: string
   ): UnitRenderData {
     const { baseStats, visuals } = definition;
 
@@ -266,6 +283,8 @@ export class BattleEngine {
     const size = getScaledUnitSize(visuals.baseSize, arenaHeight);
 
     const id = `unit_${this.nextUnitId++}`;
+    // Use provided squadId or generate one for solo units
+    const finalSquadId = squadId ?? `squad_${this.nextSquadId++}`;
     const data: UnitData = {
       type: definition.id as 'warrior' | 'archer' | 'knight',
       team,
@@ -274,6 +293,7 @@ export class BattleEngine {
       color,
       shape: visuals.shape,
       size,
+      squadId: finalSquadId,
       target: null,
       attackCooldown: 0,
       shuffleDirection: null,
@@ -313,9 +333,12 @@ export class BattleEngine {
     const definition = this.registry.get(definitionId);
     const squadSize = definition.baseStats.squadSize ?? 1;
 
+    // Generate a unique squad ID for all units in this squad
+    const squadId = `squad_${this.nextSquadId++}`;
+
     if (squadSize <= 1) {
       // Single unit, no squad formation needed
-      return [this.spawnUnitFromDefinition(definition, team, centerPosition, arenaHeight)];
+      return [this.spawnUnitFromDefinition(definition, team, centerPosition, arenaHeight, squadId)];
     }
 
     const spacing = scaleValue(BASE_SQUAD_UNIT_SPACING, arenaHeight);
@@ -342,7 +365,7 @@ export class BattleEngine {
         const y = startY + row * spacing;
         const position = new Vector2(x, y);
 
-        const unit = this.spawnUnitFromDefinition(definition, team, position, arenaHeight);
+        const unit = this.spawnUnitFromDefinition(definition, team, position, arenaHeight, squadId);
         units.push(unit);
         unitIndex++;
       }

@@ -80,6 +80,8 @@ export interface UnitData {
   color: string;
   shape: 'circle' | 'square' | 'triangle';
   size: number;
+  /** Squad identifier - units spawned together share the same squadId */
+  squadId: string;
   // Combat state - unified target (can be unit or castle)
   target: IDamageable | null;
   attackCooldown: number;
@@ -120,6 +122,9 @@ export class UnitEntity extends BaseEntity {
   }
   get type(): UnitType {
     return this.data.type;
+  }
+  get squadId(): string {
+    return this.data.squadId;
   }
   get health(): number {
     return this.data.health;
@@ -461,6 +466,7 @@ export class UnitEntity extends BaseEntity {
       id: this.id,
       type: this.type,
       team: this.team,
+      squadId: this.squadId,
       position: this.position,
       health: this.health,
       stats: this.stats,

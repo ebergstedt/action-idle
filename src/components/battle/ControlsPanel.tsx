@@ -28,11 +28,13 @@ interface ControlsPanelProps {
   waveNumber: number;
   highestWave: number;
   gold: number;
+  autoBattle: boolean;
   onStart: () => void;
   onStop: () => void;
   onReset: () => void;
   onSpeedChange: (speed: BattleSpeed) => void;
   onWaveChange: (wave: number) => void;
+  onAutoBattleToggle: () => void;
 }
 
 export function ControlsPanel({
@@ -42,11 +44,13 @@ export function ControlsPanel({
   waveNumber,
   highestWave,
   gold,
+  autoBattle,
   onStart,
   onStop,
   onReset,
   onSpeedChange,
   onWaveChange,
+  onAutoBattleToggle,
 }: ControlsPanelProps) {
   const speeds: BattleSpeed[] = [0.5, 1, 2];
 
@@ -108,29 +112,45 @@ export function ControlsPanel({
 
       {/* Battle Controls */}
       <div className="flex flex-col gap-2">
-        {!isRunning ? (
+        <div className="flex gap-2">
+          {!isRunning ? (
+            <button
+              onClick={onStart}
+              className="flex-1 px-4 py-2 rounded font-semibold hover:opacity-90"
+              style={{
+                backgroundColor: ARENA_COLORS.healthHigh,
+                color: UI_COLORS.white,
+              }}
+            >
+              {hasStarted ? 'Resume' : 'Start Battle'}
+            </button>
+          ) : (
+            <button
+              onClick={onStop}
+              className="flex-1 px-4 py-2 rounded font-semibold hover:opacity-90"
+              style={{
+                backgroundColor: ARENA_COLORS.healthMedium,
+                color: UI_COLORS.inkBlack,
+              }}
+            >
+              Pause
+            </button>
+          )}
+
+          {/* Auto-Battle Toggle */}
           <button
-            onClick={onStart}
-            className="w-full px-4 py-2 rounded font-semibold hover:opacity-90"
+            onClick={onAutoBattleToggle}
+            className="px-3 py-2 rounded font-semibold hover:opacity-90"
+            title={autoBattle ? 'Disable Auto-Battle' : 'Enable Auto-Battle'}
             style={{
-              backgroundColor: ARENA_COLORS.healthHigh,
-              color: UI_COLORS.white,
+              backgroundColor: autoBattle ? ARENA_COLORS.healthHigh : UI_COLORS.parchmentDark,
+              color: autoBattle ? UI_COLORS.white : UI_COLORS.black,
+              border: autoBattle ? `2px solid ${UI_COLORS.white}` : '2px solid transparent',
             }}
           >
-            {hasStarted ? 'Resume' : 'Start Battle'}
+            Auto
           </button>
-        ) : (
-          <button
-            onClick={onStop}
-            className="w-full px-4 py-2 rounded font-semibold hover:opacity-90"
-            style={{
-              backgroundColor: ARENA_COLORS.healthMedium,
-              color: UI_COLORS.inkBlack,
-            }}
-          >
-            Pause
-          </button>
-        )}
+        </div>
 
         <button
           onClick={onReset}

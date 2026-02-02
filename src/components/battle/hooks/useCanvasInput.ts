@@ -21,7 +21,7 @@ import {
   DragBounds,
 } from '../../../core/battle/DragController';
 import { findUnitAtPosition } from '../../../core/battle/InputAdapter';
-import { selectAllOfType } from '../../../core/battle/SelectionManager';
+import { selectAllOfType, selectSquad } from '../../../core/battle/SelectionManager';
 import {
   startBoxSelect,
   updateBoxSelect,
@@ -104,19 +104,22 @@ export function useCanvasInput({
       if (clickedUnit) {
         const isAlreadySelected = selectedUnitIds.includes(clickedUnit.id);
 
+        // Get squad units (all units with same squadId)
+        const squadSelection = selectSquad(units, clickedUnit);
+
         if (!isAlreadySelected) {
-          // Clicking unselected unit - select just that unit
-          onSelectUnit?.(clickedUnit.id);
+          // Clicking a unit - select all units in the same squad
+          onSelectUnits?.(squadSelection.selectedIds);
         }
 
-        // Start drag for player units
+        // Start drag for player units - drag entire squad
         if (clickedUnit.team === 'player') {
           const unitsToMove = isAlreadySelected
             ? selectedUnitIds.filter((id) => {
                 const unit = units.find((u) => u.id === id);
                 return unit?.team === 'player';
               })
-            : [clickedUnit.id];
+            : squadSelection.selectedIds;
 
           const session = startDrag(clickedUnit.id, pos, unitsToMove, units);
           dragSessionRef.current = session;

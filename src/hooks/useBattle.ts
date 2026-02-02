@@ -12,8 +12,26 @@ import {
   UnitRegistry,
   ZONE_HEIGHT_PERCENT,
 } from '../core/battle';
+import {
+  BattleSettingsData,
+  loadBattleSettings,
+  saveBattleSettings,
+} from '../core/battle/BattleSettings';
+import type { IPersistenceAdapter } from '../core/persistence/IPersistenceAdapter';
+import { LocalStorageAdapter } from '../core/persistence/LocalStorageAdapter';
 import { Vector2 } from '../core/physics/Vector2';
 import { unitDefinitions } from '../data/units';
+
+// Default persistence adapter for browser - Godot will inject a different one
+let persistenceAdapter: IPersistenceAdapter = new LocalStorageAdapter();
+
+/**
+ * Set the persistence adapter for battle settings.
+ * Call this before using useBattle to inject a different adapter (e.g., for Godot).
+ */
+export function setBattlePersistenceAdapter(adapter: IPersistenceAdapter): void {
+  persistenceAdapter = adapter;
+}
 
 export type BattleSpeed = 0.5 | 1 | 2;
 
@@ -22,6 +40,8 @@ export interface UseBattleReturn {
   stats: BattleStatistics;
   selectedUnitIds: string[];
   battleSpeed: BattleSpeed;
+  autoBattle: boolean;
+  settingsLoaded: boolean;
   start: () => void;
   stop: () => void;
   reset: () => void;
@@ -31,6 +51,7 @@ export interface UseBattleReturn {
   selectUnit: (unitId: string | null) => void;
   selectUnits: (unitIds: string[]) => void;
   setBattleSpeed: (speed: BattleSpeed) => void;
+  setAutoBattle: (enabled: boolean) => void;
   setWave: (wave: number) => void;
   /** Handle battle outcome - awards gold, transitions wave. Returns result. */
   handleBattleOutcome: () => BattleOutcomeResult | null;
@@ -72,7 +93,9 @@ export function useBattle(): UseBattleReturn {
   });
   const [stats, setStats] = useState<BattleStatistics>(EMPTY_STATS);
   const [selectedUnitIds, setSelectedUnitIds] = useState<string[]>([]);
-  const [battleSpeed, setBattleSpeed] = useState<BattleSpeed>(1);
+  const [battleSpeed, setBattleSpeedState] = useState<BattleSpeed>(1);
+  const [autoBattle, setAutoBattleState] = useState(false);
+  const [settingsLoaded, setSettingsLoaded] = useState(false);
   const battleSpeedRef = useRef<BattleSpeed>(1);
   const arenaSizeRef = useRef<{ width: number; height: number } | null>(null);
 
@@ -81,17 +104,64 @@ export function useBattle(): UseBattleReturn {
     battleSpeedRef.current = battleSpeed;
   }, [battleSpeed]);
 
-  // Initialize engine with registry
+  // Initialize engine with registry and load settings
   useEffect(() => {
     const registry = createUnitRegistry();
     engineRef.current = new BattleEngine(registry);
     statsRef.current = new BattleStats();
+
+    // Load saved settings
+    loadBattleSettings(persistenceAdapter).then((settings) => {
+      setAutoBattleState(settings.autoBattle);
+      setBattleSpeedState(settings.battleSpeed as BattleSpeed);
+      // Apply wave and gold to engine
+      if (engineRef.current) {
+        engineRef.current.setWave(settings.waveNumber);
+        engineRef.current.setHighestWave(settings.highestWave);
+        engineRef.current.setGold(settings.gold);
+        setState({ ...engineRef.current.getState() });
+      }
+      setSettingsLoaded(true);
+    });
+
     return () => {
       statsRef.current?.detach();
       statsRef.current = null;
       engineRef.current = null;
     };
   }, []);
+
+  // Save settings when they change
+  const saveSettings = useCallback(() => {
+    if (!engineRef.current || !settingsLoaded) return;
+    const engineState = engineRef.current.getState();
+    const settings: BattleSettingsData = {
+      version: 1,
+      autoBattle,
+      battleSpeed,
+      waveNumber: engineState.waveNumber,
+      highestWave: engineState.highestWave,
+      gold: engineState.gold,
+    };
+    saveBattleSettings(persistenceAdapter, settings).catch((err) => {
+      console.error('Failed to save settings:', err);
+    });
+  }, [autoBattle, battleSpeed, settingsLoaded]);
+
+  // Save settings when relevant values change
+  useEffect(() => {
+    if (settingsLoaded) {
+      saveSettings();
+    }
+  }, [
+    autoBattle,
+    battleSpeed,
+    state.waveNumber,
+    state.highestWave,
+    state.gold,
+    settingsLoaded,
+    saveSettings,
+  ]);
 
   // Game loop
   useEffect(() => {
@@ -239,6 +309,14 @@ export function useBattle(): UseBattleReturn {
     }
   }, []);
 
+  const setBattleSpeed = useCallback((speed: BattleSpeed) => {
+    setBattleSpeedState(speed);
+  }, []);
+
+  const setAutoBattle = useCallback((enabled: boolean) => {
+    setAutoBattleState(enabled);
+  }, []);
+
   const handleBattleOutcome = useCallback((): BattleOutcomeResult | null => {
     if (!engineRef.current) return null;
     const result = engineRef.current.handleBattleOutcome();
@@ -256,6 +334,8 @@ export function useBattle(): UseBattleReturn {
     stats,
     selectedUnitIds,
     battleSpeed,
+    autoBattle,
+    settingsLoaded,
     start,
     stop,
     reset,
@@ -265,6 +345,7 @@ export function useBattle(): UseBattleReturn {
     selectUnit,
     selectUnits,
     setBattleSpeed,
+    setAutoBattle,
     setWave,
     handleBattleOutcome,
     getWaveGoldReward,

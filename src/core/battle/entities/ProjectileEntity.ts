@@ -11,12 +11,7 @@
  */
 
 import { Vector2 } from '../../physics/Vector2';
-import {
-  PROJECTILE_HIT_RADIUS,
-  PROJECTILE_SPLASH_RADIUS,
-  BASE_PROJECTILE_SPEED,
-  scaleValue,
-} from '../BattleConfig';
+import { PROJECTILE_HIT_RADIUS, BASE_PROJECTILE_SPEED, scaleValue } from '../BattleConfig';
 import { isOutOfBounds } from '../BoundsEnforcer';
 import { ProjectileRenderData, UnitTeam } from '../types';
 import { BaseEntity } from './BaseEntity';
@@ -124,15 +119,25 @@ export class ProjectileEntity extends BaseEntity {
       return;
     }
 
-    // Damage all enemy damageables (units and castles) at target location
+    // Find the closest enemy damageable within hit radius (single target, no splash)
     const damageables = world.getDamageables();
+    let closestTarget: (typeof damageables)[0] | null = null;
+    let closestDist = Infinity;
+
     for (const target of damageables) {
       if (target.team === this.sourceTeam) continue;
 
       const dist = target.position.distanceTo(this.target);
-      if (dist < target.size + PROJECTILE_SPLASH_RADIUS) {
-        target.takeDamage(this.damage, this.sourceUnit ?? undefined);
+      const hitRange = target.size + PROJECTILE_HIT_RADIUS;
+      if (dist < hitRange && dist < closestDist) {
+        closestTarget = target;
+        closestDist = dist;
       }
+    }
+
+    // Damage only the closest target
+    if (closestTarget) {
+      closestTarget.takeDamage(this.damage, this.sourceUnit ?? undefined);
     }
 
     this.markDestroyed();

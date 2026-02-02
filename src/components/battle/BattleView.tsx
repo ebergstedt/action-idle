@@ -28,6 +28,8 @@ export function BattleView() {
     state,
     selectedUnitIds,
     battleSpeed,
+    autoBattle,
+    settingsLoaded,
     start,
     stop,
     reset,
@@ -37,6 +39,7 @@ export function BattleView() {
     selectUnit,
     selectUnits,
     setBattleSpeed,
+    setAutoBattle,
     setWave,
     handleBattleOutcome,
     getWaveGoldReward,
@@ -91,17 +94,31 @@ export function BattleView() {
     };
   }, []);
 
-  // Auto-spawn units once arena size is stable
+  // Auto-spawn units once arena size is stable and settings are loaded
   useEffect(() => {
-    if (isArenaSizeStable && state.units.length === 0 && !hasSpawnedRef.current) {
+    if (isArenaSizeStable && settingsLoaded && state.units.length === 0 && !hasSpawnedRef.current) {
       hasSpawnedRef.current = true;
       spawnWave(arenaSize.width, arenaSize.height);
     }
-  }, [isArenaSizeStable, arenaSize, state.units.length, spawnWave]);
+  }, [isArenaSizeStable, settingsLoaded, arenaSize, state.units.length, spawnWave]);
 
-  // Only show unit info panel if exactly one unit is selected
-  const selectedUnit =
-    selectedUnitIds.length === 1 ? state.units.find((u) => u.id === selectedUnitIds[0]) : null;
+  // Show unit info panel for squad selection (all selected units same type/team)
+  const selectedUnit = (() => {
+    if (selectedUnitIds.length === 0) return null;
+
+    // Get all selected units
+    const selectedUnits = state.units.filter((u) => selectedUnitIds.includes(u.id));
+    if (selectedUnits.length === 0) return null;
+
+    // Check if all selected units are same type and team (squad)
+    const firstUnit = selectedUnits[0];
+    const isSquadSelection = selectedUnits.every(
+      (u) => u.type === firstUnit.type && u.team === firstUnit.team
+    );
+
+    // Show panel for squad selection (same type/team) - use first unit as representative
+    return isSquadSelection ? firstUnit : null;
+  })();
 
   const handleStartBattle = useCallback(() => {
     start();
@@ -112,11 +129,29 @@ export function BattleView() {
     hasSpawnedRef.current = false;
   }, [reset]);
 
+  const handleAutoBattleToggle = useCallback(() => {
+    const newValue = !autoBattle;
+    setAutoBattle(newValue);
+    // If enabling auto-battle and not currently running, start the battle
+    if (newValue && !state.isRunning) {
+      start();
+    }
+  }, [autoBattle, setAutoBattle, state.isRunning, start]);
+
   // Handle outcome dismiss - delegates to engine for gold/wave logic, then resets
+  // If auto-battle is enabled, automatically starts the next battle
   const handleOutcomeDismiss = useCallback(() => {
     handleBattleOutcome();
     handleReset();
-  }, [handleBattleOutcome, handleReset]);
+
+    // Auto-start next battle if auto-battle is enabled
+    if (autoBattle) {
+      // Small delay to let the reset/spawn complete
+      setTimeout(() => {
+        start();
+      }, 100);
+    }
+  }, [handleBattleOutcome, handleReset, autoBattle, start]);
 
   return (
     <div className="flex gap-4 h-full">
@@ -140,6 +175,7 @@ export function BattleView() {
           outcome={state.outcome}
           goldEarned={state.outcome === 'player_victory' ? getWaveGoldReward() : 0}
           waveNumber={state.waveNumber}
+          autoBattle={autoBattle}
           onDismiss={handleOutcomeDismiss}
         />
       </div>
@@ -147,7 +183,11 @@ export function BattleView() {
       {/* Right side - Info Panel */}
       <div className="w-80 flex-shrink-0 rounded-lg p-5 overflow-y-auto" style={styles.panelBg}>
         {selectedUnit ? (
-          <UnitInfoPanel unit={selectedUnit} onDeselect={() => selectUnits([])} />
+          <UnitInfoPanel
+            unit={selectedUnit}
+            squadCount={selectedUnitIds.length}
+            onDeselect={() => selectUnits([])}
+          />
         ) : (
           <ControlsPanel
             isRunning={state.isRunning}
@@ -156,11 +196,13 @@ export function BattleView() {
             waveNumber={state.waveNumber}
             highestWave={state.highestWave}
             gold={state.gold}
+            autoBattle={autoBattle}
             onStart={handleStartBattle}
             onStop={stop}
             onReset={handleReset}
             onSpeedChange={setBattleSpeed}
             onWaveChange={setWave}
+            onAutoBattleToggle={handleAutoBattleToggle}
           />
         )}
       </div>
