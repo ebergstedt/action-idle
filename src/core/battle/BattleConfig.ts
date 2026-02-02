@@ -120,13 +120,13 @@ export const INK_SPLATTER_COUNT = 8;
 /**
  * Ink splatter particle size range [min, max] in pixels.
  */
-export const INK_SPLATTER_SIZE_MIN = 3;
-export const INK_SPLATTER_SIZE_MAX = 12;
+export const INK_SPLATTER_SIZE_MIN = 2;
+export const INK_SPLATTER_SIZE_MAX = 8;
 
 /**
  * Ink splatter spread radius from death position.
  */
-export const INK_SPLATTER_SPREAD = 25;
+export const INK_SPLATTER_SPREAD = 15;
 
 /**
  * Ink splatter lifetime in seconds before fading.
@@ -134,9 +134,13 @@ export const INK_SPLATTER_SPREAD = 25;
 export const INK_SPLATTER_LIFETIME = 3.0;
 
 /**
- * Ink splatter maximum opacity (death splatters).
+ * Ink splatter base opacity. Set to 0.5 so overlapping splatters
+ * naturally stack and become darker (source-over blending).
+ * - 1 splatter: 0.5 opacity
+ * - 2 overlapping: ~0.75 opacity
+ * - 3 overlapping: ~0.875 opacity
  */
-export const INK_SPLATTER_OPACITY = 1.0;
+export const INK_SPLATTER_OPACITY = 0.5;
 
 /**
  * Number of ink splatter particles spawned on hit.
@@ -146,13 +150,13 @@ export const INK_HIT_SPLATTER_COUNT = 3;
 /**
  * Ink hit splatter size range [min, max] in pixels.
  */
-export const INK_HIT_SPLATTER_SIZE_MIN = 2;
-export const INK_HIT_SPLATTER_SIZE_MAX = 6;
+export const INK_HIT_SPLATTER_SIZE_MIN = 1;
+export const INK_HIT_SPLATTER_SIZE_MAX = 3;
 
 /**
  * Ink hit splatter spray distance from unit.
  */
-export const INK_HIT_SPLATTER_DISTANCE = 20;
+export const INK_HIT_SPLATTER_DISTANCE = 10;
 
 /**
  * Ink hit splatter spray angle spread (radians).
@@ -162,7 +166,7 @@ export const INK_HIT_SPLATTER_SPREAD = 0.8;
 /**
  * Ink hit splatter initial speed (pixels per second).
  */
-export const INK_HIT_SPLATTER_SPEED = 140;
+export const INK_HIT_SPLATTER_SPEED = 80;
 
 /**
  * Ink splatter gravity (pixels per second squared).
@@ -858,7 +862,7 @@ export const SHOCKWAVE_MIN_RENDER_RADIUS = 10;
 /**
  * Initial upward velocity component for ink hit splatters (pixels per second).
  */
-export const INK_HIT_SPLATTER_UPWARD_VELOCITY = -70;
+export const INK_HIT_SPLATTER_UPWARD_VELOCITY = -40;
 
 /**
  * Vignette color RGB values (sepia/brown tone for parchment edges).

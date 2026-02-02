@@ -25,8 +25,8 @@ function drawInkBlob(
   ctx.translate(x, y);
   ctx.rotate(rotation);
 
-  // Sepia ink color
-  ctx.fillStyle = UI_COLORS.inkBrown;
+  // Dark ink color for better visibility
+  ctx.fillStyle = UI_COLORS.inkBlack;
   ctx.globalAlpha = alpha * INK_SPLATTER_OPACITY;
 
   // Draw irregular blob shape using bezier curves
@@ -67,7 +67,7 @@ function drawInkBlob(
  */
 function drawInkDroplet(ctx: CanvasRenderingContext2D, x: number, y: number, size: number): void {
   ctx.save();
-  ctx.fillStyle = UI_COLORS.inkBrown;
+  ctx.fillStyle = UI_COLORS.inkBlack;
   ctx.globalAlpha = INK_SPLATTER_OPACITY;
 
   // Simple circle for in-flight droplets

@@ -526,17 +526,15 @@ export class BattleWorld implements IEntityWorld, IBattleWorld, IWorldEventEmitt
 
   /**
    * Check if battle is over.
-   * Win condition: A side loses when ALL their units AND castles are destroyed.
+   * Win condition: A side loses when ALL their units are destroyed (castles don't prevent loss).
    */
   isBattleOver(): { over: boolean; winner: UnitTeam | null } {
-    const playerCastlesAlive = this.getCastlesByTeam('player').length > 0;
-    const enemyCastlesAlive = this.getCastlesByTeam('enemy').length > 0;
     const playerUnitsAlive = this.getPlayerUnits().length > 0;
     const enemyUnitsAlive = this.getEnemyUnits().length > 0;
 
-    // A side loses when they have no units AND no castles remaining
-    const playerLost = !playerUnitsAlive && !playerCastlesAlive;
-    const enemyLost = !enemyUnitsAlive && !enemyCastlesAlive;
+    // A side loses when they have no units remaining (castles don't matter)
+    const playerLost = !playerUnitsAlive;
+    const enemyLost = !enemyUnitsAlive;
 
     if (playerLost && enemyLost) {
       return { over: true, winner: null }; // Draw

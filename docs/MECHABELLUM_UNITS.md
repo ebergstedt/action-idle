@@ -2,6 +2,8 @@
 
 A comprehensive reference for Mechabellum unit values, stats, counters, and strategic information. This document serves as a design reference for auto-battler game development.
 
+**Last updated:** February 2026 (includes Void Eye from Update 1.5)
+
 **Sources:**
 - [Mechabellum Wiki - Unit Overview](https://mechabellum.wiki/index.php/Unit_Overview)
 - [MechaMonarch Unit Guides](https://mechamonarch.com/unit/)
@@ -16,7 +18,7 @@ A comprehensive reference for Mechabellum unit values, stats, counters, and stra
 ### By Type
 | Type | Description | Examples |
 |------|-------------|----------|
-| **Small** | Low HP, high squad count, melee/short range | Crawler, Fang |
+| **Small** | Low HP, high squad count, melee/short range | Crawler, Fang, Hound, Void Eye |
 | **Medium** | Moderate HP, varied squad sizes | Marksman, Sledgehammer, Rhino |
 | **Heavy** | High HP, usually single unit | Sabertooth, Scorpion, Tarantula |
 | **Giant** | Massive HP, expensive, game-changing | Fortress, Vulcan, Melting Point |
@@ -26,7 +28,7 @@ A comprehensive reference for Mechabellum unit values, stats, counters, and stra
 ### By Cost Tier
 | Tier | Cost | Unlock Cost | Examples |
 |------|------|-------------|----------|
-| T1 | 100 | 0 (Free) | Crawler, Fang, Arclight, Marksman, Hound |
+| T1 | 100 | 0 (Free) | Crawler, Fang, Arclight, Marksman, Hound, Void Eye |
 | T2 | 200 | 50 | Mustang, Sledgehammer, Rhino, Steel Ball, Wasp, Phoenix |
 | T3 | 300 | 100 | Scorpion, Typhoon, Farseer |
 | T4 (Giant) | 400 | 200 | Fortress, Vulcan, Melting Point, Sandworm, Overlord |
@@ -45,6 +47,7 @@ A comprehensive reference for Mechabellum unit values, stats, counters, and stra
 | **Arclight** | 100 | 4,813 | 347 | 385 | 95m | 7 m/s | 0.9s | 1 |
 | **Marksman** | 100 | 1,622 | 2,329 | 751 | 140m | 8 m/s | 3.1s | 1 |
 | **Hound** | 100 | 897 | 247 | — | 70m | 10 m/s | 2.4s | 5 |
+| **Void Eye** | 100 | ~1,000 | ~1,800 | — | 100m | 8 m/s | 3.2s | 3 |
 | **Mustang** | 200 | 343 | 36 | 1,110 | 95m | 16 m/s | 0.4s | 12 |
 | **Sledgehammer** | 200 | 3,478 | 608 | 675 | 95m | 7 m/s | 4.5s | 5 |
 | **Stormcaller** | 200 | 1,149 | 772×4 | 2,344 | 180m | 6 m/s | 6.6s | 4 |
@@ -128,6 +131,7 @@ Units ranked by versatility and how often they're the correct choice:
 - **Sandworm** - Unique burrowing mechanic, situational
 - **Tarantula** - Anti-swarm specialist
 - **Hacker** - Disruption specialist
+- **Void Eye** - Anti-heavy specialist, can gain flight mode
 
 ---
 
@@ -157,6 +161,7 @@ Units ranked by versatility and how often they're the correct choice:
 | **Phoenix** | Arclight, Overlord, Rhino, Stormcaller, Vulcan | Wasp, Marksman, Mustang, Fang, Fortress |
 | **Wraith** | Crawler, Fang, Sledgehammer, Steel Ball, Wasp | Overlord, Phoenix, Melting Point, Marksman |
 | **Overlord** | Most ground units, Hacker, Scorpion, War Factory | Marksman, Melting Point, Phoenix, Mustang, Fortress |
+| **Void Eye** | Marksman, Stormcaller, Phoenix, Vulcan, Sabertooth | Crawler, Fang, Sledgehammer, Arclight |
 
 ---
 
