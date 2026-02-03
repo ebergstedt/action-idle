@@ -26,11 +26,11 @@
   },
   "visuals": {
     "shape": "circle",
-    "baseSize": 6,
     "colorKey": "crawler",
     "walkAnimation": "bounce"
   },
+  "unitGridSize": { "cols": 1, "rows": 1 },
   "innateAbilities": [],
   "unlockRequirements": [],
-  "gridFootprint": { "cols": 5, "rows": 2 }
+  "gridFootprint": { "cols": 6, "rows": 4 }
 }

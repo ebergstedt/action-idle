@@ -8,16 +8,18 @@
  */
 
 import { Vector2 } from '../physics/Vector2';
-import {
-  DRAG_OVERLAP_ITERATIONS,
-  UNIT_SPACING,
-  MIN_SEPARATION_DISTANCE,
-  OVERLAP_BASE_PUSH,
-  OVERLAP_PUSH_FACTOR,
-} from './BattleConfig';
 import { ISelectable } from './ISelectable';
 import type { GridFootprint, GridBounds, GridPosition } from './grid/GridTypes';
-import { snapFootprintToGrid, doGridBoundsOverlap, isGridBoundsWithin } from './grid/GridManager';
+import {
+  snapFootprintToGrid,
+  doGridBoundsOverlap,
+  isGridBoundsWithin,
+  getFootprintGridPosition,
+  getFootprintPixelCenter,
+  getPlayerDeploymentBounds,
+  getEnemyDeploymentBounds,
+  findNonOverlappingGridPosition,
+} from './grid/GridManager';
 
 export interface DragSession {
   /** The unit that was clicked to initiate the drag */
@@ -131,21 +133,14 @@ export function calculateDragPositions(
     adjustY = bounds.maxY - groupMaxY;
   }
 
-  // Get non-dragged units for overlap checking
-  const staticUnits = allUnits.filter(
-    (u) => !session.draggedUnitIds.includes(u.id) && u.team === 'player'
-  );
-
-  // Second pass: apply adjustment and resolve overlaps
+  // Second pass: apply boundary adjustment to all dragged units
+  // Note: Individual unit overlap resolution is NOT done here - squads move as units
+  // and overlap prevention is handled by validateSquadMoves at the grid level
   for (const unitId of session.draggedUnitIds) {
     const data = desiredPositions.get(unitId);
     if (!data) continue;
 
-    let finalPos = new Vector2(data.pos.x + adjustX, data.pos.y + adjustY);
-
-    // Resolve overlaps with static units (best effort)
-    finalPos = resolveOverlaps(finalPos, data.size, staticUnits, DRAG_OVERLAP_ITERATIONS);
-
+    const finalPos = new Vector2(data.pos.x + adjustX, data.pos.y + adjustY);
     moves.push({ unitId, position: finalPos });
   }
 
@@ -171,41 +166,6 @@ export function calculateSingleDragPosition(
     Math.max(bounds.minX, Math.min(bounds.maxX, desired.x)),
     Math.max(bounds.minY, Math.min(bounds.maxY, desired.y))
   );
-}
-
-/**
- * Resolves overlaps by pushing the unit away from static units.
- * Does NOT move the static units.
- */
-function resolveOverlaps(
-  pos: Vector2,
-  size: number,
-  staticUnits: ISelectable[],
-  maxIterations: number
-): Vector2 {
-  let result = pos;
-
-  for (let i = 0; i < maxIterations; i++) {
-    let hasOverlap = false;
-    let pushDir = new Vector2(0, 0);
-
-    for (const other of staticUnits) {
-      const diff = result.subtract(other.position);
-      const dist = diff.magnitude();
-      const minDist = (size + other.size) * UNIT_SPACING;
-
-      if (dist < minDist && dist > MIN_SEPARATION_DISTANCE) {
-        hasOverlap = true;
-        const overlap = minDist - dist;
-        pushDir = pushDir.add(diff.normalize().multiply(overlap + OVERLAP_BASE_PUSH));
-      }
-    }
-
-    if (!hasOverlap) break;
-    result = result.add(pushDir.multiply(OVERLAP_PUSH_FACTOR));
-  }
-
-  return result;
 }
 
 /**
@@ -318,4 +278,401 @@ export function calculateDragPositionsWithGrid(
   }
 
   return { moves: snappedMoves };
+}
+
+// =============================================================================
+// SQUAD OVERLAP PREVENTION
+// =============================================================================
+
+/**
+ * Gets the grid bounds for a squad given its centroid position.
+ *
+ * @param centroid - Pixel position of squad centroid
+ * @param footprint - Squad footprint in grid cells
+ * @param cellSize - Size of each grid cell in pixels
+ * @returns Grid bounds for the squad
+ */
+export function getSquadGridBounds(
+  centroid: Vector2,
+  footprint: GridFootprint,
+  cellSize: number
+): GridBounds {
+  const gridPos = getFootprintGridPosition(centroid, footprint, cellSize);
+  return {
+    col: gridPos.col,
+    row: gridPos.row,
+    cols: footprint.cols,
+    rows: footprint.rows,
+  };
+}
+
+/**
+ * Collects grid bounds for all squads of a specific team, optionally excluding certain squad IDs.
+ *
+ * @param units - All units to check
+ * @param team - Team to filter by
+ * @param cellSize - Size of each grid cell in pixels
+ * @param excludeSquadIds - Squad IDs to exclude (e.g., squads being dragged)
+ * @returns Map of squadId to GridBounds
+ */
+export function collectSquadGridBounds(
+  units: ISelectable[],
+  team: 'player' | 'enemy',
+  cellSize: number,
+  excludeSquadIds: Set<string> = new Set()
+): Map<string, GridBounds> {
+  const squadBounds = new Map<string, GridBounds>();
+
+  // Group units by squad
+  const squadUnits = new Map<string, ISelectable[]>();
+  for (const unit of units) {
+    if (unit.team !== team) continue;
+    if (excludeSquadIds.has(unit.squadId)) continue;
+
+    if (!squadUnits.has(unit.squadId)) {
+      squadUnits.set(unit.squadId, []);
+    }
+    squadUnits.get(unit.squadId)!.push(unit);
+  }
+
+  // Calculate bounds for each squad
+  for (const [squadId, members] of squadUnits) {
+    if (members.length === 0) continue;
+
+    // Calculate centroid
+    let centroidX = 0;
+    let centroidY = 0;
+    for (const unit of members) {
+      centroidX += unit.position.x;
+      centroidY += unit.position.y;
+    }
+    centroidX /= members.length;
+    centroidY /= members.length;
+
+    const footprint = members[0].gridFootprint;
+    if (footprint) {
+      const bounds = getSquadGridBounds(new Vector2(centroidX, centroidY), footprint, cellSize);
+      squadBounds.set(squadId, bounds);
+    }
+  }
+
+  return squadBounds;
+}
+
+/**
+ * Checks if a squad move would cause an overlap with other squads.
+ *
+ * @param proposedCentroid - Proposed pixel position for squad centroid
+ * @param footprint - Squad footprint in grid cells
+ * @param cellSize - Size of each grid cell in pixels
+ * @param otherSquadBounds - Grid bounds of other squads to check against
+ * @param deploymentBounds - Valid deployment zone bounds (optional)
+ * @returns True if the move is valid (no overlaps and within bounds)
+ */
+export function isSquadMoveValid(
+  proposedCentroid: Vector2,
+  footprint: GridFootprint,
+  cellSize: number,
+  otherSquadBounds: GridBounds[],
+  deploymentBounds?: GridBounds
+): boolean {
+  const proposedBounds = getSquadGridBounds(proposedCentroid, footprint, cellSize);
+
+  // Check if within deployment bounds
+  if (deploymentBounds && !isGridBoundsWithin(proposedBounds, deploymentBounds)) {
+    return false;
+  }
+
+  // Check for overlaps with other squads
+  for (const other of otherSquadBounds) {
+    if (doGridBoundsOverlap(proposedBounds, other)) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+/**
+ * Validates and adjusts squad moves to prevent overlaps during deployment.
+ * If a move would cause an overlap, the squad reverts to its initial position (drag start).
+ *
+ * @param moves - Proposed moves for units
+ * @param units - All units (for looking up squad info)
+ * @param cellSize - Size of each grid cell in pixels
+ * @param draggedSquadIds - IDs of squads being dragged
+ * @param initialPositions - Optional map of unit IDs to their positions at drag start
+ * @returns Validated moves (overlapping moves reverted to initial positions)
+ */
+export function validateSquadMoves(
+  moves: Array<{ unitId: string; position: Vector2 }>,
+  units: ISelectable[],
+  cellSize: number,
+  draggedSquadIds: Set<string>,
+  initialPositions?: Map<string, Vector2>
+): Array<{ unitId: string; position: Vector2 }> {
+  // If cellSize is invalid, return initial positions to prevent any movement
+  // This ensures we don't allow moves when validation can't run properly
+  if (cellSize <= 0) {
+    return moves.map((move) => ({
+      unitId: move.unitId,
+      position: initialPositions?.get(move.unitId) ?? move.position,
+    }));
+  }
+
+  // Get deployment bounds
+  const deploymentBounds = getPlayerDeploymentBounds();
+
+  // Collect grid bounds of all non-dragged player squads
+  const otherSquadBounds = collectSquadGridBounds(units, 'player', cellSize, draggedSquadIds);
+  const otherBoundsArray = Array.from(otherSquadBounds.values());
+
+  // Group moves by squad
+  const squadMoves = new Map<
+    string,
+    Array<{ unitId: string; position: Vector2; originalPos: Vector2 }>
+  >();
+
+  for (const move of moves) {
+    const unit = units.find((u) => u.id === move.unitId);
+    if (!unit) continue;
+
+    if (!squadMoves.has(unit.squadId)) {
+      squadMoves.set(unit.squadId, []);
+    }
+    // Use initial position from drag start if available, otherwise fall back to current position
+    const originalPos = initialPositions?.get(move.unitId) ?? unit.position;
+    squadMoves.get(unit.squadId)!.push({
+      unitId: move.unitId,
+      position: move.position,
+      originalPos,
+    });
+  }
+
+  const validatedMoves: Array<{ unitId: string; position: Vector2 }> = [];
+
+  // Validate each squad's move
+  for (const [squadId, squadUnitMoves] of squadMoves) {
+    if (squadUnitMoves.length === 0) continue;
+
+    // Get footprint from units
+    const firstUnit = units.find((u) => u.squadId === squadId);
+    const footprint = firstUnit?.gridFootprint;
+
+    if (!footprint) {
+      // No footprint, allow the move
+      for (const m of squadUnitMoves) {
+        validatedMoves.push({ unitId: m.unitId, position: m.position });
+      }
+      continue;
+    }
+
+    // Calculate proposed centroid
+    let proposedCentroidX = 0;
+    let proposedCentroidY = 0;
+    for (const m of squadUnitMoves) {
+      proposedCentroidX += m.position.x;
+      proposedCentroidY += m.position.y;
+    }
+    proposedCentroidX /= squadUnitMoves.length;
+    proposedCentroidY /= squadUnitMoves.length;
+
+    const proposedCentroid = new Vector2(proposedCentroidX, proposedCentroidY);
+
+    // Check if move is valid
+    if (
+      isSquadMoveValid(proposedCentroid, footprint, cellSize, otherBoundsArray, deploymentBounds)
+    ) {
+      // Move is valid, apply it
+      for (const m of squadUnitMoves) {
+        validatedMoves.push({ unitId: m.unitId, position: m.position });
+      }
+    } else {
+      // Move would cause overlap, revert to initial positions (drag start)
+      for (const m of squadUnitMoves) {
+        validatedMoves.push({ unitId: m.unitId, position: m.originalPos });
+      }
+    }
+  }
+
+  return validatedMoves;
+}
+
+// =============================================================================
+// SQUAD OVERLAP RESOLUTION
+// =============================================================================
+
+/** Maximum iterations for overlap resolution to prevent infinite loops */
+const MAX_OVERLAP_RESOLUTION_ITERATIONS = 50;
+
+/**
+ * Squad info for overlap resolution.
+ */
+export interface SquadInfo {
+  squadId: string;
+  centroid: Vector2;
+  footprint: GridFootprint;
+  unitIds: string[];
+}
+
+/**
+ * Collects squad information from units.
+ *
+ * @param units - All units
+ * @param team - Team to filter by
+ * @returns Array of squad info
+ */
+export function collectSquadInfo(units: ISelectable[], team: 'player' | 'enemy'): SquadInfo[] {
+  const squadMap = new Map<
+    string,
+    { units: ISelectable[]; footprint: GridFootprint | undefined }
+  >();
+
+  for (const unit of units) {
+    if (unit.team !== team) continue;
+
+    if (!squadMap.has(unit.squadId)) {
+      squadMap.set(unit.squadId, { units: [], footprint: unit.gridFootprint });
+    }
+    squadMap.get(unit.squadId)!.units.push(unit);
+  }
+
+  const squads: SquadInfo[] = [];
+  for (const [squadId, data] of squadMap) {
+    if (data.units.length === 0 || !data.footprint) continue;
+
+    // Calculate centroid
+    let centroidX = 0;
+    let centroidY = 0;
+    for (const unit of data.units) {
+      centroidX += unit.position.x;
+      centroidY += unit.position.y;
+    }
+    centroidX /= data.units.length;
+    centroidY /= data.units.length;
+
+    squads.push({
+      squadId,
+      centroid: new Vector2(centroidX, centroidY),
+      footprint: data.footprint,
+      unitIds: data.units.map((u) => u.id),
+    });
+  }
+
+  return squads;
+}
+
+/**
+ * Result of overlap resolution for a single squad.
+ */
+export interface SquadMoveResult {
+  squadId: string;
+  newCentroid: Vector2;
+  unitMoves: Array<{ unitId: string; position: Vector2 }>;
+}
+
+/**
+ * Resolves overlapping squads by moving them to nearby non-overlapping positions.
+ * Uses a best-effort algorithm with a maximum iteration limit.
+ *
+ * @param units - All units (will be used to calculate current positions)
+ * @param team - Team to resolve overlaps for ('player' or 'enemy')
+ * @param cellSize - Size of each grid cell in pixels
+ * @returns Array of moves to apply to resolve overlaps
+ */
+export function resolveSquadOverlaps(
+  units: ISelectable[],
+  team: 'player' | 'enemy',
+  cellSize: number
+): Array<{ unitId: string; position: Vector2 }> {
+  if (cellSize <= 0) return [];
+
+  const deploymentBounds =
+    team === 'player' ? getPlayerDeploymentBounds() : getEnemyDeploymentBounds();
+  const squads = collectSquadInfo(units, team);
+
+  if (squads.length === 0) return [];
+
+  // Track which squads need to move
+  const movedSquads = new Map<string, Vector2>(); // squadId -> new centroid
+
+  // Process squads iteratively until no overlaps remain or max iterations reached
+  for (let iteration = 0; iteration < MAX_OVERLAP_RESOLUTION_ITERATIONS; iteration++) {
+    let hadOverlap = false;
+
+    for (const squad of squads) {
+      // Get current centroid (possibly already moved)
+      const currentCentroid = movedSquads.get(squad.squadId) || squad.centroid;
+      const currentBounds = getSquadGridBounds(currentCentroid, squad.footprint, cellSize);
+
+      // Check for overlap with any other squad's bounds
+      let overlapsWithOther = false;
+      for (const otherSquad of squads) {
+        if (otherSquad.squadId === squad.squadId) continue;
+
+        const otherCentroid = movedSquads.get(otherSquad.squadId) || otherSquad.centroid;
+        const otherBounds = getSquadGridBounds(otherCentroid, otherSquad.footprint, cellSize);
+
+        if (doGridBoundsOverlap(currentBounds, otherBounds)) {
+          overlapsWithOther = true;
+          break;
+        }
+      }
+
+      if (overlapsWithOther) {
+        hadOverlap = true;
+
+        // Collect bounds of all OTHER squads (not this one)
+        const otherBounds: GridBounds[] = [];
+        for (const otherSquad of squads) {
+          if (otherSquad.squadId === squad.squadId) continue;
+          const otherCentroid = movedSquads.get(otherSquad.squadId) || otherSquad.centroid;
+          otherBounds.push(getSquadGridBounds(otherCentroid, otherSquad.footprint, cellSize));
+        }
+
+        // Find a new position
+        const newGridPos = findNonOverlappingGridPosition(
+          squad.footprint,
+          currentCentroid,
+          otherBounds,
+          deploymentBounds,
+          cellSize
+        );
+
+        if (newGridPos) {
+          const newCentroid = getFootprintPixelCenter(newGridPos, squad.footprint, cellSize);
+          movedSquads.set(squad.squadId, newCentroid);
+        }
+        // If no position found, squad stays where it is (best effort)
+      }
+    }
+
+    // If no overlaps found in this iteration, we're done
+    if (!hadOverlap) break;
+  }
+
+  // Generate moves for all units in moved squads
+  const moves: Array<{ unitId: string; position: Vector2 }> = [];
+
+  for (const squad of squads) {
+    const newCentroid = movedSquads.get(squad.squadId);
+    if (!newCentroid) continue; // Squad didn't need to move
+
+    // Calculate delta from original centroid
+    const deltaX = newCentroid.x - squad.centroid.x;
+    const deltaY = newCentroid.y - squad.centroid.y;
+
+    // Apply delta to all units in the squad
+    for (const unitId of squad.unitIds) {
+      const unit = units.find((u) => u.id === unitId);
+      if (unit) {
+        moves.push({
+          unitId,
+          position: new Vector2(unit.position.x + deltaX, unit.position.y + deltaY),
+        });
+      }
+    }
+  }
+
+  return moves;
 }

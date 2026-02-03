@@ -102,7 +102,9 @@ export class UnitFactory {
 
     // Get visual properties
     const color = getUnitColor(team, definition.visuals.colorKey);
-    const size = getScaledUnitSize(definition.visuals.baseSize, arenaHeight);
+    // Calculate size based on unit's grid footprint (individual unit size)
+    const unitGridCols = definition.unitGridSize?.cols ?? 1;
+    const size = getScaledUnitSize(unitGridCols, arenaHeight);
 
     // Default position if not provided
     const position = options.position ?? new Vector2(0, 0);

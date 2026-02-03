@@ -193,6 +193,7 @@ import { createSeededRandom, shuffle } from '../utils/Random';
 import { UnitDefinition, FormationRole } from './units/types';
 import { IUnitRegistry } from './units/IUnitRegistry';
 import type { GridFootprint } from './grid/GridTypes';
+import { getScaledUnitSize } from './types';
 import {
   FORMATION_SPAWN_MARGIN,
   FORMATION_WIDTH_SCALE,
@@ -372,7 +373,8 @@ export function calculateSquadFootprint(
 ): SquadFootprint {
   const squadSize = definition.baseStats.squadSize ?? 1;
   const spacing = scaleValue(BASE_SQUAD_UNIT_SPACING, arenaHeight);
-  const unitSize = scaleValue(definition.visuals.baseSize, arenaHeight);
+  const unitGridCols = definition.unitGridSize?.cols ?? 1;
+  const unitSize = getScaledUnitSize(unitGridCols, arenaHeight);
   const paddingH = scaleValue(BASE_SQUAD_PADDING_H, arenaHeight);
   const paddingV = scaleValue(BASE_SQUAD_PADDING_V, arenaHeight);
 

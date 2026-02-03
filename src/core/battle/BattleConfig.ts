@@ -43,6 +43,12 @@ export const BASE_SEPARATION_FORCE = 60;
 export const MIN_ARENA_WIDTH = 600;
 
 /**
+ * Maximum arena width in pixels.
+ * Keeps the arena at a reasonable size similar to Mechabellum.
+ */
+export const MAX_ARENA_WIDTH = 800;
+
+/**
  * Minimum arena height in pixels.
  */
 export const MIN_ARENA_HEIGHT = 400;
@@ -97,6 +103,13 @@ export const GRID_DEPLOYMENT_ROWS = 30;
  * Columns available for deployment (72 - 6 - 6 = 60).
  */
 export const GRID_DEPLOYMENT_COLS = 60;
+
+/**
+ * Unit visual size as a fraction of cell size.
+ * 0.7 = units are 70% of cell size, leaving 30% gap between units.
+ * This ensures units fit neatly within their 1x1 grid cells.
+ */
+export const UNIT_SIZE_CELL_FRACTION = 0.7;
 
 /**
  * Divisor for zone midway calculation.

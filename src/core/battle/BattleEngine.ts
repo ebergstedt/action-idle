@@ -11,13 +11,11 @@ import { Vector2 } from '../physics/Vector2';
 import { getCastleColor, getUnitColor } from '../theme/colors';
 import {
   BASE_CASTLE_HORIZONTAL_MARGIN,
-  BASE_SQUAD_UNIT_SPACING,
   BATTLE_TIME_THRESHOLD,
   CASTLE_MAX_HEALTH,
   CASTLE_SIZE,
   DEFAULT_ARENA_MARGIN,
   DRAG_OVERLAP_ITERATIONS,
-  DRAG_POSITION_MAX_ITERATIONS,
   GRID_TOTAL_COLS,
   GRID_TOTAL_ROWS,
   GRID_FLANK_COLS,
@@ -430,7 +428,9 @@ export class BattleEngine {
 
     // Get color from theme using colorKey
     const color = getUnitColor(team, visuals.colorKey as 'hound' | 'fang' | 'crawler');
-    const size = getScaledUnitSize(visuals.baseSize, arenaHeight);
+    // Calculate size based on unit's grid footprint (individual unit size)
+    const unitGridCols = definition.unitGridSize?.cols ?? 1;
+    const size = getScaledUnitSize(unitGridCols, arenaHeight);
 
     const id = `unit_${this.nextUnitId++}`;
     // Use provided squadId or generate one for solo units
@@ -494,13 +494,15 @@ export class BattleEngine {
       return [this.spawnUnitFromDefinition(definition, team, centerPosition, arenaHeight, squadId)];
     }
 
-    const spacing = scaleValue(BASE_SQUAD_UNIT_SPACING, arenaHeight);
+    // Use cell size for spacing so each unit is centered in its grid cell
+    const cellSize = arenaHeight / GRID_TOTAL_ROWS;
     const cols = Math.min(squadSize, SQUAD_MAX_COLUMNS);
     const rows = Math.ceil(squadSize / cols);
 
     // Calculate grid offset so formation is centered
-    const gridWidth = (cols - 1) * spacing;
-    const gridHeight = (rows - 1) * spacing;
+    // Each unit is spaced by one cell size
+    const gridWidth = (cols - 1) * cellSize;
+    const gridHeight = (rows - 1) * cellSize;
     const startX = centerPosition.x - gridWidth / 2;
     const startY = centerPosition.y - gridHeight / 2;
 
@@ -511,11 +513,11 @@ export class BattleEngine {
       // Calculate columns for this row (last row may have fewer)
       const colsInRow = row === rows - 1 ? squadSize - unitIndex : cols;
       // Center the last row if it has fewer units
-      const rowOffsetX = row === rows - 1 ? ((cols - colsInRow) * spacing) / 2 : 0;
+      const rowOffsetX = row === rows - 1 ? ((cols - colsInRow) * cellSize) / 2 : 0;
 
       for (let col = 0; col < colsInRow && unitIndex < squadSize; col++) {
-        const x = startX + rowOffsetX + col * spacing;
-        const y = startY + row * spacing;
+        const x = startX + rowOffsetX + col * cellSize;
+        const y = startY + row * cellSize;
         const position = new Vector2(x, y);
 
         const unit = this.spawnUnitFromDefinition(definition, team, position, arenaHeight, squadId);
@@ -586,6 +588,8 @@ export class BattleEngine {
   /**
    * Resolve overlapping units immediately.
    * Call after spawning all units.
+   * Only resolves overlaps between different squads - units within the same squad
+   * are positioned via the grid system and shouldn't push each other.
    */
   resolveOverlaps(
     iterations: number = DRAG_OVERLAP_ITERATIONS,
@@ -601,6 +605,9 @@ export class BattleEngine {
 
         for (let j = i + 1; j < units.length; j++) {
           const unitB = units[j];
+
+          // Skip units in the same squad - they move as a unit
+          if (unitA.squadId === unitB.squadId) continue;
 
           const diff = unitA.position.subtract(unitB.position);
           const dist = diff.magnitude();
@@ -758,42 +765,17 @@ export class BattleEngine {
 
   /**
    * Move a unit before battle starts.
+   * During deployment, positions are set directly without individual unit push logic.
+   * Squad overlap prevention is handled by grid-based validation (validateSquadMoves)
+   * and resolution (resolveSquadOverlaps) at the squad level.
    */
   moveUnit(id: string, position: Vector2): void {
     if (this.hasStarted) return;
 
     const entity = this.world.getUnitById(id);
     if (entity && entity.team === 'player') {
-      const newPos = this.findNonOverlappingPosition(entity, position);
-      entity.position = newPos;
+      // Set position directly - grid-based validation handles overlap prevention at squad level
+      entity.position = position.clone();
     }
-  }
-
-  private findNonOverlappingPosition(unit: UnitEntity, desiredPos: Vector2): Vector2 {
-    const allies = this.world.getAlliesOf(unit);
-
-    let pos = desiredPos.clone();
-    const maxIterations = DRAG_POSITION_MAX_ITERATIONS;
-
-    for (let i = 0; i < maxIterations; i++) {
-      let hasOverlap = false;
-      let pushDir = Vector2.zero();
-
-      for (const ally of allies) {
-        const diff = pos.subtract(ally.position);
-        const dist = diff.magnitude();
-        const minDist = (unit.size + ally.size) * UNIT_SPACING;
-
-        if (dist < minDist && dist > 0) {
-          hasOverlap = true;
-          pushDir = pushDir.add(diff.normalize().multiply(minDist - dist));
-        }
-      }
-
-      if (!hasOverlap) break;
-      pos = pos.add(pushDir);
-    }
-
-    return pos;
   }
 }

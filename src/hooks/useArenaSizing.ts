@@ -10,6 +10,7 @@
 import { useEffect, useRef, useState, RefObject } from 'react';
 import {
   MIN_ARENA_WIDTH,
+  MAX_ARENA_WIDTH,
   MIN_ARENA_HEIGHT,
   ARENA_ASPECT_RATIO,
   ARENA_SIZE_STABLE_DELAY_MS,
@@ -60,7 +61,8 @@ export function useArenaSizing(): UseArenaSizingReturn {
         const availableHeight = rect.height - ARENA_CONTAINER_PADDING_V;
         const availableWidth = rect.width - ARENA_CONTAINER_PADDING_H;
 
-        const width = Math.max(MIN_ARENA_WIDTH, availableWidth);
+        // Constrain width between min and max
+        const width = Math.min(MAX_ARENA_WIDTH, Math.max(MIN_ARENA_WIDTH, availableWidth));
         const height = Math.max(
           MIN_ARENA_HEIGHT,
           Math.min(availableHeight, width * ARENA_ASPECT_RATIO)

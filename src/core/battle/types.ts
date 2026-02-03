@@ -12,7 +12,7 @@
  */
 
 import { Vector2 } from '../physics/Vector2';
-import { MAX_UNIT_SCALE, MIN_UNIT_SCALE, REFERENCE_ARENA_HEIGHT } from './BattleConfig';
+import { GRID_TOTAL_ROWS, UNIT_SIZE_CELL_FRACTION } from './BattleConfig';
 import type { UnitTeam as UnitTeamType, UnitShape as UnitShapeType } from './units/types';
 import type { DamageNumberRenderData } from './entities/DamageNumberEntity';
 import type { GridFootprint } from './grid/GridTypes';
@@ -246,13 +246,20 @@ export type LegacyModifier = ModifierRenderData;
 // =============================================================================
 
 /**
- * Calculate scaled unit size based on arena dimensions.
- * Used by both entity system and React rendering.
+ * Calculate unit size (radius) based on grid cell size and unit's grid footprint.
+ * Each unit fits within its unitGridSize with padding.
+ *
+ * The `size` value is used as a radius in rendering (e.g., ctx.arc uses radius),
+ * so we divide by 2 to get the radius from the desired diameter.
+ *
+ * @param unitGridCols - How many grid columns the unit occupies (default 1)
+ * @param arenaHeight - Current arena height in pixels
+ * @returns Unit size (radius) in pixels
  */
-export function getScaledUnitSize(baseSize: number, arenaHeight: number): number {
-  const scale = Math.max(
-    MIN_UNIT_SCALE,
-    Math.min(MAX_UNIT_SCALE, arenaHeight / REFERENCE_ARENA_HEIGHT)
-  );
-  return Math.round(baseSize * scale);
+export function getScaledUnitSize(unitGridCols: number, arenaHeight: number): number {
+  const cellSize = arenaHeight / GRID_TOTAL_ROWS;
+  // Unit visual size is based on how many cells it spans
+  const gridCols = unitGridCols || 1;
+  // Diameter = cellSize * gridCols * fraction, radius = diameter / 2
+  return Math.round((cellSize * gridCols * UNIT_SIZE_CELL_FRACTION) / 2);
 }

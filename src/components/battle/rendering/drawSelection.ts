@@ -43,6 +43,7 @@ export function drawSelectionBox(ctx: CanvasRenderingContext2D, box: SelectionBo
 /**
  * Draw selection outlines around selected squads.
  * Groups selected units by squadId and draws a rectangle based on the squad's grid footprint.
+ * Uses the same footprint-based bounds calculation as collision detection for consistency.
  *
  * @param ctx - Canvas rendering context
  * @param units - All units in the battle
@@ -78,39 +79,30 @@ export function drawSquadSelections(
   for (const [, squadMembers] of squadUnits) {
     if (squadMembers.length === 0) continue;
 
-    // Find the bounding box of all unit positions (in pixels)
-    // Include unit size to get actual bounds, not just center points
-    let unitMinX = Infinity;
-    let unitMinY = Infinity;
-    let unitMaxX = -Infinity;
-    let unitMaxY = -Infinity;
+    // Get footprint from the first unit (all units in squad have same footprint)
+    const footprint = squadMembers[0].gridFootprint;
 
+    // Calculate squad centroid from unit positions (same as collision detection)
+    let centroidX = 0;
+    let centroidY = 0;
     for (const unit of squadMembers) {
-      const x = unit.position.x + unit.visualOffset.x;
-      const y = unit.position.y + unit.visualOffset.y;
-      const halfSize = unit.size;
-      unitMinX = Math.min(unitMinX, x - halfSize);
-      unitMinY = Math.min(unitMinY, y - halfSize);
-      unitMaxX = Math.max(unitMaxX, x + halfSize);
-      unitMaxY = Math.max(unitMaxY, y + halfSize);
+      centroidX += unit.position.x + unit.visualOffset.x;
+      centroidY += unit.position.y + unit.visualOffset.y;
     }
+    centroidX /= squadMembers.length;
+    centroidY /= squadMembers.length;
 
-    // Convert to grid cells and snap to cell boundaries
-    // Floor for min (expand outward), Ceil for max (expand outward)
-    const gridMinCol = Math.floor(unitMinX / cellSize);
-    const gridMinRow = Math.floor(unitMinY / cellSize);
-    const gridMaxColRaw = Math.ceil(unitMaxX / cellSize);
-    const gridMaxRowRaw = Math.ceil(unitMaxY / cellSize);
+    // Calculate grid position from centroid and footprint (same formula as getFootprintGridPosition)
+    const halfCols = footprint.cols / 2;
+    const halfRows = footprint.rows / 2;
+    const gridCol = Math.floor(centroidX / cellSize - halfCols + 0.5);
+    const gridRow = Math.floor(centroidY / cellSize - halfRows + 0.5);
 
-    // Ensure minimum 1 cell size in each dimension
-    const gridMaxCol = gridMaxColRaw <= gridMinCol ? gridMinCol + 1 : gridMaxColRaw;
-    const gridMaxRow = gridMaxRowRaw <= gridMinRow ? gridMinRow + 1 : gridMaxRowRaw;
-
-    // Convert back to pixel coordinates (snapped to grid)
-    let minX = gridMinCol * cellSize;
-    let minY = gridMinRow * cellSize;
-    let maxX = gridMaxCol * cellSize;
-    let maxY = gridMaxRow * cellSize;
+    // Convert to pixel coordinates using footprint dimensions
+    let minX = gridCol * cellSize;
+    let minY = gridRow * cellSize;
+    let maxX = (gridCol + footprint.cols) * cellSize;
+    let maxY = (gridRow + footprint.rows) * cellSize;
 
     // Add small padding around the selection
     const padding = 2;
@@ -121,7 +113,7 @@ export function drawSquadSelections(
 
     // Draw selection rectangle
     ctx.strokeStyle = ARENA_COLORS.selectionRing;
-    ctx.lineWidth = isDragging ? 2 : 3;
+    ctx.lineWidth = isDragging ? 1 : 1.5;
     ctx.globalAlpha = isDragging ? 0.7 : 1;
 
     // Draw rounded rectangle

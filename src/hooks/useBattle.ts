@@ -15,9 +15,9 @@ import {
   BattleStats,
   BattleStatistics,
   BattleOutcomeResult,
-  CLASSIC_FORMATION,
-  calculateAlliedSpawnPositions,
+  calculateDeterministicAlliedPositions,
   calculateDeterministicEnemyPositions,
+  getDefaultAlliedComposition,
   getEnemyCompositionForWave,
   UnitRegistry,
   ZONE_HEIGHT_PERCENT,
@@ -25,6 +25,8 @@ import {
 import type { IPersistenceAdapter } from '../core/persistence/IPersistenceAdapter';
 import { LocalStorageAdapter } from '../adapters/LocalStorageAdapter';
 import { Vector2 } from '../core/physics/Vector2';
+import { calculateCellSize, snapFootprintToGrid } from '../core/battle/grid/GridManager';
+import { resolveSquadOverlaps } from '../core/battle/DragController';
 import { unitDefinitions } from '../data/units';
 import { useBattleSettings, BattleSpeed } from './useBattleSettings';
 import { useBattleLoop } from './useBattleLoop';
@@ -125,6 +127,7 @@ export function useBattle(options: UseBattleOptions = {}): UseBattleReturn {
   const engineRef = useRef<BattleEngine | null>(null);
   const statsRef = useRef<BattleStats | null>(null);
   const autoBattleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const arenaDimensionsRef = useRef<{ width: number; height: number }>({ width: 0, height: 0 });
 
   // Battle state
   const [state, setState] = useState<BattleState>({
@@ -280,15 +283,27 @@ export function useBattle(options: UseBattleOptions = {}): UseBattleReturn {
     // Spawn castles for both teams
     engine.spawnCastles();
 
-    // Spawn allied army using fixed classic formation
-    const alliedPositions = calculateAlliedSpawnPositions(CLASSIC_FORMATION, bounds);
+    const waveNumber = engine.getState().waveNumber;
+    const registry = engine.getRegistry();
+    const cellSize = calculateCellSize(arenaWidth, arenaHeight);
+
+    // Spawn allied army using deterministic formation with collision detection
+    const alliedComposition = getDefaultAlliedComposition();
+    const alliedPositions = calculateDeterministicAlliedPositions(
+      alliedComposition,
+      registry,
+      bounds,
+      waveNumber
+    );
     for (const spawn of alliedPositions) {
-      engine.spawnSquad(spawn.type, 'player', spawn.position, arenaHeight);
+      // Snap position to grid based on unit's footprint
+      const def = registry.tryGet(spawn.type);
+      const footprint = def?.gridFootprint || { cols: 2, rows: 2 };
+      const snappedPos = snapFootprintToGrid(spawn.position, footprint, cellSize);
+      engine.spawnSquad(spawn.type, 'player', snappedPos, arenaHeight);
     }
 
     // Spawn enemy army using deterministic formation (varies by wave)
-    const waveNumber = engine.getState().waveNumber;
-    const registry = engine.getRegistry();
     const enemyComposition = getEnemyCompositionForWave(waveNumber, registry);
     const enemyPositions = calculateDeterministicEnemyPositions(
       enemyComposition,
@@ -297,15 +312,39 @@ export function useBattle(options: UseBattleOptions = {}): UseBattleReturn {
       waveNumber
     );
     for (const spawn of enemyPositions) {
-      engine.spawnSquad(spawn.type, 'enemy', spawn.position, arenaHeight);
+      // Snap position to grid based on unit's footprint
+      const def = registry.tryGet(spawn.type);
+      const footprint = def?.gridFootprint || { cols: 2, rows: 2 };
+      const snappedPos = snapFootprintToGrid(spawn.position, footprint, cellSize);
+      engine.spawnSquad(spawn.type, 'enemy', snappedPos, arenaHeight);
     }
 
-    // Resolve any overlapping units after spawning
-    engine.resolveOverlaps(30, {
-      arenaWidth,
-      arenaHeight,
-      zoneHeightPercent: ZONE_HEIGHT_PERCENT,
-    });
+    // Resolve any overlapping squads after spawning (best-effort algorithm)
+    const currentState = engine.getState();
+    const unitsForResolution = currentState.units.map((u) => ({
+      id: u.id,
+      type: u.type,
+      position: u.position,
+      size: u.size,
+      team: u.team,
+      squadId: u.squadId,
+      gridFootprint: u.gridFootprint,
+    }));
+
+    // Resolve player squad overlaps
+    const playerMoves = resolveSquadOverlaps(unitsForResolution, 'player', cellSize);
+    for (const move of playerMoves) {
+      engine.moveUnit(move.unitId, move.position);
+    }
+
+    // Resolve enemy squad overlaps
+    const enemyMoves = resolveSquadOverlaps(unitsForResolution, 'enemy', cellSize);
+    for (const move of enemyMoves) {
+      engine.moveUnit(move.unitId, move.position);
+    }
+
+    // Store arena dimensions for later use in moveUnits
+    arenaDimensionsRef.current = { width: arenaWidth, height: arenaHeight };
 
     setState({ ...engine.getState() });
     if (statsRef.current) {
@@ -323,10 +362,35 @@ export function useBattle(options: UseBattleOptions = {}): UseBattleReturn {
 
   const moveUnits = useCallback((moves: Array<{ unitId: string; position: Vector2 }>) => {
     if (engineRef.current) {
+      const engine = engineRef.current;
+
       for (const { unitId, position } of moves) {
-        engineRef.current.moveUnit(unitId, position);
+        engine.moveUnit(unitId, position);
       }
-      setState({ ...engineRef.current.getState() });
+
+      // During deployment phase, resolve any overlaps caused by the move
+      const currentState = engine.getState();
+      const { width: arenaW, height: arenaH } = arenaDimensionsRef.current;
+      if (!currentState.hasStarted && arenaW > 0 && arenaH > 0) {
+        const cellSize = calculateCellSize(arenaW, arenaH);
+        const unitsForResolution = currentState.units.map((u) => ({
+          id: u.id,
+          type: u.type,
+          position: u.position,
+          size: u.size,
+          team: u.team,
+          squadId: u.squadId,
+          gridFootprint: u.gridFootprint,
+        }));
+
+        // Resolve player squad overlaps
+        const resolutionMoves = resolveSquadOverlaps(unitsForResolution, 'player', cellSize);
+        for (const move of resolutionMoves) {
+          engine.moveUnit(move.unitId, move.position);
+        }
+      }
+
+      setState({ ...engine.getState() });
     }
   }, []);
 

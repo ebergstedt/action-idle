@@ -31,11 +31,11 @@
   },
   "visuals": {
     "shape": "triangle_down",
-    "baseSize": 8,
     "colorKey": "marksman",
     "walkAnimation": "bounce",
     "aimingLaser": true
   },
+  "unitGridSize": { "cols": 2, "rows": 2 },
   "innateAbilities": [],
   "unlockRequirements": [],
   "gridFootprint": { "cols": 2, "rows": 2 }

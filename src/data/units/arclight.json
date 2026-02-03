@@ -32,10 +32,10 @@
   },
   "visuals": {
     "shape": "diamond",
-    "baseSize": 10,
     "colorKey": "arclight",
     "walkAnimation": "bounce"
   },
+  "unitGridSize": { "cols": 2, "rows": 2 },
   "innateAbilities": [],
   "unlockRequirements": [],
   "gridFootprint": { "cols": 2, "rows": 2 }

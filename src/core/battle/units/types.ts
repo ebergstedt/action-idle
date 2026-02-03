@@ -81,7 +81,10 @@ export interface ComputedStats {
  */
 export interface UnitVisuals {
   shape: UnitShape;
-  baseSize: number;
+  /**
+   * @deprecated Use unitGridSize instead. Kept for backward compatibility.
+   */
+  baseSize?: number;
   /**
    * Key into UNIT_TYPE_COLORS for team-based coloring.
    * e.g., 'warrior', 'archer', 'knight'
@@ -174,6 +177,14 @@ export interface UnitDefinition {
    * If not specified, calculated from squadSize.
    */
   gridFootprint?: GridFootprint;
+
+  /**
+   * Size of an individual unit in grid cells.
+   * e.g., { cols: 1, rows: 1 } for small units like Fang
+   * e.g., { cols: 2, rows: 2 } for large units like Marksman
+   * Defaults to { cols: 1, rows: 1 } if not specified.
+   */
+  unitGridSize?: GridFootprint;
 }
 
 /**

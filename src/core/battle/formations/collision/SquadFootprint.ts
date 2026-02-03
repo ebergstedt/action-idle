@@ -14,6 +14,7 @@ import {
 } from '../../BattleConfig';
 import { UnitDefinition } from '../../units/types';
 import { SquadFootprint } from '../types';
+import { getScaledUnitSize } from '../../types';
 
 /**
  * Calculates the footprint (bounding box) of a squad.
@@ -32,7 +33,8 @@ export function calculateSquadFootprint(
 ): SquadFootprint {
   const squadSize = definition.baseStats.squadSize ?? 1;
   const spacing = scaleValue(BASE_SQUAD_UNIT_SPACING, arenaHeight);
-  const unitSize = scaleValue(definition.visuals.baseSize, arenaHeight);
+  const unitGridCols = definition.unitGridSize?.cols ?? 1;
+  const unitSize = getScaledUnitSize(unitGridCols, arenaHeight);
   const paddingH = scaleValue(BASE_SQUAD_PADDING_H, arenaHeight);
   const paddingV = scaleValue(BASE_SQUAD_PADDING_V, arenaHeight);
 

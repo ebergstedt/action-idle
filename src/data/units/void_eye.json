@@ -30,11 +30,11 @@
   },
   "visuals": {
     "shape": "circle",
-    "baseSize": 7,
     "colorKey": "void_eye",
     "walkAnimation": "bounce"
   },
+  "unitGridSize": { "cols": 1, "rows": 1 },
   "innateAbilities": [],
   "unlockRequirements": [],
-  "gridFootprint": { "cols": 2, "rows": 2 }
+  "gridFootprint": { "cols": 3, "rows": 1 }
 }

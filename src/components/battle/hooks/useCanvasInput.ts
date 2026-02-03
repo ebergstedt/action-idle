@@ -10,7 +10,12 @@
 import { useState, useRef, useCallback, useEffect, RefObject } from 'react';
 import type { ISelectable } from '../../../core/battle';
 import { ZONE_HEIGHT_PERCENT } from '../../../core/battle';
-import { DRAG_BOUNDS_MARGIN } from '../../../core/battle/BattleConfig';
+import {
+  DRAG_BOUNDS_MARGIN,
+  GRID_FLANK_COLS,
+  GRID_DEPLOYMENT_COLS,
+  GRID_TOTAL_ROWS,
+} from '../../../core/battle/BattleConfig';
 import { Vector2 } from '../../../core/physics/Vector2';
 import {
   startDrag,
@@ -20,8 +25,9 @@ import {
   DragSession,
   DragBounds,
   snapSquadToGrid,
+  validateSquadMoves,
 } from '../../../core/battle/DragController';
-import { findUnitAtPosition } from '../../../core/battle/InputAdapter';
+import { findSquadAtPosition } from '../../../core/battle/InputAdapter';
 import {
   selectAllOfType,
   selectSquad,
@@ -110,12 +116,17 @@ export function useCanvasInput<T extends ISelectable = ISelectable>({
   // Utilities
   // ─────────────────────────────────────────────────────────────────────────────
 
-  /** Calculate bounds for allied deployment zone */
+  /** Calculate bounds for allied deployment zone (respects grid deployment area) */
   const getDragBounds = useCallback((): DragBounds => {
     const zoneHeight = height * ZONE_HEIGHT_PERCENT;
+    // Calculate cell size to get grid-aligned X bounds
+    const cellSize = height / GRID_TOTAL_ROWS;
+    // Deployment zone is columns 6-65 (GRID_FLANK_COLS to GRID_FLANK_COLS + GRID_DEPLOYMENT_COLS - 1)
+    const gridMinX = GRID_FLANK_COLS * cellSize;
+    const gridMaxX = (GRID_FLANK_COLS + GRID_DEPLOYMENT_COLS) * cellSize;
     return {
-      minX: DRAG_BOUNDS_MARGIN,
-      maxX: width - DRAG_BOUNDS_MARGIN,
+      minX: gridMinX + DRAG_BOUNDS_MARGIN,
+      maxX: gridMaxX - DRAG_BOUNDS_MARGIN,
       minY: height - zoneHeight + DRAG_BOUNDS_MARGIN,
       maxY: height - DRAG_BOUNDS_MARGIN,
     };
@@ -147,12 +158,16 @@ export function useCanvasInput<T extends ISelectable = ISelectable>({
   // Event Processing (shared logic for canvas and document events)
   // ─────────────────────────────────────────────────────────────────────────────
 
-  /** Apply grid snapping to moves, keeping squads together */
+  /** Apply grid snapping to moves, keeping squads together and preventing overlaps */
   const applyGridSnapToMoves = useCallback(
     (
-      moves: Array<{ unitId: string; position: Vector2 }>
+      moves: Array<{ unitId: string; position: Vector2 }>,
+      initialPositions?: Map<string, Vector2>
     ): Array<{ unitId: string; position: Vector2 }> => {
       if (cellSize <= 0) return moves;
+
+      // Collect dragged squad IDs for overlap validation
+      const draggedSquadIds = new Set<string>();
 
       // Group moves by squadId
       const squadMoves = new Map<
@@ -165,6 +180,8 @@ export function useCanvasInput<T extends ISelectable = ISelectable>({
         if (!unit) continue;
 
         const squadId = unit.squadId;
+        draggedSquadIds.add(squadId);
+
         if (!squadMoves.has(squadId)) {
           squadMoves.set(squadId, []);
         }
@@ -214,7 +231,17 @@ export function useCanvasInput<T extends ISelectable = ISelectable>({
         }
       }
 
-      return snappedMoves;
+      // Validate moves to prevent squad overlaps during deployment
+      // Pass initial positions so invalid moves revert to drag start, not current frame
+      const validatedMoves = validateSquadMoves(
+        snappedMoves,
+        units,
+        cellSize,
+        draggedSquadIds,
+        initialPositions
+      );
+
+      return validatedMoves;
     },
     [cellSize, units]
   );
@@ -237,15 +264,18 @@ export function useCanvasInput<T extends ISelectable = ISelectable>({
       if (isMultiDrag(session) && onUnitsMove) {
         const result = calculateDragPositions(session, pos, bounds, units);
         // Apply grid snapping - snaps entire squads together
-        const snappedMoves = applyGridSnapToMoves(result.moves);
+        // Pass initial positions so invalid moves revert to drag start
+        const snappedMoves = applyGridSnapToMoves(result.moves, session.initialPositions);
         onUnitsMove(snappedMoves);
       } else if (onUnitMove) {
         const newPos = calculateSingleDragPosition(session, pos, bounds);
         if (newPos) {
           // For single unit, use squad snapping too (in case it's a 1-unit squad)
-          const snappedMoves = applyGridSnapToMoves([
-            { unitId: session.anchorUnitId, position: newPos },
-          ]);
+          // Pass initial positions so invalid moves revert to drag start
+          const snappedMoves = applyGridSnapToMoves(
+            [{ unitId: session.anchorUnitId, position: newPos }],
+            session.initialPositions
+          );
           if (snappedMoves.length > 0) {
             onUnitMove(session.anchorUnitId, snappedMoves[0].position);
           }
@@ -295,7 +325,8 @@ export function useCanvasInput<T extends ISelectable = ISelectable>({
   const handleMouseDown = useCallback(
     (e: React.MouseEvent<HTMLCanvasElement>) => {
       const pos = getMousePos(e);
-      const clickedUnit = findUnitAtPosition(pos, units);
+      // Use squad bounding box for hit detection so clicking between units still works
+      const clickedUnit = findSquadAtPosition(pos, units, height);
 
       if (clickedUnit) {
         const isAlreadySelected = selectedUnitIds.includes(clickedUnit.id);
@@ -324,21 +355,22 @@ export function useCanvasInput<T extends ISelectable = ISelectable>({
         setBoxSelectSession(startBoxSelect(pos));
       }
     },
-    [getMousePos, units, selectedUnitIds, onSelectUnits]
+    [getMousePos, units, selectedUnitIds, onSelectUnits, height]
   );
 
   /** Double click - select all of type */
   const handleDoubleClick = useCallback(
     (e: React.MouseEvent<HTMLCanvasElement>) => {
       const pos = getMousePos(e);
-      const clickedUnit = findUnitAtPosition(pos, units);
+      // Use squad bounding box for hit detection
+      const clickedUnit = findSquadAtPosition(pos, units, height);
 
       if (clickedUnit && onSelectUnits) {
         const newSelection = selectAllOfType(units, clickedUnit);
         onSelectUnits(newSelection.selectedIds);
       }
     },
-    [getMousePos, units, onSelectUnits]
+    [getMousePos, units, onSelectUnits, height]
   );
 
   /** Mouse move - delegates to shared logic */

@@ -141,7 +141,8 @@ export function drawUnitBody(
   ctx.globalAlpha = baseAlpha * deathOpacity;
   ctx.fillStyle = color;
   ctx.strokeStyle = UI_COLORS.black;
-  ctx.lineWidth = 1.5;
+  // Scale border width with unit size (min 0.5, proportional to size)
+  ctx.lineWidth = Math.max(0.5, size * 0.15);
 
   switch (shape) {
     case 'circle':
