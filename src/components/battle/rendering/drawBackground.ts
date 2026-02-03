@@ -13,7 +13,6 @@ import {
   PARCHMENT_NOISE_OPACITY,
   PARCHMENT_NOISE_SIZE_MIN,
   PARCHMENT_NOISE_SIZE_MAX,
-  PARCHMENT_LINE_SPACING,
 } from '../../../core/battle/BattleConfig';
 import { ARENA_COLORS, UI_COLORS } from '../../../core/theme/colors';
 
@@ -151,7 +150,7 @@ export function drawVignette(ctx: CanvasRenderingContext2D, width: number, heigh
 }
 
 /**
- * Draw complete parchment background with base color, grid, and noise.
+ * Draw complete parchment background with base color and noise.
  * Note: Vignette is drawn separately at the end of the render pass
  * so it affects all game elements.
  */
@@ -164,25 +163,6 @@ export function drawParchmentBackground(
   ctx.fillStyle = ARENA_COLORS.background;
   ctx.fillRect(0, 0, width, height);
 
-  // 2. Ruled paper lines
-  drawPaperLines(ctx, width, height);
-
-  // 3. Noise texture overlay (blends with alpha)
+  // 2. Noise texture overlay (blends with alpha)
   drawParchmentNoise(ctx, width, height);
-}
-
-/**
- * Draw horizontal ruled lines like notebook paper.
- */
-function drawPaperLines(ctx: CanvasRenderingContext2D, width: number, height: number): void {
-  ctx.strokeStyle = ARENA_COLORS.gridLine;
-  ctx.lineWidth = 1;
-
-  // Horizontal ruled lines
-  for (let y = 0; y < height; y += PARCHMENT_LINE_SPACING) {
-    ctx.beginPath();
-    ctx.moveTo(0, y);
-    ctx.lineTo(width, y);
-    ctx.stroke();
-  }
 }

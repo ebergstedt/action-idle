@@ -18,6 +18,11 @@ import {
   DEFAULT_ARENA_MARGIN,
   DRAG_OVERLAP_ITERATIONS,
   DRAG_POSITION_MAX_ITERATIONS,
+  GRID_TOTAL_COLS,
+  GRID_TOTAL_ROWS,
+  GRID_FLANK_COLS,
+  GRID_NO_MANS_LAND_ROWS,
+  GRID_DEPLOYMENT_ROWS,
   IDLE_DAMAGE_TIMEOUT,
   IDLE_SPEED_INCREMENT,
   MAX_IDLE_SPEED_BONUS,
@@ -39,6 +44,8 @@ import {
   MAX_WAVE,
   calculateWaveGold,
 } from './BattleConfig';
+import type { GridConfig } from './grid/GridTypes';
+import { calculateCellSize } from './grid/GridManager';
 import { EntityBounds } from './BoundsEnforcer';
 import { DEFAULT_WALK_ANIMATION } from './animations';
 import { BattleWorld, UnitEntity, UnitData, CastleEntity, CastleData } from './entities';
@@ -90,6 +97,7 @@ export class BattleEngine {
   private gold = 0;
   private arenaBounds: EntityBounds | null = null;
   private battleOutcome: BattleOutcome = 'pending';
+  private cellSize: number = 0;
 
   // Speed control
   private userBattleSpeed = 1;
@@ -346,14 +354,39 @@ export class BattleEngine {
 
   /**
    * Set arena bounds for boundary enforcement.
+   * Also calculates and stores the grid cell size.
    */
   setArenaBounds(width: number, height: number, margin: number = DEFAULT_ARENA_MARGIN): void {
     this.arenaBounds = { width, height, margin };
     this.world.setArenaBounds(this.arenaBounds);
+
+    // Calculate cell size for grid-based positioning
+    this.cellSize = calculateCellSize(width, height);
   }
 
   getArenaBounds(): EntityBounds | null {
     return this.arenaBounds;
+  }
+
+  /**
+   * Get the current grid cell size in pixels.
+   * Returns 0 if arena bounds haven't been set.
+   */
+  getCellSize(): number {
+    return this.cellSize;
+  }
+
+  /**
+   * Get the grid configuration constants.
+   */
+  getGridConfig(): GridConfig {
+    return {
+      totalCols: GRID_TOTAL_COLS,
+      totalRows: GRID_TOTAL_ROWS,
+      flankCols: GRID_FLANK_COLS,
+      noMansLandRows: GRID_NO_MANS_LAND_ROWS,
+      deploymentRows: GRID_DEPLOYMENT_ROWS,
+    };
   }
 
   /**
@@ -425,6 +458,7 @@ export class BattleEngine {
       walkAnimationTime: 0, // Walk animation starts at time 0
       walkAnimation: visuals.walkAnimation ?? DEFAULT_WALK_ANIMATION,
       hasAimingLaser: visuals.aimingLaser ?? false,
+      gridFootprint: definition.gridFootprint ?? { cols: 2, rows: 2 },
     };
 
     const entity = this.unitFactory.createUnit(id, position.clone(), data);

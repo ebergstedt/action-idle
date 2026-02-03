@@ -9,6 +9,7 @@
 
 import { Vector2 } from '../physics/Vector2';
 import type { UnitTeam } from './units/types';
+import type { GridFootprint } from './grid/GridTypes';
 
 /**
  * Minimal interface for entities that can be selected or dragged.
@@ -27,4 +28,6 @@ export interface ISelectable {
   team: UnitTeam;
   /** Squad identifier for group selection */
   squadId: string;
+  /** Grid footprint for deployment positioning */
+  gridFootprint: GridFootprint;
 }

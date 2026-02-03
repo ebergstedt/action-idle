@@ -50,6 +50,7 @@ import { clampToArenaInPlace } from '../BoundsEnforcer';
 import { EntityKind, IDamageable, IMeleeTarget } from '../IEntity';
 import { applyShuffle } from '../shuffle';
 import { AttackMode, UnitRenderData, UnitStats, UnitTeam, UnitType, UnitShape } from '../types';
+import type { GridFootprint } from '../grid/GridTypes';
 import { BaseEntity } from './BaseEntity';
 import { IBattleWorld } from './IBattleWorld';
 
@@ -92,6 +93,8 @@ export interface UnitData {
   walkAnimation: string;
   // If true, shows a targeting laser when aiming (for snipers)
   hasAimingLaser: boolean;
+  // Grid footprint for deployment positioning
+  gridFootprint: GridFootprint;
 }
 
 /**
@@ -133,6 +136,9 @@ export class UnitEntity extends BaseEntity {
   }
   get shape(): UnitShape {
     return this.data.shape;
+  }
+  get gridFootprint(): GridFootprint {
+    return this.data.gridFootprint;
   }
   get target(): IDamageable | null {
     return this.data.target;
@@ -572,6 +578,7 @@ export class UnitEntity extends BaseEntity {
       walkAnimationTime: this.walkAnimationTime,
       walkAnimation: this.walkAnimation,
       aimingAt: this.getAimingTarget(),
+      gridFootprint: this.gridFootprint,
     };
   }
 

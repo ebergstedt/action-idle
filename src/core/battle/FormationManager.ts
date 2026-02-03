@@ -192,6 +192,7 @@ import { Vector2 } from '../physics/Vector2';
 import { createSeededRandom, shuffle } from '../utils/Random';
 import { UnitDefinition, FormationRole } from './units/types';
 import { IUnitRegistry } from './units/IUnitRegistry';
+import type { GridFootprint } from './grid/GridTypes';
 import {
   FORMATION_SPAWN_MARGIN,
   FORMATION_WIDTH_SCALE,
@@ -297,6 +298,45 @@ export interface SquadBounds {
   y: number; // Top edge (absolute pixel coordinate)
   width: number;
   height: number;
+}
+
+// =============================================================================
+// GRID FOOTPRINT UTILITIES
+// =============================================================================
+
+/**
+ * Gets the grid footprint for a unit definition.
+ * Uses the explicit gridFootprint if defined, otherwise calculates from squadSize.
+ *
+ * @param definition - Unit definition
+ * @returns Grid footprint in cells
+ */
+export function getUnitGridFootprint(definition: UnitDefinition): GridFootprint {
+  // Use explicit gridFootprint if defined
+  if (definition.gridFootprint) {
+    return definition.gridFootprint;
+  }
+
+  // Fallback: calculate from squadSize
+  const squadSize = definition.baseStats.squadSize ?? 1;
+
+  if (squadSize <= 1) {
+    return { cols: 2, rows: 2 };
+  }
+
+  // Calculate based on squad layout (cols used for size categorization)
+  const cols = Math.min(squadSize, SQUAD_MAX_COLUMNS);
+  void cols; // Used for size categorization logic below
+
+  // Map to grid cells (roughly 10 pixels per cell at reference size)
+  // Small squads: 2x2, medium: 3x2, large: 5x2
+  if (squadSize <= 3) {
+    return { cols: 2, rows: 2 };
+  } else if (squadSize <= 6) {
+    return { cols: 3, rows: 2 };
+  } else {
+    return { cols: 5, rows: 2 };
+  }
 }
 
 // =============================================================================

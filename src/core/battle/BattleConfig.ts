@@ -49,9 +49,9 @@ export const MIN_ARENA_HEIGHT = 400;
 
 /**
  * Arena height as a fraction of width (aspect ratio).
- * 0.65 = height is 65% of width for a wide tactical view.
+ * 0.861 = 62/72 for square grid cells (Mechabellum-style).
  */
-export const ARENA_ASPECT_RATIO = 0.65;
+export const ARENA_ASPECT_RATIO = 0.861;
 
 /**
  * Default margin from arena edges for entity bounds.
@@ -60,10 +60,43 @@ export const DEFAULT_ARENA_MARGIN = 10;
 
 /**
  * Percentage of arena height used for each deployment zone.
- * 0.41 = 41% for allied zone (bottom), 41% for enemy zone (top).
- * Increased by 10% from original 37.5% for more vertical space.
+ * 0.484 = 30/62 rows per deployment zone (Mechabellum-style).
  */
-export const ZONE_HEIGHT_PERCENT = 0.41;
+export const ZONE_HEIGHT_PERCENT = 0.484;
+
+// =============================================================================
+// GRID CONFIGURATION
+// =============================================================================
+
+/**
+ * Total columns in the battle grid (Mechabellum: 72).
+ */
+export const GRID_TOTAL_COLS = 72;
+
+/**
+ * Total rows in the battle grid (Mechabellum: 62).
+ */
+export const GRID_TOTAL_ROWS = 62;
+
+/**
+ * Columns reserved for flanks on each side (Mechabellum: 6).
+ */
+export const GRID_FLANK_COLS = 6;
+
+/**
+ * Rows for no man's land in the middle (Mechabellum: 2).
+ */
+export const GRID_NO_MANS_LAND_ROWS = 2;
+
+/**
+ * Rows for each deployment zone (Mechabellum: 30).
+ */
+export const GRID_DEPLOYMENT_ROWS = 30;
+
+/**
+ * Columns available for deployment (72 - 6 - 6 = 60).
+ */
+export const GRID_DEPLOYMENT_COLS = 60;
 
 /**
  * Divisor for zone midway calculation.

@@ -15,6 +15,7 @@ import { Vector2 } from '../physics/Vector2';
 import { MAX_UNIT_SCALE, MIN_UNIT_SCALE, REFERENCE_ARENA_HEIGHT } from './BattleConfig';
 import type { UnitTeam as UnitTeamType, UnitShape as UnitShapeType } from './units/types';
 import type { DamageNumberRenderData } from './entities/DamageNumberEntity';
+import type { GridFootprint } from './grid/GridTypes';
 
 // Re-export for convenience
 export type { DamageNumberRenderData } from './entities/DamageNumberEntity';
@@ -123,6 +124,8 @@ export interface UnitRenderData {
   walkAnimation: string;
   /** Target position for aiming laser (null if not aiming or no laser) */
   aimingAt: Vector2 | null;
+  /** Grid footprint for deployment positioning (from unit definition) */
+  gridFootprint: GridFootprint;
 }
 
 /**

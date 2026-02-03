@@ -10,6 +10,7 @@
 
 import { Vector2 } from '../../physics/Vector2';
 import { ActiveModifier } from '../modifiers/types';
+import type { GridFootprint } from '../grid/GridTypes';
 
 /**
  * Unit team affiliation.
@@ -166,6 +167,13 @@ export interface UnitDefinition {
 
   /** Optional reference metadata for design attribution */
   reference?: UnitReference;
+
+  /**
+   * Grid footprint for deployment positioning.
+   * Defines how many grid cells this unit's squad occupies.
+   * If not specified, calculated from squadSize.
+   */
+  gridFootprint?: GridFootprint;
 }
 
 /**

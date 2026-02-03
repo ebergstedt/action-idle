@@ -135,6 +135,10 @@ export const ARENA_COLORS = {
   damageNumberOutline: '#000000', // Black outline for readability
   unitShadow: '#4A4A4A', // Dark gray shadow under units
   dustParticle: '#8B7355', // Brown dust color matching parchment theme
+
+  // Grid overlay zones
+  noMansLand: '#8B5A2B', // Brown for no man's land between deployment zones
+  flankZone: '#654321', // Darker brown for flank zones (sides)
 } as const;
 
 // =============================================================================

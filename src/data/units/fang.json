@@ -35,5 +35,6 @@
     "walkAnimation": "bounce"
   },
   "innateAbilities": [],
-  "unlockRequirements": []
+  "unlockRequirements": [],
+  "gridFootprint": { "cols": 5, "rows": 2 }
 }

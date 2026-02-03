@@ -19,10 +19,12 @@ import { drawUnitShadow, drawUnitBody, drawHealthBar, drawDebuffIndicator } from
 import { drawProjectile } from './drawProjectile';
 import { drawCastle, drawCastleHealthBar } from './drawCastle';
 import { drawShockwave } from './drawEffects';
-import { drawSelectionBox } from './drawSelection';
+import { drawSelectionBox, drawSquadSelections } from './drawSelection';
 import { drawParchmentBackground, drawVignette } from './drawBackground';
 import { drawInkSplatters } from './drawInkSplatter';
 import { drawAimingLaser } from './drawLaser';
+import { drawBackgroundGrid, drawFlankZones } from './drawGrid';
+import { calculateCellSize } from '../../../core/battle/grid/GridManager';
 import type { DustParticle, InkSplatter } from '../../../core/battle/particles';
 
 /**
@@ -44,29 +46,18 @@ export interface RenderContext {
 
 /**
  * Draw spawn zones (enemy at top, ally at bottom).
+ * Only fills the zones with color, no border lines.
  */
 function drawSpawnZones(ctx: CanvasRenderingContext2D, width: number, height: number): void {
   const zoneHeight = height * ZONE_HEIGHT_PERCENT;
 
-  // Enemy zone (top)
+  // Enemy zone (top) - fill only
   ctx.fillStyle = ARENA_COLORS.enemyZoneFill;
   ctx.fillRect(0, 0, width, zoneHeight);
-  ctx.strokeStyle = ARENA_COLORS.enemyZoneBorder;
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-  ctx.moveTo(0, zoneHeight);
-  ctx.lineTo(width, zoneHeight);
-  ctx.stroke();
 
-  // Allied zone (bottom)
+  // Allied zone (bottom) - fill only
   ctx.fillStyle = ARENA_COLORS.allyZoneFill;
   ctx.fillRect(0, height - zoneHeight, width, zoneHeight);
-  ctx.strokeStyle = ARENA_COLORS.allyZoneBorder;
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-  ctx.moveTo(0, height - zoneHeight);
-  ctx.lineTo(width, height - zoneHeight);
-  ctx.stroke();
 }
 
 /**
@@ -102,11 +93,20 @@ export function renderBattle(context: RenderContext): void {
     inkSplatters,
   } = context;
 
+  // Calculate cell size once for grid-based rendering
+  const cellSize = calculateCellSize(width, height);
+
   // 1. Parchment background with noise texture and grid
   drawParchmentBackground(ctx, width, height);
 
   // 2. Spawn zones
   drawSpawnZones(ctx, width, height);
+
+  // 2.5. Faint background grid (always visible) and flank zones during deployment
+  drawBackgroundGrid(ctx, width, height, cellSize);
+  if (!state.hasStarted) {
+    drawFlankZones(ctx, width, height, cellSize, 0.1);
+  }
 
   // 3. Ink splatters (on the ground, behind everything else)
   drawInkSplatters(ctx, inkSplatters);
@@ -144,6 +144,9 @@ export function renderBattle(context: RenderContext): void {
     const isBeingDragged = isDragging && draggedUnitIds.includes(unit.id);
     drawUnitBody(ctx, unit, isSelected, isBeingDragged);
   }
+
+  // 8.5. Squad selection outlines (after unit bodies, before dust)
+  drawSquadSelections(ctx, state.units, selectedUnitIds, isDragging, cellSize);
 
   // 9. Dust particles (after units so they're visible)
   drawDustParticles(ctx, dustParticles);

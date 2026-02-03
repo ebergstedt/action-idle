@@ -11,8 +11,6 @@ import {
   DEATH_FADE_DURATION,
   UNIT_SHADOW_OFFSET,
   UNIT_SHADOW_OPACITY,
-  SELECTION_PULSE_SPEED,
-  SELECTION_PULSE_INTENSITY,
 } from '../../../core/battle/BattleConfig';
 import { computeWalkAnimationState } from '../../../core/battle/animations';
 import { ARENA_COLORS, UI_COLORS, getOppositeTeam, getTeamColor } from '../../../core/theme/colors';
@@ -92,12 +90,13 @@ export function drawUnitShadow(ctx: CanvasRenderingContext2D, unit: UnitRenderDa
 }
 
 /**
- * Draw the unit body with selection ring, hit flash, and walk animation.
+ * Draw the unit body with hit flash and walk animation.
+ * Note: Selection is now drawn as a squad outline, not individual unit rings.
  */
 export function drawUnitBody(
   ctx: CanvasRenderingContext2D,
   unit: UnitRenderData,
-  isSelected: boolean,
+  _isSelected: boolean,
   isBeingDragged: boolean
 ): void {
   const {
@@ -135,25 +134,6 @@ export function drawUnitBody(
   const finalScaleY = deathScale * animScaleY;
   if (finalScaleX !== 1 || finalScaleY !== 1) {
     ctx.scale(finalScaleX, finalScaleY);
-  }
-
-  // Selection ring with pulse animation (skip for dying units)
-  if ((isSelected || isBeingDragged) && !isDying) {
-    // Calculate pulse based on time
-    const pulseTime = performance.now() / 1000; // seconds
-    const pulse = Math.sin(pulseTime * SELECTION_PULSE_SPEED * Math.PI * 2);
-    const pulseScale = 1 + pulse * SELECTION_PULSE_INTENSITY;
-    const ringRadius = (size + 8) * pulseScale;
-
-    ctx.strokeStyle = ARENA_COLORS.selectionRing;
-    ctx.lineWidth = 3;
-    ctx.beginPath();
-    ctx.arc(0, 0, ringRadius, 0, Math.PI * 2);
-    ctx.stroke();
-    ctx.shadowColor = ARENA_COLORS.selectionRing;
-    ctx.shadowBlur = 15;
-    ctx.stroke();
-    ctx.shadowBlur = 0;
   }
 
   // Unit shape

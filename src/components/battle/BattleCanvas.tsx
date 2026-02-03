@@ -7,10 +7,11 @@
  * Godot equivalent: A CanvasLayer or Node2D with _draw() override.
  */
 
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import type { BattleState } from '../../core/battle';
 import { MIN_ZOOM, MAX_ZOOM, ZOOM_SPEED, DEFAULT_ZOOM } from '../../core/battle/BattleConfig';
 import { Vector2 } from '../../core/physics/Vector2';
+import { calculateCellSize } from '../../core/battle/grid/GridManager';
 
 import { useCanvasInput, ZoomState } from './hooks/useCanvasInput';
 import { useDustParticles } from './hooks/useDustParticles';
@@ -57,6 +58,12 @@ export function BattleCanvas({
   useEffect(() => {
     setZoomState({ zoom: DEFAULT_ZOOM, panX: 0, panY: 0 });
   }, [resetKey]);
+
+  // Calculate cell size for grid snapping (only active during deployment)
+  const cellSize = useMemo(() => {
+    if (state.hasStarted) return 0; // Disable grid snapping during battle
+    return calculateCellSize(width, height);
+  }, [width, height, state.hasStarted]);
 
   // Handle mouse wheel for zoom
   const handleWheel = useCallback(
@@ -107,6 +114,7 @@ export function BattleCanvas({
     width,
     height,
     zoomState,
+    cellSize,
     onUnitMove,
     onUnitsMove,
     onSelectUnit,

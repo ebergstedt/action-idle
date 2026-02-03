@@ -109,6 +109,35 @@ export function selectSquad(units: ISelectable[], referenceUnit: ISelectable): S
 }
 
 /**
+ * Expands a selection to include all units from any squads that have at least one unit selected.
+ * This ensures squad-based selection - you can't select individual units from a squad.
+ *
+ * @param selectedIds - Currently selected unit IDs (may be partial squad selection)
+ * @param units - All available units
+ * @returns Selection state with all squad members included
+ */
+export function expandSelectionToSquads(
+  selectedIds: string[],
+  units: ISelectable[]
+): SelectionState {
+  if (selectedIds.length === 0) return { selectedIds: [] };
+
+  // Find all squad IDs that have at least one selected unit
+  const affectedSquadIds = new Set<string>();
+  for (const id of selectedIds) {
+    const unit = units.find((u) => u.id === id);
+    if (unit) {
+      affectedSquadIds.add(unit.squadId);
+    }
+  }
+
+  // Select all units from affected squads
+  const expandedIds = units.filter((u) => affectedSquadIds.has(u.squadId)).map((u) => u.id);
+
+  return { selectedIds: expandedIds };
+}
+
+/**
  * Filters selection to only include units that still exist.
  */
 export function pruneSelection(

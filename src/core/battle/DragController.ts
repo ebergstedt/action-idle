@@ -16,6 +16,8 @@ import {
   OVERLAP_PUSH_FACTOR,
 } from './BattleConfig';
 import { ISelectable } from './ISelectable';
+import type { GridFootprint, GridBounds, GridPosition } from './grid/GridTypes';
+import { snapFootprintToGrid, doGridBoundsOverlap, isGridBoundsWithin } from './grid/GridManager';
 
 export interface DragSession {
   /** The unit that was clicked to initiate the drag */
@@ -211,4 +213,109 @@ function resolveOverlaps(
  */
 export function isMultiDrag(session: DragSession): boolean {
   return session.draggedUnitIds.length > 1;
+}
+
+// =============================================================================
+// GRID SNAPPING
+// =============================================================================
+
+/**
+ * Snaps a squad position to the grid.
+ *
+ * @param pos - Current pixel position (center of squad)
+ * @param footprint - Squad footprint in grid cells
+ * @param cellSize - Size of each grid cell in pixels
+ * @returns Snapped pixel position (center of squad)
+ */
+export function snapSquadToGrid(pos: Vector2, footprint: GridFootprint, cellSize: number): Vector2 {
+  return snapFootprintToGrid(pos, footprint, cellSize);
+}
+
+/**
+ * Checks if a grid position is valid (within bounds and not overlapping).
+ *
+ * @param gridPos - Grid position (top-left of footprint)
+ * @param footprint - Size of the footprint in grid cells
+ * @param occupiedCells - List of already-occupied grid bounds
+ * @param deploymentBounds - Valid deployment zone bounds
+ * @returns True if position is valid
+ */
+export function isGridPositionValid(
+  gridPos: GridPosition,
+  footprint: GridFootprint,
+  occupiedCells: GridBounds[],
+  deploymentBounds: GridBounds
+): boolean {
+  const candidateBounds: GridBounds = {
+    col: gridPos.col,
+    row: gridPos.row,
+    cols: footprint.cols,
+    rows: footprint.rows,
+  };
+
+  // Check if within deployment bounds
+  if (!isGridBoundsWithin(candidateBounds, deploymentBounds)) {
+    return false;
+  }
+
+  // Check for overlaps with occupied cells
+  for (const occ of occupiedCells) {
+    if (doGridBoundsOverlap(candidateBounds, occ)) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+/**
+ * Calculates drag positions with grid snapping.
+ *
+ * @param session - The drag session
+ * @param currentMousePos - Current mouse position
+ * @param bounds - Boundary constraints
+ * @param allUnits - All units for overlap checking
+ * @param cellSize - Size of each grid cell in pixels (0 to disable snapping)
+ * @param footprints - Map of unit ID to grid footprint (for snapping)
+ */
+export function calculateDragPositionsWithGrid(
+  session: DragSession,
+  currentMousePos: Vector2,
+  bounds: DragBounds,
+  allUnits: ISelectable[],
+  cellSize: number = 0,
+  footprints: Map<string, GridFootprint> = new Map()
+): DragResult {
+  // First calculate positions using the standard method
+  const result = calculateDragPositions(session, currentMousePos, bounds, allUnits);
+
+  // If grid snapping is disabled, return as-is
+  if (cellSize <= 0) {
+    return result;
+  }
+
+  // Snap each unit's position to the grid
+  const snappedMoves: Array<{ unitId: string; position: Vector2 }> = [];
+
+  for (const move of result.moves) {
+    const footprint = footprints.get(move.unitId);
+
+    if (footprint) {
+      // Snap to grid based on footprint
+      const snappedPos = snapSquadToGrid(move.position, footprint, cellSize);
+
+      // Clamp to bounds after snapping
+      const clampedPos = new Vector2(
+        Math.max(bounds.minX, Math.min(bounds.maxX, snappedPos.x)),
+        Math.max(bounds.minY, Math.min(bounds.maxY, snappedPos.y))
+      );
+
+      snappedMoves.push({ unitId: move.unitId, position: clampedPos });
+    } else {
+      // No footprint, keep original position
+      snappedMoves.push(move);
+    }
+  }
+
+  return { moves: snappedMoves };
 }

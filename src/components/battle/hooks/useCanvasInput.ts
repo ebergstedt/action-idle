@@ -19,12 +19,14 @@ import {
   isMultiDrag,
   DragSession,
   DragBounds,
+  snapSquadToGrid,
 } from '../../../core/battle/DragController';
 import { findUnitAtPosition } from '../../../core/battle/InputAdapter';
 import {
   selectAllOfType,
   selectSquad,
   filterSelectionByTeam,
+  expandSelectionToSquads,
 } from '../../../core/battle/SelectionManager';
 import {
   startBoxSelect,
@@ -48,6 +50,8 @@ export interface CanvasConfig {
   width: number;
   height: number;
   zoomState?: ZoomState;
+  /** Grid cell size in pixels (0 or undefined to disable grid snapping) */
+  cellSize?: number;
 }
 
 /** Current selection state - generic to support different unit types */
@@ -89,6 +93,7 @@ export function useCanvasInput<T extends ISelectable = ISelectable>({
   width,
   height,
   zoomState,
+  cellSize = 0,
   onUnitMove,
   onUnitsMove,
   onSelectUnit,
@@ -142,6 +147,78 @@ export function useCanvasInput<T extends ISelectable = ISelectable>({
   // Event Processing (shared logic for canvas and document events)
   // ─────────────────────────────────────────────────────────────────────────────
 
+  /** Apply grid snapping to moves, keeping squads together */
+  const applyGridSnapToMoves = useCallback(
+    (
+      moves: Array<{ unitId: string; position: Vector2 }>
+    ): Array<{ unitId: string; position: Vector2 }> => {
+      if (cellSize <= 0) return moves;
+
+      // Group moves by squadId
+      const squadMoves = new Map<
+        string,
+        Array<{ unitId: string; position: Vector2; unit: (typeof units)[0] }>
+      >();
+
+      for (const move of moves) {
+        const unit = units.find((u) => u.id === move.unitId);
+        if (!unit) continue;
+
+        const squadId = unit.squadId;
+        if (!squadMoves.has(squadId)) {
+          squadMoves.set(squadId, []);
+        }
+        squadMoves.get(squadId)!.push({ ...move, unit });
+      }
+
+      const snappedMoves: Array<{ unitId: string; position: Vector2 }> = [];
+
+      // Process each squad as a unit
+      for (const [, squadUnits] of squadMoves) {
+        if (squadUnits.length === 0) continue;
+
+        // Get the footprint from any unit in the squad (they all have the same)
+        const footprint = squadUnits[0].unit.gridFootprint;
+        if (!footprint) {
+          // No footprint, just return original positions
+          for (const su of squadUnits) {
+            snappedMoves.push({ unitId: su.unitId, position: su.position });
+          }
+          continue;
+        }
+
+        // Calculate squad centroid (average position)
+        let centroidX = 0;
+        let centroidY = 0;
+        for (const su of squadUnits) {
+          centroidX += su.position.x;
+          centroidY += su.position.y;
+        }
+        centroidX /= squadUnits.length;
+        centroidY /= squadUnits.length;
+        const centroid = new Vector2(centroidX, centroidY);
+
+        // Snap the centroid to the grid based on squad footprint
+        const snappedCentroid = snapSquadToGrid(centroid, footprint, cellSize);
+
+        // Calculate the delta from original centroid to snapped centroid
+        const deltaX = snappedCentroid.x - centroidX;
+        const deltaY = snappedCentroid.y - centroidY;
+
+        // Apply the same delta to all units in the squad
+        for (const su of squadUnits) {
+          snappedMoves.push({
+            unitId: su.unitId,
+            position: new Vector2(su.position.x + deltaX, su.position.y + deltaY),
+          });
+        }
+      }
+
+      return snappedMoves;
+    },
+    [cellSize, units]
+  );
+
   /** Process mouse move for drag or box select */
   const processMoveEvent = useCallback(
     (pos: Vector2) => {
@@ -159,15 +236,31 @@ export function useCanvasInput<T extends ISelectable = ISelectable>({
 
       if (isMultiDrag(session) && onUnitsMove) {
         const result = calculateDragPositions(session, pos, bounds, units);
-        onUnitsMove(result.moves);
+        // Apply grid snapping - snaps entire squads together
+        const snappedMoves = applyGridSnapToMoves(result.moves);
+        onUnitsMove(snappedMoves);
       } else if (onUnitMove) {
         const newPos = calculateSingleDragPosition(session, pos, bounds);
         if (newPos) {
-          onUnitMove(session.anchorUnitId, newPos);
+          // For single unit, use squad snapping too (in case it's a 1-unit squad)
+          const snappedMoves = applyGridSnapToMoves([
+            { unitId: session.anchorUnitId, position: newPos },
+          ]);
+          if (snappedMoves.length > 0) {
+            onUnitMove(session.anchorUnitId, snappedMoves[0].position);
+          }
         }
       }
     },
-    [isDragging, boxSelectSession, getDragBounds, units, onUnitMove, onUnitsMove]
+    [
+      isDragging,
+      boxSelectSession,
+      getDragBounds,
+      units,
+      onUnitMove,
+      onUnitsMove,
+      applyGridSnapToMoves,
+    ]
   );
 
   /** Process mouse up for ending drag or finalizing selection */
@@ -178,7 +271,10 @@ export function useCanvasInput<T extends ISelectable = ISelectable>({
         // Box was large enough - select units inside
         const box = getSelectionBox(boxSelectSession);
         const selectedIds = getUnitsInBox(box, units);
-        onSelectUnits?.(selectedIds);
+        // Expand selection to include all units from affected squads
+        // (can't select individual units from a squad)
+        const expandedSelection = expandSelectionToSquads(selectedIds, units);
+        onSelectUnits?.(expandedSelection.selectedIds);
       } else {
         // Box was too small (just a click) - clear selection
         onSelectUnit?.(null);

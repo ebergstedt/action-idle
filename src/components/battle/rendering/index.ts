@@ -14,6 +14,14 @@ export { drawUnitShadow, drawUnitBody, drawHealthBar, drawDebuffIndicator } from
 export { drawProjectile } from './drawProjectile';
 export { drawCastle, drawCastleHealthBar } from './drawCastle';
 export { drawShockwave, drawDamageNumber } from './drawEffects';
-export { drawSelectionBox } from './drawSelection';
+export { drawSelectionBox, drawSquadSelections } from './drawSelection';
 export type { SelectionBox } from './drawSelection';
 export { drawInkSplatters } from './drawInkSplatter';
+export {
+  drawDeploymentGrid,
+  drawFootprintPreview,
+  drawNoMansLand,
+  drawFlankZones,
+  drawDeploymentOverlay,
+  drawBackgroundGrid,
+} from './drawGrid';
