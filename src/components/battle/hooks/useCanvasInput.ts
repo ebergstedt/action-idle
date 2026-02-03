@@ -15,7 +15,14 @@ import {
   GRID_FLANK_COLS,
   GRID_DEPLOYMENT_COLS,
   GRID_TOTAL_ROWS,
+  CASTLE_GRID_COLS,
+  CASTLE_GRID_ROWS,
+  BASE_CASTLE_HORIZONTAL_MARGIN,
+  BASE_OBSTACLE_PADDING,
+  ZONE_MIDWAY_DIVISOR,
+  scaleValue,
 } from '../../../core/battle/BattleConfig';
+import type { GridBounds } from '../../../core/battle/grid/GridTypes';
 import { Vector2 } from '../../../core/physics/Vector2';
 import {
   startDrag,
@@ -42,6 +49,67 @@ import {
   isBoxSelectActive,
   BoxSelectSession,
 } from '../../../core/battle/BoxSelectController';
+
+/**
+ * Generate castle obstacle bounds for deployment validation.
+ * Prevents units from being placed inside castle areas.
+ * This mirrors FormationManager.generateCastleObstacles but returns GridBounds format.
+ */
+function generateCastleObstacleBounds(
+  arenaWidth: number,
+  arenaHeight: number,
+  cellSize: number
+): GridBounds[] {
+  if (cellSize <= 0) return [];
+
+  const zoneHeight = arenaHeight * ZONE_HEIGHT_PERCENT;
+
+  // Castle positions (same calculation as BattleEngine.spawnCastles)
+  const castleMargin = scaleValue(BASE_CASTLE_HORIZONTAL_MARGIN, arenaHeight);
+  const leftX = castleMargin;
+  const rightX = arenaWidth - castleMargin;
+
+  // Castle Y positions (centered in each zone)
+  const playerY = arenaHeight - zoneHeight / ZONE_MIDWAY_DIVISOR;
+  const enemyY = zoneHeight / ZONE_MIDWAY_DIVISOR;
+
+  // Castle size from grid footprint (4x4 cells) plus padding
+  const castleWidthPx = CASTLE_GRID_COLS * cellSize;
+  const castleHeightPx = CASTLE_GRID_ROWS * cellSize;
+  const padding = scaleValue(BASE_OBSTACLE_PADDING, arenaHeight);
+
+  // Convert to grid bounds (in grid cells, not pixels)
+  // GridBounds uses { col, row, cols, rows } - top-left corner + size
+  const castleGridCols = CASTLE_GRID_COLS + Math.ceil((padding * 2) / cellSize);
+  const castleGridRows = CASTLE_GRID_ROWS + Math.ceil((padding * 2) / cellSize);
+
+  // Calculate grid positions for each castle
+  const obstacles: GridBounds[] = [];
+
+  // Helper to convert pixel center to grid bounds
+  const pixelToGridBounds = (centerX: number, centerY: number): GridBounds => {
+    const obstacleWidthPx = castleWidthPx + padding * 2;
+    const obstacleHeightPx = castleHeightPx + padding * 2;
+    const topLeftX = centerX - obstacleWidthPx / 2;
+    const topLeftY = centerY - obstacleHeightPx / 2;
+    return {
+      col: Math.floor(topLeftX / cellSize),
+      row: Math.floor(topLeftY / cellSize),
+      cols: castleGridCols,
+      rows: castleGridRows,
+    };
+  };
+
+  // Player castles (bottom zone) - only check these for player deployment
+  obstacles.push(pixelToGridBounds(leftX, playerY));
+  obstacles.push(pixelToGridBounds(rightX, playerY));
+
+  // Enemy castles (top zone) - included for completeness, though players deploy at bottom
+  obstacles.push(pixelToGridBounds(leftX, enemyY));
+  obstacles.push(pixelToGridBounds(rightX, enemyY));
+
+  return obstacles;
+}
 
 /** Zoom state for coordinate transformation */
 export interface ZoomState {
@@ -232,6 +300,9 @@ export function useCanvasInput<T extends ISelectable = ISelectable>({
         }
       }
 
+      // Generate castle obstacle bounds to prevent units from being placed inside castles
+      const castleObstacleBounds = generateCastleObstacleBounds(width, height, cellSize);
+
       // Validate moves to prevent squad overlaps during deployment
       // Pass initial positions so invalid moves revert to drag start, not current frame
       const validatedMoves = validateSquadMoves(
@@ -239,12 +310,13 @@ export function useCanvasInput<T extends ISelectable = ISelectable>({
         units,
         cellSize,
         draggedSquadIds,
-        initialPositions
+        initialPositions,
+        castleObstacleBounds
       );
 
       return validatedMoves;
     },
-    [cellSize, units]
+    [cellSize, units, width, height]
   );
 
   /** Process mouse move for drag or box select */

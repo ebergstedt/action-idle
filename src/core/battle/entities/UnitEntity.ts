@@ -882,7 +882,7 @@ export class UnitEntity extends BaseEntity {
 
     // Apply ally avoidance while marching
     const allies = world.getAlliesOf(this);
-    let avoidance = Vector2.zero();
+    let allyAvoidance = Vector2.zero();
     const allyAvoidanceForce = this.getAllyAvoidanceForce();
 
     for (const ally of allies) {
@@ -896,13 +896,15 @@ export class UnitEntity extends BaseEntity {
       if (dist < avoidDist && dist > 0) {
         // Push away from nearby allies
         const pushStrength = (avoidDist - dist) / avoidDist;
-        avoidance = avoidance.add(toAlly.normalize().multiply(pushStrength * allyAvoidanceForce));
+        allyAvoidance = allyAvoidance.add(
+          toAlly.normalize().multiply(pushStrength * allyAvoidanceForce)
+        );
       }
     }
 
-    // Combine forward movement with avoidance (using modified speed)
+    // Combine forward movement with ally avoidance
     const modifiedSpeed = this.getModifiedMoveSpeed();
-    let moveDirection = forwardDir.multiply(modifiedSpeed).add(avoidance);
+    let moveDirection = forwardDir.multiply(modifiedSpeed).add(allyAvoidance);
     const speed = moveDirection.magnitude();
     if (speed > modifiedSpeed) {
       moveDirection = moveDirection.normalize().multiply(modifiedSpeed);
@@ -1041,7 +1043,7 @@ export class UnitEntity extends BaseEntity {
 
     // Apply ally avoidance
     const allies = world.getAlliesOf(this);
-    let avoidance = Vector2.zero();
+    let allyAvoidance = Vector2.zero();
     const allyAvoidanceForce = this.getAllyAvoidanceForce();
 
     for (const ally of allies) {
@@ -1060,12 +1062,12 @@ export class UnitEntity extends BaseEntity {
           const rightClear = this.isDirectionClear(perpendicular.multiply(-1), allies);
 
           if (leftClear && !rightClear) {
-            avoidance = avoidance.add(perpendicular.multiply(allyAvoidanceForce / dist));
+            allyAvoidance = allyAvoidance.add(perpendicular.multiply(allyAvoidanceForce / dist));
           } else if (rightClear && !leftClear) {
-            avoidance = avoidance.add(perpendicular.multiply(-allyAvoidanceForce / dist));
+            allyAvoidance = allyAvoidance.add(perpendicular.multiply(-allyAvoidanceForce / dist));
           } else {
             const cross = moveDirection.x * toAlly.y - moveDirection.y * toAlly.x;
-            avoidance = avoidance.add(
+            allyAvoidance = allyAvoidance.add(
               perpendicular.multiply(((cross > 0 ? 1 : -1) * allyAvoidanceForce) / dist)
             );
           }
@@ -1073,9 +1075,9 @@ export class UnitEntity extends BaseEntity {
       }
     }
 
-    // Combine movement with avoidance (using modified speed)
+    // Combine movement direction with ally avoidance
     const modifiedSpeed = this.getModifiedMoveSpeed();
-    moveDirection = moveDirection.multiply(modifiedSpeed).add(avoidance);
+    moveDirection = moveDirection.multiply(modifiedSpeed).add(allyAvoidance);
     const speed = moveDirection.magnitude();
     if (speed > modifiedSpeed) {
       moveDirection = moveDirection.normalize().multiply(modifiedSpeed);

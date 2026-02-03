@@ -360,13 +360,14 @@ export function collectSquadGridBounds(
 }
 
 /**
- * Checks if a squad move would cause an overlap with other squads.
+ * Checks if a squad move would cause an overlap with other squads or obstacles.
  *
  * @param proposedCentroid - Proposed pixel position for squad centroid
  * @param footprint - Squad footprint in grid cells
  * @param cellSize - Size of each grid cell in pixels
  * @param otherSquadBounds - Grid bounds of other squads to check against
  * @param deploymentBounds - Valid deployment zone bounds (optional)
+ * @param obstacleBounds - Grid bounds of obstacles (castles, etc.) to check against (optional)
  * @returns True if the move is valid (no overlaps and within bounds)
  */
 export function isSquadMoveValid(
@@ -374,7 +375,8 @@ export function isSquadMoveValid(
   footprint: GridFootprint,
   cellSize: number,
   otherSquadBounds: GridBounds[],
-  deploymentBounds?: GridBounds
+  deploymentBounds?: GridBounds,
+  obstacleBounds?: GridBounds[]
 ): boolean {
   const proposedBounds = getSquadGridBounds(proposedCentroid, footprint, cellSize);
 
@@ -390,6 +392,15 @@ export function isSquadMoveValid(
     }
   }
 
+  // Check for overlaps with obstacles (castles, etc.)
+  if (obstacleBounds) {
+    for (const obstacle of obstacleBounds) {
+      if (doGridBoundsOverlap(proposedBounds, obstacle)) {
+        return false;
+      }
+    }
+  }
+
   return true;
 }
 
@@ -402,6 +413,7 @@ export function isSquadMoveValid(
  * @param cellSize - Size of each grid cell in pixels
  * @param draggedSquadIds - IDs of squads being dragged
  * @param initialPositions - Optional map of unit IDs to their positions at drag start
+ * @param obstacleBounds - Optional array of obstacle bounds (castles, etc.) to check against
  * @returns Validated moves (overlapping moves reverted to initial positions)
  */
 export function validateSquadMoves(
@@ -409,7 +421,8 @@ export function validateSquadMoves(
   units: ISelectable[],
   cellSize: number,
   draggedSquadIds: Set<string>,
-  initialPositions?: Map<string, Vector2>
+  initialPositions?: Map<string, Vector2>,
+  obstacleBounds?: GridBounds[]
 ): Array<{ unitId: string; position: Vector2 }> {
   // If cellSize is invalid, return initial positions to prevent any movement
   // This ensures we don't allow moves when validation can't run properly
@@ -479,9 +492,16 @@ export function validateSquadMoves(
 
     const proposedCentroid = new Vector2(proposedCentroidX, proposedCentroidY);
 
-    // Check if move is valid
+    // Check if move is valid (against other squads, bounds, and obstacles)
     if (
-      isSquadMoveValid(proposedCentroid, footprint, cellSize, otherBoundsArray, deploymentBounds)
+      isSquadMoveValid(
+        proposedCentroid,
+        footprint,
+        cellSize,
+        otherBoundsArray,
+        deploymentBounds,
+        obstacleBounds
+      )
     ) {
       // Move is valid, apply it
       for (const m of squadUnitMoves) {

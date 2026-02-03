@@ -283,9 +283,11 @@ export const MELEE_ATTACK_RANGE_THRESHOLD = 25;
 export const CASTLE_MAX_HEALTH = 1;
 
 /**
- * Castle visual size (radius for rendering).
+ * Castle grid footprint (4x4 cells).
+ * Used for collision, deployment blocking, and rendering size.
  */
-export const CASTLE_SIZE = 14;
+export const CASTLE_GRID_COLS = 4;
+export const CASTLE_GRID_ROWS = 4;
 
 /**
  * Base horizontal offset from arena edge for castle placement.
@@ -294,11 +296,11 @@ export const CASTLE_SIZE = 14;
 export const BASE_CASTLE_HORIZONTAL_MARGIN = 200;
 
 /**
- * Padding around castles for formation placement (pixels).
- * Units will not be placed within this distance of a castle.
+ * Padding around obstacles for formation placement (pixels).
+ * Units will not be placed within this distance of an obstacle.
  * Scaled by arena size at runtime.
  */
-export const BASE_CASTLE_FORMATION_PADDING = 25;
+export const BASE_OBSTACLE_PADDING = 4;
 
 // =============================================================================
 // SEPARATION & COLLISION

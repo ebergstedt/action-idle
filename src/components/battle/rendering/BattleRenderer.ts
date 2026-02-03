@@ -118,7 +118,7 @@ export function renderBattle(context: RenderContext): void {
 
   // 5. Castles (draw before units so units appear on top)
   for (const castle of state.castles) {
-    drawCastle(ctx, castle);
+    drawCastle(ctx, castle, cellSize);
   }
 
   // 6. Projectiles
@@ -169,7 +169,7 @@ export function renderBattle(context: RenderContext): void {
   // 12. Health bars for castles (only show if damaged)
   for (const castle of state.castles) {
     if (castle.health < castle.maxHealth) {
-      drawCastleHealthBar(ctx, castle);
+      drawCastleHealthBar(ctx, castle, cellSize);
     }
   }
 

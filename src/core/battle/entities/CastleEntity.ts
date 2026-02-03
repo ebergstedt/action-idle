@@ -3,6 +3,7 @@
  *
  * A stationary objective that teams must defend/attack.
  * Castles have health but no attack - they're pure objectives.
+ * Implements IObstacle for collision and deployment blocking.
  *
  * Godot equivalent:
  * - class_name Castle extends StaticBody2D
@@ -12,6 +13,8 @@
 
 import { Vector2 } from '../../physics/Vector2';
 import { EntityKind } from '../IEntity';
+import type { GridFootprint } from '../grid/GridTypes';
+import type { IObstacle } from '../obstacles/Obstacle';
 import { CastleRenderData } from '../types';
 import { UnitTeam } from '../units/types';
 import { BaseEntity } from './BaseEntity';
@@ -23,16 +26,21 @@ export interface CastleData {
   team: UnitTeam;
   maxHealth: number;
   health: number;
-  size: number;
+  /** Grid footprint (cols x rows) */
+  gridFootprint: GridFootprint;
   color: string;
 }
 
 /**
- * Castle entity - stationary objective.
+ * Castle entity - stationary objective and obstacle.
  */
-export class CastleEntity extends BaseEntity {
+export class CastleEntity extends BaseEntity implements IObstacle {
   public readonly kind: EntityKind = 'castle';
   public data: CastleData;
+
+  // IObstacle implementation
+  public readonly blocksMovement: boolean = true;
+  public readonly blocksDeployment: boolean = true;
 
   constructor(id: string, position: Vector2, data: CastleData) {
     super(id, position);
@@ -52,11 +60,16 @@ export class CastleEntity extends BaseEntity {
   set health(value: number) {
     this.data.health = value;
   }
-  get size(): number {
-    return this.data.size;
+  get gridFootprint(): GridFootprint {
+    return this.data.gridFootprint;
   }
   get color(): string {
     return this.data.color;
+  }
+  /** Deprecated: use gridFootprint instead. Returns half-width for backwards compatibility. */
+  get size(): number {
+    // Backwards compatibility: return approximate half-size
+    return (this.data.gridFootprint.cols * 8) / 2; // Approximate for rendering
   }
 
   /**
@@ -103,7 +116,8 @@ export class CastleEntity extends BaseEntity {
       position: this.position,
       health: this.health,
       maxHealth: this.maxHealth,
-      size: this.size,
+      gridFootprint: this.gridFootprint,
+      size: this.size, // Deprecated - kept for backwards compatibility
       color: this.color,
     };
   }

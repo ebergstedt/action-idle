@@ -15,9 +15,11 @@ import {
   BASE_ALLY_AVOIDANCE_FORCE,
   PATH_DOT_THRESHOLD,
   DIRECTION_CHECK_MULTIPLIER,
+  GRID_TOTAL_ROWS,
   scaleValue,
 } from '../BattleConfig';
 import { IDamageable } from '../IEntity';
+import { calculateObstacleAvoidance } from '../obstacles/Obstacle';
 import { UnitTeam } from '../types';
 import { AllyData, MovementContext } from './types';
 
@@ -207,6 +209,35 @@ export interface MovementResult {
 }
 
 /**
+ * Calculate obstacle avoidance vector for all obstacles.
+ */
+function calculateAllObstacleAvoidance(
+  position: Vector2,
+  velocity: Vector2,
+  context: MovementContext
+): Vector2 {
+  const obstacles = context.getObstacles();
+  if (obstacles.length === 0) return Vector2.zero();
+
+  const cellSize = context.arenaHeight / GRID_TOTAL_ROWS;
+  const avoidanceRadius = cellSize * 4; // Look ahead 4 cells for obstacles
+
+  let totalAvoidance = Vector2.zero();
+  for (const obstacle of obstacles) {
+    const avoidance = calculateObstacleAvoidance(
+      position,
+      velocity,
+      obstacle,
+      cellSize,
+      avoidanceRadius
+    );
+    totalAvoidance = totalAvoidance.add(avoidance);
+  }
+
+  return totalAvoidance;
+}
+
+/**
  * Calculate march forward movement (no target).
  */
 export function marchForward(
@@ -222,7 +253,7 @@ export function marchForward(
   const forwardDir = calculateMarchDirection(position, team, context);
 
   // Apply ally avoidance
-  const avoidance = calculateAllyAvoidance(
+  const allyAvoidance = calculateAllyAvoidance(
     position,
     unitId,
     collisionSize,
@@ -230,8 +261,14 @@ export function marchForward(
     context.arenaHeight
   );
 
-  // Combine forward movement with avoidance
-  let moveDirection = forwardDir.multiply(moveSpeed).add(avoidance);
+  // Calculate base velocity for obstacle avoidance calculation
+  const baseVelocity = forwardDir.multiply(moveSpeed);
+
+  // Apply obstacle avoidance (castles, walls, etc.)
+  const obstacleAvoidance = calculateAllObstacleAvoidance(position, baseVelocity, context);
+
+  // Combine forward movement with both avoidance vectors
+  let moveDirection = baseVelocity.add(allyAvoidance).add(obstacleAvoidance);
   moveDirection = clampSpeed(moveDirection, moveSpeed);
 
   const movement = moveDirection.multiply(delta);
@@ -274,8 +311,8 @@ export function moveTowardTarget(
 
   let moveDirection = toTarget.normalize();
 
-  // Apply path avoidance
-  const avoidance = calculatePathAvoidance(
+  // Apply path avoidance for allies
+  const pathAvoidance = calculatePathAvoidance(
     position,
     unitId,
     collisionSize,
@@ -284,8 +321,14 @@ export function moveTowardTarget(
     context.arenaHeight
   );
 
-  // Combine movement with avoidance
-  moveDirection = moveDirection.multiply(moveSpeed).add(avoidance);
+  // Calculate base velocity for obstacle avoidance calculation
+  const baseVelocity = moveDirection.multiply(moveSpeed);
+
+  // Apply obstacle avoidance (castles, walls, etc.)
+  const obstacleAvoidance = calculateAllObstacleAvoidance(position, baseVelocity, context);
+
+  // Combine movement with both avoidance vectors
+  moveDirection = baseVelocity.add(pathAvoidance).add(obstacleAvoidance);
   moveDirection = clampSpeed(moveDirection, moveSpeed);
 
   const movement = moveDirection.multiply(delta);

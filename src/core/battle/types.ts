@@ -152,6 +152,9 @@ export interface CastleRenderData {
   position: Vector2;
   health: number;
   maxHealth: number;
+  /** Grid footprint (cols x rows) for collision and rendering */
+  gridFootprint: GridFootprint;
+  /** @deprecated Use gridFootprint instead. Kept for backwards compatibility. */
   size: number;
   color: string;
 }

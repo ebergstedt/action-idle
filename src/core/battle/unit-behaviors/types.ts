@@ -11,6 +11,7 @@ import { Vector2 } from '../../physics/Vector2';
 import { IDamageable } from '../IEntity';
 import { EntityBounds } from '../BoundsEnforcer';
 import { UnitTeam, UnitStats } from '../types';
+import type { IObstacle } from '../obstacles/Obstacle';
 
 /**
  * Minimal unit interface for targeting system.
@@ -124,6 +125,8 @@ export interface MovementContext {
   getEnemyCastles(): readonly IDamageable[];
   /** Check if any enemy castle has been destroyed */
   hasAnyEnemyCastleBeenDestroyed(): boolean;
+  /** Get all obstacles for movement avoidance */
+  getObstacles(): readonly IObstacle[];
   /** Arena bounds for boundary enforcement */
   bounds: EntityBounds | null;
   /** Arena height for scaling */

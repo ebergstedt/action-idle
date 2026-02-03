@@ -13,7 +13,8 @@ import {
   BASE_CASTLE_HORIZONTAL_MARGIN,
   BATTLE_TIME_THRESHOLD,
   CASTLE_MAX_HEALTH,
-  CASTLE_SIZE,
+  CASTLE_GRID_COLS,
+  CASTLE_GRID_ROWS,
   DEFAULT_ARENA_MARGIN,
   DRAG_OVERLAP_ITERATIONS,
   GRID_TOTAL_COLS,
@@ -24,10 +25,8 @@ import {
   IDLE_DAMAGE_TIMEOUT,
   IDLE_SPEED_INCREMENT,
   MAX_IDLE_SPEED_BONUS,
-  MAX_SCALE,
   STALEMATE_TIMEOUT,
   MIN_SEPARATION_DISTANCE,
-  MIN_SCALE,
   OVERLAP_BASE_PUSH,
   OVERLAP_PUSH_FACTOR,
   RANDOM_DIRECTION_CENTER,
@@ -531,25 +530,23 @@ export class BattleEngine {
 
   /**
    * Spawn a castle for a team.
+   * Castles use a 4x4 grid footprint for consistent collision and rendering.
    * @param team - Which team the castle belongs to
    * @param position - Spawn position
-   * @param arenaHeight - Arena height for size scaling
+   * @param _arenaHeight - Arena height (unused, kept for API compatibility)
    * @returns The spawned castle entity
    */
   spawnCastle(
     team: UnitTeam,
     position: Vector2,
-    arenaHeight: number = REFERENCE_ARENA_HEIGHT
+    _arenaHeight: number = REFERENCE_ARENA_HEIGHT
   ): CastleEntity {
-    const scale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, arenaHeight / REFERENCE_ARENA_HEIGHT));
-    const size = Math.round(CASTLE_SIZE * scale);
-
     const id = `castle_${this.nextCastleId++}`;
     const data: CastleData = {
       team,
       maxHealth: CASTLE_MAX_HEALTH,
       health: CASTLE_MAX_HEALTH,
-      size,
+      gridFootprint: { cols: CASTLE_GRID_COLS, rows: CASTLE_GRID_ROWS },
       color: getCastleColor(team),
     };
 
