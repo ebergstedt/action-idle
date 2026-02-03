@@ -221,6 +221,10 @@ import {
   BASE_CASTLE_FORMATION_PADDING,
   ZONE_HEIGHT_PERCENT,
   ZONE_MIDWAY_DIVISOR,
+  // Grid constants for deployment zone
+  GRID_FLANK_COLS,
+  GRID_DEPLOYMENT_COLS,
+  GRID_TOTAL_ROWS,
 } from './BattleConfig';
 
 // =============================================================================
@@ -371,12 +375,25 @@ export function calculateSquadFootprint(
   definition: UnitDefinition,
   arenaHeight: number
 ): SquadFootprint {
+  const cellSize = arenaHeight / GRID_TOTAL_ROWS;
+  const paddingH = scaleValue(BASE_SQUAD_PADDING_H, arenaHeight);
+  const paddingV = scaleValue(BASE_SQUAD_PADDING_V, arenaHeight);
+
+  // Use grid footprint from definition if available (preferred for grid-based deployment)
+  if (definition.gridFootprint) {
+    const baseWidth = definition.gridFootprint.cols * cellSize;
+    const baseHeight = definition.gridFootprint.rows * cellSize;
+    return {
+      width: baseWidth + paddingH * 2,
+      height: baseHeight + paddingV * 2,
+    };
+  }
+
+  // Fallback: calculate from squad layout (for units without gridFootprint defined)
   const squadSize = definition.baseStats.squadSize ?? 1;
   const spacing = scaleValue(BASE_SQUAD_UNIT_SPACING, arenaHeight);
   const unitGridCols = definition.unitGridSize?.cols ?? 1;
   const unitSize = getScaledUnitSize(unitGridCols, arenaHeight);
-  const paddingH = scaleValue(BASE_SQUAD_PADDING_H, arenaHeight);
-  const paddingV = scaleValue(BASE_SQUAD_PADDING_V, arenaHeight);
 
   if (squadSize <= 1) {
     // Single unit: just unit size plus padding on all sides
@@ -504,19 +521,26 @@ function findNonOverlappingPosition(
   zoneRight: number,
   zoneTop: number,
   zoneBottom: number,
-  padding: number
+  padding: number,
+  cellSize: number = FORMATION_GRID_STEP
 ): { x: number; y: number } {
-  // Grid step size - smaller = more precision but slower
-  const gridStep = FORMATION_GRID_STEP;
+  // Grid step matches cell size for proper grid-aligned placement
+  const gridStep = cellSize;
+
+  // Calculate valid placement bounds (squad center must be far enough from edges)
+  const minX = zoneLeft + footprint.width / 2;
+  const maxX = zoneRight - footprint.width / 2;
+  const minY = zoneTop + footprint.height / 2;
+  const maxY = zoneBottom - footprint.height / 2;
 
   // Generate grid positions sorted by distance from target
   const gridPositions = generateSortedGridPositions(
     targetX,
     targetY,
-    zoneLeft + footprint.width / 2,
-    zoneRight - footprint.width / 2,
-    zoneTop + footprint.height / 2,
-    zoneBottom - footprint.height / 2,
+    minX,
+    maxX,
+    minY,
+    maxY,
     gridStep
   );
 
@@ -537,8 +561,36 @@ function findNonOverlappingPosition(
     }
   }
 
-  // Fallback: return target position (shouldn't happen with proper zone sizing)
-  return { x: targetX, y: targetY };
+  // Fallback: search entire zone with finer grid step to find ANY valid position
+  const fineGridPositions = generateSortedGridPositions(
+    (minX + maxX) / 2, // Search from center of zone
+    (minY + maxY) / 2,
+    minX,
+    maxX,
+    minY,
+    maxY,
+    gridStep / 2 // Finer grid for fallback search
+  );
+
+  for (const pos of fineGridPositions) {
+    const candidate: SquadBounds = {
+      x: pos.x - footprint.width / 2,
+      y: pos.y - footprint.height / 2,
+      width: footprint.width,
+      height: footprint.height,
+    };
+
+    const hasOverlap = placedSquads.some((placed) => boundsOverlap(candidate, placed, padding));
+
+    if (!hasOverlap) {
+      return { x: pos.x, y: pos.y };
+    }
+  }
+
+  // Last resort: clamp target to valid bounds (ensures footprint stays in zone)
+  const clampedX = Math.max(minX, Math.min(maxX, targetX));
+  const clampedY = Math.max(minY, Math.min(maxY, targetY));
+  return { x: clampedX, y: clampedY };
 }
 
 // =============================================================================
@@ -672,7 +724,7 @@ export const DEFAULT_ENEMY_PATTERNS: EnemyFormationPattern[] = [
     // Heavy left flank - all crawlers on left, fangs spread wide
     front: { yPosition: 0.2, spread: 'line', widthFraction: 0.95 },
     back: { yPosition: 0.55, spread: 'wide', widthFraction: 0.9 },
-    flank: { yPosition: 0.12, spread: 'left', widthFraction: 0.45 },
+    flank: { yPosition: 0.55, spread: 'left', widthFraction: 0.45 },
   },
   {
     id: 'right_hammer',
@@ -680,7 +732,7 @@ export const DEFAULT_ENEMY_PATTERNS: EnemyFormationPattern[] = [
     // Heavy right flank - all crawlers on right, fangs spread wide
     front: { yPosition: 0.2, spread: 'line', widthFraction: 0.95 },
     back: { yPosition: 0.55, spread: 'wide', widthFraction: 0.9 },
-    flank: { yPosition: 0.12, spread: 'right', widthFraction: 0.45 },
+    flank: { yPosition: 0.55, spread: 'right', widthFraction: 0.45 },
   },
   {
     id: 'refused_flank',
@@ -696,7 +748,7 @@ export const DEFAULT_ENEMY_PATTERNS: EnemyFormationPattern[] = [
     // Spread across entire width, flanks pushed forward
     front: { yPosition: 0.25, spread: 'line', widthFraction: 0.7 },
     back: { yPosition: 0.55, spread: 'line', widthFraction: 0.95 },
-    flank: { yPosition: 0.08, spread: 'wide', widthFraction: 0.98 },
+    flank: { yPosition: 0.55, spread: 'wide', widthFraction: 0.98 },
   },
 ];
 
@@ -796,7 +848,7 @@ export const DEFAULT_ALLIED_PATTERNS: EnemyFormationPattern[] = [
     // Knights front (aggressive), Warriors middle support, Archers back
     front: { yPosition: 0.35, spread: 'line', widthFraction: 0.85 },
     back: { yPosition: 0.65, spread: 'line', widthFraction: 0.9 },
-    flank: { yPosition: 0.1, spread: 'line', widthFraction: 0.7 },
+    flank: { yPosition: 0.55, spread: 'line', widthFraction: 0.7 },
   },
   {
     id: 'left_heavy',
@@ -804,7 +856,7 @@ export const DEFAULT_ALLIED_PATTERNS: EnemyFormationPattern[] = [
     // Concentrate forces on left flank
     front: { yPosition: 0.2, spread: 'left', widthFraction: 0.6 },
     back: { yPosition: 0.55, spread: 'line', widthFraction: 0.85 },
-    flank: { yPosition: 0.1, spread: 'left', widthFraction: 0.4 },
+    flank: { yPosition: 0.55, spread: 'left', widthFraction: 0.4 },
   },
   {
     id: 'right_heavy',
@@ -812,7 +864,7 @@ export const DEFAULT_ALLIED_PATTERNS: EnemyFormationPattern[] = [
     // Concentrate forces on right flank
     front: { yPosition: 0.2, spread: 'right', widthFraction: 0.6 },
     back: { yPosition: 0.55, spread: 'line', widthFraction: 0.85 },
-    flank: { yPosition: 0.1, spread: 'right', widthFraction: 0.4 },
+    flank: { yPosition: 0.55, spread: 'right', widthFraction: 0.4 },
   },
 ];
 
@@ -943,8 +995,13 @@ export function calculateDeterministicAlliedPositions(
   const allyZoneTop = bounds.height - zoneHeight + FORMATION_SPAWN_MARGIN;
   const allyZoneBottom = bounds.height - FORMATION_SPAWN_MARGIN;
   const availableHeight = allyZoneBottom - allyZoneTop;
-  const availableWidth = bounds.width - FORMATION_SPAWN_MARGIN * 2;
-  const centerX = bounds.width / 2;
+
+  // Use grid-based X boundaries (deployment zone is columns 6-65)
+  const cellSize = bounds.height / GRID_TOTAL_ROWS;
+  const gridMinX = GRID_FLANK_COLS * cellSize;
+  const gridMaxX = (GRID_FLANK_COLS + GRID_DEPLOYMENT_COLS) * cellSize;
+  const availableWidth = gridMaxX - gridMinX;
+  const centerX = (gridMinX + gridMaxX) / 2;
 
   // Group composition by role
   const grouped: Record<FormationRole, { type: UnitType; def: UnitDefinition }[]> = {
@@ -970,9 +1027,9 @@ export function calculateDeterministicAlliedPositions(
   // Initialize with castle obstacles to prevent units from spawning on castles
   const placedSquads: SquadBounds[] = generateCastleObstacles(bounds);
 
-  // Zone boundaries for collision detection
-  const zoneLeft = FORMATION_SPAWN_MARGIN;
-  const zoneRight = bounds.width - FORMATION_SPAWN_MARGIN;
+  // Zone boundaries for collision detection (grid-based X bounds)
+  const zoneLeft = gridMinX;
+  const zoneRight = gridMaxX;
   const zoneTop = allyZoneTop;
   const zoneBottom = allyZoneBottom;
 
@@ -1017,7 +1074,8 @@ export function calculateDeterministicAlliedPositions(
           zoneRight,
           zoneTop,
           zoneBottom,
-          minPadding
+          minPadding,
+          cellSize
         );
         placedSquads.push({
           x: validPos.x - fp.width / 2,
@@ -1043,7 +1101,8 @@ export function calculateDeterministicAlliedPositions(
           zoneRight,
           zoneTop,
           zoneBottom,
-          minPadding
+          minPadding,
+          cellSize
         );
         placedSquads.push({
           x: validPos.x - fp.width / 2,
@@ -1094,7 +1153,8 @@ export function calculateDeterministicAlliedPositions(
         zoneRight,
         zoneTop,
         zoneBottom,
-        minPadding
+        minPadding,
+        cellSize
       );
 
       // Record this squad's bounds
@@ -1346,8 +1406,13 @@ export function calculateDeterministicEnemyPositions(
   const enemyZoneTop = FORMATION_SPAWN_MARGIN;
   const enemyZoneBottom = zoneHeight - FORMATION_SPAWN_MARGIN;
   const availableHeight = enemyZoneBottom - enemyZoneTop;
-  const availableWidth = bounds.width - FORMATION_SPAWN_MARGIN * 2;
-  const centerX = bounds.width / 2;
+
+  // Use grid-based X boundaries (deployment zone is columns 6-65)
+  const cellSize = bounds.height / GRID_TOTAL_ROWS;
+  const gridMinX = GRID_FLANK_COLS * cellSize;
+  const gridMaxX = (GRID_FLANK_COLS + GRID_DEPLOYMENT_COLS) * cellSize;
+  const availableWidth = gridMaxX - gridMinX;
+  const centerX = (gridMinX + gridMaxX) / 2;
 
   // Group composition by role (with potential role swapping for variety)
   const grouped: Record<FormationRole, { type: UnitType; def: UnitDefinition }[]> = {
@@ -1375,9 +1440,9 @@ export function calculateDeterministicEnemyPositions(
   // Initialize with castle obstacles to prevent units from spawning on castles
   const placedSquads: SquadBounds[] = generateCastleObstacles(bounds);
 
-  // Zone boundaries for collision detection
-  const zoneLeft = FORMATION_SPAWN_MARGIN;
-  const zoneRight = bounds.width - FORMATION_SPAWN_MARGIN;
+  // Zone boundaries for collision detection (grid-based X bounds)
+  const zoneLeft = gridMinX;
+  const zoneRight = gridMaxX;
   const zoneTop = enemyZoneTop;
   const zoneBottom = enemyZoneBottom;
 
@@ -1422,7 +1487,8 @@ export function calculateDeterministicEnemyPositions(
           zoneRight,
           zoneTop,
           zoneBottom,
-          minPadding
+          minPadding,
+          cellSize
         );
         placedSquads.push({
           x: validPos.x - fp.width / 2,
@@ -1448,7 +1514,8 @@ export function calculateDeterministicEnemyPositions(
           zoneRight,
           zoneTop,
           zoneBottom,
-          minPadding
+          minPadding,
+          cellSize
         );
         placedSquads.push({
           x: validPos.x - fp.width / 2,
@@ -1499,7 +1566,8 @@ export function calculateDeterministicEnemyPositions(
         zoneRight,
         zoneTop,
         zoneBottom,
-        minPadding
+        minPadding,
+        cellSize
       );
 
       // Record this squad's bounds

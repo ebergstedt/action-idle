@@ -122,11 +122,12 @@ export function useCanvasInput<T extends ISelectable = ISelectable>({
     // Calculate cell size to get grid-aligned X bounds
     const cellSize = height / GRID_TOTAL_ROWS;
     // Deployment zone is columns 6-65 (GRID_FLANK_COLS to GRID_FLANK_COLS + GRID_DEPLOYMENT_COLS - 1)
+    // No X margin needed - grid boundaries define the deployment area
     const gridMinX = GRID_FLANK_COLS * cellSize;
     const gridMaxX = (GRID_FLANK_COLS + GRID_DEPLOYMENT_COLS) * cellSize;
     return {
-      minX: gridMinX + DRAG_BOUNDS_MARGIN,
-      maxX: gridMaxX - DRAG_BOUNDS_MARGIN,
+      minX: gridMinX,
+      maxX: gridMaxX,
       minY: height - zoneHeight + DRAG_BOUNDS_MARGIN,
       maxY: height - DRAG_BOUNDS_MARGIN,
     };

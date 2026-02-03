@@ -291,7 +291,7 @@ export const CASTLE_SIZE = 14;
  * Base horizontal offset from arena edge for castle placement.
  * Scaled by arena size at runtime.
  */
-export const BASE_CASTLE_HORIZONTAL_MARGIN = 300;
+export const BASE_CASTLE_HORIZONTAL_MARGIN = 200;
 
 /**
  * Padding around castles for formation placement (pixels).
