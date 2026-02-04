@@ -1,7 +1,7 @@
 {
   "id": "fang",
   "name": "Fang",
-  "description": "Fragile ranged swarm. Slow but keeps enemies at distance. Falls back to weak melee when cornered.",
+  "description": "Fragile ranged swarm. Slow but keeps enemies at distance with consistent fire.",
   "category": "ranged",
   "tier": 1,
   "formationRole": "back",
@@ -17,11 +17,7 @@
     "armor": 0,
     "attackInterval": 1.5,
     "squadSize": 18,
-    "melee": {
-      "damage": 20,
-      "attackSpeed": 0.67,
-      "range": 15
-    },
+    "melee": null,
     "ranged": {
       "damage": 63,
       "attackSpeed": 0.67,

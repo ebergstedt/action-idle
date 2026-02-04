@@ -11,19 +11,15 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import type { BattleOutcome } from '../../core/battle';
-import { getOutcomeText, getOutcomeStyle } from '../../core/battle/OutcomePresentation';
+import { getOutcomeText } from '../../core/battle/OutcomePresentation';
 import {
   OVERLAY_SHOW_DELAY_MS,
   OVERLAY_STAMP_DELAY_MS,
-  WAX_SEAL_PRESTAMP_SCALE,
-  WAX_SEAL_PRESTAMP_ROTATION,
   WAX_SEAL_PANEL_PRESTAMP_SCALE,
-  WAX_SEAL_STAMP_DURATION,
   WAX_SEAL_PANEL_DURATION,
 } from '../../core/battle/BattleConfig';
-import { WAX_SEAL_COLORS, UI_COLORS, hexToRgba } from '../../core/theme/colors';
+import { UI_COLORS, hexToRgba } from '../../core/theme/colors';
 import { useAutoBattleCountdown } from '../../hooks/useAutoBattleCountdown';
-import { WaxSeal } from './WaxSeal';
 
 interface WaxSealOverlayProps {
   outcome: BattleOutcome;
@@ -62,7 +58,7 @@ export function WaxSealOverlay({
       // Small delay before showing overlay
       const showTimer = setTimeout(() => {
         setIsVisible(true);
-        // Stamp animation after overlay fades in
+        // Animation after overlay fades in
         const stampTimer = setTimeout(() => {
           setIsStamped(true);
         }, OVERLAY_STAMP_DELAY_MS);
@@ -81,10 +77,6 @@ export function WaxSealOverlay({
 
   // Get outcome text from core (Godot-portable)
   const outcomeText = getOutcomeText(outcome, waveNumber ?? 0);
-  const outcomeStyle = getOutcomeStyle(outcome);
-
-  // Map style to colors
-  const sealColors = outcomeStyle ? WAX_SEAL_COLORS[outcomeStyle] : WAX_SEAL_COLORS.draw;
 
   return (
     <div
@@ -108,19 +100,6 @@ export function WaxSealOverlay({
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Status Seal */}
-        <div
-          className="relative"
-          style={{
-            transform: isStamped
-              ? 'scale(1) rotate(0deg)'
-              : `scale(${WAX_SEAL_PRESTAMP_SCALE}) rotate(${WAX_SEAL_PRESTAMP_ROTATION}deg)`,
-            transition: `transform ${WAX_SEAL_STAMP_DURATION}s cubic-bezier(0.34, 1.56, 0.64, 1)`,
-          }}
-        >
-          <WaxSeal colors={sealColors} symbol={outcome === 'player_victory' ? 'crown' : 'skull'} />
-        </div>
-
         {/* Title */}
         <h2
           className="text-3xl font-bold tracking-wide"

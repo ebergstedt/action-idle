@@ -14,13 +14,21 @@ import { UnitInfoPanel } from './UnitInfoPanel';
 import { ControlsPanel } from './ControlsPanel';
 import { getUniformSelectionUnit } from '../../core/battle/SelectionManager';
 import { UI_COLORS } from '../../core/theme/colors';
+import { BattleUpgradeStates } from '../../core/battle/upgrades/types';
 
 // Industrial theme styles
 const styles = {
   panelBg: { backgroundColor: UI_COLORS.panelLight },
 };
 
-export function BattleView() {
+export interface BattleViewProps {
+  /** Upgrade states from assembly (for applying modifiers) */
+  upgradeStates?: BattleUpgradeStates;
+  /** Callback when returning to assembly with gold earned and new highest wave */
+  onReturnToAssembly?: (goldEarned: number, highestWave: number) => void;
+}
+
+export function BattleView({ upgradeStates: _upgradeStates, onReturnToAssembly }: BattleViewProps) {
   const {
     state,
     selectedUnitIds,
@@ -48,6 +56,9 @@ export function BattleView() {
 
   // Reset key for triggering zoom reset
   const [zoomResetKey, setZoomResetKey] = useState(0);
+
+  // Track gold earned during this battle session
+  const [sessionGoldEarned, setSessionGoldEarned] = useState(0);
 
   // Auto-spawn units once arena size is stable and settings are loaded
   useEffect(() => {
@@ -84,13 +95,26 @@ export function BattleView() {
 
   // Handle outcome dismiss - delegates to hook for outcome processing and auto-battle flow
   const handleOutcomeDismiss = useCallback(() => {
+    // Track gold earned before continuing
+    if (state.outcome === 'player_victory') {
+      const goldReward = getWaveGoldReward();
+      setSessionGoldEarned((prev) => prev + goldReward);
+    }
+
     handleOutcomeAndContinue(() => {
       // Reset spawned ref so units can spawn again
       hasSpawnedRef.current = false;
       // Reset zoom for new battle
       setZoomResetKey((prev) => prev + 1);
     });
-  }, [handleOutcomeAndContinue]);
+  }, [handleOutcomeAndContinue, state.outcome, getWaveGoldReward]);
+
+  // Handle return to assembly
+  const handleReturnToAssembly = useCallback(() => {
+    if (onReturnToAssembly) {
+      onReturnToAssembly(sessionGoldEarned, state.highestWave);
+    }
+  }, [onReturnToAssembly, sessionGoldEarned, state.highestWave]);
 
   return (
     <div className="flex gap-4 h-full">
@@ -137,12 +161,14 @@ export function BattleView() {
             highestWave={state.highestWave}
             gold={state.gold}
             autoBattle={autoBattle}
+            sessionGoldEarned={sessionGoldEarned}
             onStart={handleStartBattle}
             onStop={stop}
             onReset={handleReset}
             onSpeedChange={setBattleSpeed}
             onWaveChange={handleWaveChange}
             onAutoBattleToggle={toggleAutoBattle}
+            onReturnToAssembly={onReturnToAssembly ? handleReturnToAssembly : undefined}
           />
         )}
       </div>

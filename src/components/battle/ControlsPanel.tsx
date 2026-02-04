@@ -28,12 +28,14 @@ interface ControlsPanelProps {
   highestWave: number;
   gold: number;
   autoBattle: boolean;
+  sessionGoldEarned?: number;
   onStart: () => void;
   onStop: () => void;
   onReset: () => void;
   onSpeedChange: (speed: BattleSpeed) => void;
   onWaveChange: (wave: number) => void;
   onAutoBattleToggle: () => void;
+  onReturnToAssembly?: () => void;
 }
 
 export function ControlsPanel({
@@ -44,12 +46,14 @@ export function ControlsPanel({
   highestWave,
   gold,
   autoBattle,
+  sessionGoldEarned = 0,
   onStart,
   onStop,
   onReset,
   onSpeedChange,
   onWaveChange,
   onAutoBattleToggle,
+  onReturnToAssembly,
 }: ControlsPanelProps) {
   const speeds: BattleSpeed[] = [0.5, 1, 2];
 
@@ -186,6 +190,28 @@ export function ControlsPanel({
           ))}
         </div>
       </div>
+
+      {/* Return to Assembly */}
+      {onReturnToAssembly && (
+        <div className="pt-4" style={{ borderTop: `1px solid ${UI_COLORS.metalDark}` }}>
+          {sessionGoldEarned > 0 && (
+            <div className="text-sm mb-2 text-center" style={styles.textFaded}>
+              Session Earnings:{' '}
+              <span style={{ color: UI_COLORS.accentPrimary }}>+{sessionGoldEarned}g</span>
+            </div>
+          )}
+          <button
+            onClick={onReturnToAssembly}
+            className="w-full px-4 py-3 rounded font-bold tracking-wide hover:opacity-90"
+            style={{
+              backgroundColor: UI_COLORS.accentSecondary,
+              color: UI_COLORS.white,
+            }}
+          >
+            RETURN TO ASSEMBLY
+          </button>
+        </div>
+      )}
     </div>
   );
 }

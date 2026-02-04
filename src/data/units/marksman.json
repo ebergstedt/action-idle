@@ -17,11 +17,7 @@
     "armor": 0,
     "attackInterval": 3.1,
     "squadSize": 1,
-    "melee": {
-      "damage": 100,
-      "attackSpeed": 0.32,
-      "range": 15
-    },
+    "melee": null,
     "ranged": {
       "damage": 2329,
       "attackSpeed": 0.32,
