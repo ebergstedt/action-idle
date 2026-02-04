@@ -62,6 +62,22 @@ export function HangarPage({
       {/* Dark overlay for better text readability */}
       <div className="absolute inset-0" style={{ backgroundColor: 'rgba(0, 0, 0, 0.4)' }} />
 
+      {/* Slow pulsing glow overlay */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background:
+            'radial-gradient(ellipse at center, rgba(245, 166, 35, 0.08) 0%, transparent 70%)',
+          animation: 'hangarGlow 10s ease-in-out infinite',
+        }}
+      />
+      <style>{`
+        @keyframes hangarGlow {
+          0%, 100% { opacity: 0.3; }
+          50% { opacity: 1; }
+        }
+      `}</style>
+
       {/* Content layer */}
       <div className="relative z-10 flex flex-col h-full p-4 gap-4">
         {/* Main row */}
