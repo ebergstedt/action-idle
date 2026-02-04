@@ -393,12 +393,19 @@ export class BattleWorld implements IEntityWorld, IBattleWorld, IWorldEventEmitt
   }
 
   getEnemiesOf(unit: UnitEntity): UnitEntity[] {
-    return this.units.filter((u) => u.team !== unit.team && !u.isDestroyed() && u.health > 0);
+    return this.units.filter(
+      (u) => u.team !== unit.team && !u.isDestroyed() && u.health > 0 && !u.isStationary
+    );
   }
 
   getAlliesOf(unit: UnitEntity): UnitEntity[] {
     return this.units.filter(
-      (u) => u.team === unit.team && u.id !== unit.id && !u.isDestroyed() && u.health > 0
+      (u) =>
+        u.team === unit.team &&
+        u.id !== unit.id &&
+        !u.isDestroyed() &&
+        u.health > 0 &&
+        !u.isStationary
     );
   }
 
