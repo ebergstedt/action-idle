@@ -7,7 +7,7 @@
  * Godot-portable: Interface only, no dependencies.
  */
 
-import { UnitCategory, UnitDefinition } from './types';
+import { UnitDefinition } from './types';
 
 /**
  * Interface for unit definition registry.
@@ -34,16 +34,6 @@ export interface IUnitRegistry {
    * Gets all unit definitions.
    */
   getAll(): UnitDefinition[];
-
-  /**
-   * Gets unit definitions by category.
-   */
-  getByCategory(category: UnitCategory): UnitDefinition[];
-
-  /**
-   * Gets unit definitions by tier.
-   */
-  getByTier(tier: number): UnitDefinition[];
 
   /**
    * Gets all unlocked unit definitions based on unlock state.

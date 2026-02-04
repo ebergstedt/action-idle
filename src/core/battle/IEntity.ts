@@ -21,7 +21,7 @@ import type { TemporaryModifier } from './modifiers/TemporaryModifier';
  *
  * Godot equivalent: Node.get_class() or custom "type" property on nodes.
  */
-export type EntityKind = 'unit' | 'castle' | 'projectile' | 'shockwave' | 'damage_number';
+export type EntityKind = 'unit' | 'projectile' | 'shockwave' | 'damage_number';
 
 /**
  * Interface for entities that can take damage (units, castles, etc.).

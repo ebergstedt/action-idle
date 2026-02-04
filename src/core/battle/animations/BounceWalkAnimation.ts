@@ -13,40 +13,13 @@ import {
   BOUNCE_SQUASH_STRETCH_X,
   BOUNCE_SQUASH_STRETCH_Y,
 } from '../BattleConfig';
-import { IWalkAnimation, WalkAnimationState, NULL_WALK_ANIMATION_STATE } from './IWalkAnimation';
+import { WalkAnimationState, NULL_WALK_ANIMATION_STATE } from './IWalkAnimation';
 
 /**
  * Bouncy walk animation with squash and stretch.
+ * Uses only static methods - no instance state needed.
  */
-export class BounceWalkAnimation implements IWalkAnimation {
-  private phase: number = 0;
-
-  /**
-   * Advance the bounce animation by delta time.
-   */
-  advance(delta: number): void {
-    this.phase += delta * BOUNCE_FREQUENCY * Math.PI * 2;
-    // Keep phase in reasonable range to prevent floating point issues
-    if (this.phase > Math.PI * 2) {
-      this.phase -= Math.PI * 2;
-    }
-  }
-
-  /**
-   * Get the current animation state.
-   */
-  getState(unitSize: number): WalkAnimationState {
-    return BounceWalkAnimation.computeState(this.phase, unitSize);
-  }
-
-  getPhase(): number {
-    return this.phase;
-  }
-
-  setPhase(phase: number): void {
-    this.phase = phase;
-  }
-
+export class BounceWalkAnimation {
   /**
    * Compute animation state from elapsed time.
    * This is the main entry point for external callers using generic time.

@@ -70,31 +70,6 @@ describe('UnitRegistry', () => {
       expect(registry.has('warrior')).toBe(true);
       expect(registry.get('warrior')).toEqual(warriorDef);
     });
-
-    it('indexes by category', () => {
-      registry.register(warriorDef);
-      registry.register(archerDef);
-
-      const infantry = registry.getByCategory('infantry');
-      expect(infantry).toHaveLength(1);
-      expect(infantry[0].id).toBe('warrior');
-
-      const ranged = registry.getByCategory('ranged');
-      expect(ranged).toHaveLength(1);
-      expect(ranged[0].id).toBe('archer');
-    });
-
-    it('indexes by tier', () => {
-      registry.register(warriorDef);
-      registry.register(eliteWarriorDef);
-
-      const tier1 = registry.getByTier(1);
-      expect(tier1).toHaveLength(1);
-
-      const tier2 = registry.getByTier(2);
-      expect(tier2).toHaveLength(1);
-      expect(tier2[0].id).toBe('elite_warrior');
-    });
   });
 
   describe('registerAll', () => {

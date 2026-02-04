@@ -8,7 +8,7 @@
  */
 
 import { IUnitRegistry } from './IUnitRegistry';
-import { UnitCategory, UnitDefinition } from './types';
+import { UnitDefinition } from './types';
 
 /**
  * Registry for unit definitions.
@@ -16,24 +16,12 @@ import { UnitCategory, UnitDefinition } from './types';
  */
 export class UnitRegistry implements IUnitRegistry {
   private definitions: Map<string, UnitDefinition> = new Map();
-  private byCategory: Map<UnitCategory, UnitDefinition[]> = new Map();
-  private byTier: Map<number, UnitDefinition[]> = new Map();
 
   /**
    * Registers a unit definition.
    */
   register(definition: UnitDefinition): void {
     this.definitions.set(definition.id, definition);
-
-    // Index by category
-    const categoryList = this.byCategory.get(definition.category) ?? [];
-    categoryList.push(definition);
-    this.byCategory.set(definition.category, categoryList);
-
-    // Index by tier
-    const tierList = this.byTier.get(definition.tier) ?? [];
-    tierList.push(definition);
-    this.byTier.set(definition.tier, tierList);
   }
 
   /**
@@ -79,20 +67,6 @@ export class UnitRegistry implements IUnitRegistry {
   }
 
   /**
-   * Gets unit definitions by category.
-   */
-  getByCategory(category: UnitCategory): UnitDefinition[] {
-    return this.byCategory.get(category) ?? [];
-  }
-
-  /**
-   * Gets unit definitions by tier.
-   */
-  getByTier(tier: number): UnitDefinition[] {
-    return this.byTier.get(tier) ?? [];
-  }
-
-  /**
    * Gets all unlocked unit definitions based on unlock state.
    */
   getUnlocked(unlockedIds: Set<string>): UnitDefinition[] {
@@ -116,7 +90,5 @@ export class UnitRegistry implements IUnitRegistry {
    */
   clear(): void {
     this.definitions.clear();
-    this.byCategory.clear();
-    this.byTier.clear();
   }
 }

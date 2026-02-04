@@ -26,9 +26,6 @@ import { EventEmitter } from './EventEmitter';
 export interface IEntityWorld {
   /** Get all entities */
   getEntities(): readonly IEntity[];
-
-  /** Query for specific entity types */
-  query<T extends IEntity>(predicate: (entity: IEntity) => entity is T): T[];
 }
 
 /**

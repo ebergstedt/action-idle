@@ -1,8 +1,7 @@
 /**
- * Walk Animation Interface
+ * Walk Animation Types
  *
- * Defines the contract for walk/movement animations.
- * Different animation styles can implement this interface.
+ * Type definitions for walk/movement animations.
  *
  * Godot equivalent: AnimationPlayer or custom animation resource
  */
@@ -18,35 +17,6 @@ export interface WalkAnimationState {
   scaleX: number;
   /** Vertical scale multiplier (1.0 = normal) */
   scaleY: number;
-}
-
-/**
- * Interface for walk animation implementations.
- * Animations track their own phase and compute visual state.
- */
-export interface IWalkAnimation {
-  /**
-   * Advance the animation by delta time while moving.
-   * @param delta - Time elapsed in seconds
-   */
-  advance(delta: number): void;
-
-  /**
-   * Get current animation state for rendering.
-   * @param unitSize - The unit's base size (for scaling offsets)
-   * @returns Animation state with offsets and scales
-   */
-  getState(unitSize: number): WalkAnimationState;
-
-  /**
-   * Get the current phase value (for serialization/render data).
-   */
-  getPhase(): number;
-
-  /**
-   * Set the phase value (for deserialization).
-   */
-  setPhase(phase: number): void;
 }
 
 /**

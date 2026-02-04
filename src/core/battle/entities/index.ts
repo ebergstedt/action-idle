@@ -14,11 +14,7 @@
 export { EventEmitter, WorldEventEmitter } from './EventEmitter';
 export { BaseEntity, type IEntityWorld } from './BaseEntity';
 
-// Focused query/spawner interfaces (composing IBattleWorld)
-export type { IUnitQueries } from './IUnitQueries';
-export type { ICastleQueries } from './ICastleQueries';
-export type { IDamageableQueries } from './IDamageableQueries';
-export type { IEntitySpawner } from './IEntitySpawner';
+// Battle world interface
 export type { IBattleWorld, ICombatHelpers, IWorldState } from './IBattleWorld';
 
 export type { EntityKind } from '../IEntity';

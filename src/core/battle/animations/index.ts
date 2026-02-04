@@ -4,7 +4,7 @@
  * Modular walk/movement animations for units.
  */
 
-export type { IWalkAnimation, WalkAnimationState } from './IWalkAnimation';
+export type { WalkAnimationState } from './IWalkAnimation';
 export { NULL_WALK_ANIMATION_STATE } from './IWalkAnimation';
 export { BounceWalkAnimation } from './BounceWalkAnimation';
 export type { WalkAnimationComputer } from './WalkAnimationRegistry';

@@ -369,16 +369,6 @@ export class BattleWorld implements IEntityWorld, IBattleWorld, IWorldEventEmitt
     return [...this.units, ...this.projectiles, ...this.shockwaves];
   }
 
-  query<T extends IEntity>(predicate: (entity: IEntity) => entity is T): T[] {
-    const result: T[] = [];
-    for (const entity of this.getEntities()) {
-      if (predicate(entity)) {
-        result.push(entity);
-      }
-    }
-    return result;
-  }
-
   // === IBattleWorld Implementation ===
 
   getUnits(): readonly UnitEntity[] {

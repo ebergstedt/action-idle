@@ -8,7 +8,7 @@
  */
 
 import { IAbilityRegistry } from './IAbilityRegistry';
-import { AbilityDefinition, TriggerType } from './types';
+import { AbilityDefinition } from './types';
 
 /**
  * Registry for ability definitions.
@@ -16,19 +16,12 @@ import { AbilityDefinition, TriggerType } from './types';
  */
 export class AbilityRegistry implements IAbilityRegistry {
   private definitions: Map<string, AbilityDefinition> = new Map();
-  private byTrigger: Map<TriggerType, AbilityDefinition[]> = new Map();
 
   /**
    * Registers an ability definition.
    */
   register(definition: AbilityDefinition): void {
     this.definitions.set(definition.id, definition);
-
-    // Index by trigger type
-    const triggerType = definition.trigger.type;
-    const triggerList = this.byTrigger.get(triggerType) ?? [];
-    triggerList.push(definition);
-    this.byTrigger.set(triggerType, triggerList);
   }
 
   /**
@@ -74,13 +67,6 @@ export class AbilityRegistry implements IAbilityRegistry {
   }
 
   /**
-   * Gets ability definitions by trigger type.
-   */
-  getByTrigger(triggerType: TriggerType): AbilityDefinition[] {
-    return this.byTrigger.get(triggerType) ?? [];
-  }
-
-  /**
    * Gets multiple abilities by their IDs.
    * Skips any that don't exist.
    */
@@ -95,6 +81,5 @@ export class AbilityRegistry implements IAbilityRegistry {
    */
   clear(): void {
     this.definitions.clear();
-    this.byTrigger.clear();
   }
 }

@@ -52,14 +52,11 @@ import {
 } from './types';
 import { UnitDefinition, UnitTeam } from './units/types';
 import { IUnitRegistry } from './units';
-import { IUnitEntityFactory, DefaultUnitFactory } from './factories';
 
 /**
  * Configuration options for BattleEngine.
  */
 export interface BattleEngineConfig {
-  /** Custom unit factory (optional, uses default if not provided) */
-  unitFactory?: IUnitEntityFactory;
   /** Custom battle world (optional, for testing) */
   world?: BattleWorld;
 }
@@ -71,7 +68,6 @@ export interface BattleEngineConfig {
 export class BattleEngine {
   private world: BattleWorld;
   private registry: IUnitRegistry;
-  private unitFactory: IUnitEntityFactory;
   private nextUnitId = 1;
   private nextSquadId = 1;
   private isRunning = false;
@@ -108,7 +104,6 @@ export class BattleEngine {
   constructor(registry: IUnitRegistry, config?: BattleEngineConfig) {
     this.registry = registry;
     this.world = config?.world ?? new BattleWorld();
-    this.unitFactory = config?.unitFactory ?? new DefaultUnitFactory();
 
     // Bind event listeners for idle speed-up system
     this.onDamagedListener = this.handleDamaged.bind(this);
@@ -462,7 +457,7 @@ export class BattleEngine {
       gridFootprint: definition.gridFootprint ?? { cols: 2, rows: 2 },
     };
 
-    const entity = this.unitFactory.createUnit(id, position.clone(), data);
+    const entity = new UnitEntity(id, position.clone(), data);
     this.world.addUnit(entity);
 
     return entity.toRenderData();

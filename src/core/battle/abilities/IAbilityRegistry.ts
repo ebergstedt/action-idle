@@ -7,7 +7,7 @@
  * Godot-portable: Interface only, no dependencies.
  */
 
-import { AbilityDefinition, TriggerType } from './types';
+import { AbilityDefinition } from './types';
 
 /**
  * Interface for ability definition registry.
@@ -34,11 +34,6 @@ export interface IAbilityRegistry {
    * Gets all ability definitions.
    */
   getAll(): AbilityDefinition[];
-
-  /**
-   * Gets ability definitions by trigger type.
-   */
-  getByTrigger(triggerType: TriggerType): AbilityDefinition[];
 
   /**
    * Gets multiple abilities by their IDs.
