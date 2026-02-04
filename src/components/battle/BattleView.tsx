@@ -13,14 +13,9 @@ import { BattleCanvas } from './BattleCanvas';
 import { WaxSealOverlay } from './WaxSealOverlay';
 import { UnitInfoPanel } from './UnitInfoPanel';
 import { ControlsPanel } from './ControlsPanel';
+import { Panel3D } from '../ui/Panel3D';
 import { getUniformSelectionUnit } from '../../core/battle/SelectionManager';
 import battlegroundBg from '../../assets/battleground1.png';
-
-// Semi-transparent panel style - AC6 inspired
-const panelStyle = {
-  backgroundColor: 'rgba(15, 18, 22, 0.92)',
-  backdropFilter: 'blur(4px)',
-};
 
 export interface BattleViewProps {
   /** Current VEST from assembly */
@@ -158,7 +153,7 @@ export function BattleView({ vest = 0, onReturnToAssembly }: BattleViewProps) {
         </div>
 
         {/* Right side - Info Panel */}
-        <div className="w-72 flex-shrink-0 p-4 overflow-y-auto" style={panelStyle}>
+        <Panel3D className="w-72 flex-shrink-0 overflow-y-auto">
           {selectedUnit ? (
             <UnitInfoPanel
               unit={selectedUnit}
@@ -184,7 +179,7 @@ export function BattleView({ vest = 0, onReturnToAssembly }: BattleViewProps) {
               onReturnToAssembly={onReturnToAssembly ? handleReturnToAssembly : undefined}
             />
           )}
-        </div>
+        </Panel3D>
       </div>
     </div>
   );

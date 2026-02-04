@@ -11,6 +11,7 @@ import { UnitSelector } from './UnitSelector';
 import { UnitStatsPanel } from './UnitStatsPanel';
 import { UpgradeListPanel } from './UpgradeListPanel';
 import { Button3D } from '../ui/Button3D';
+import { Panel3D } from '../ui/Panel3D';
 import hangarBg from '../../assets/hangar.png';
 
 interface AssemblyPageProps {
@@ -29,12 +30,6 @@ interface AssemblyPageProps {
   /** Called when launch battle button is clicked */
   onLaunchBattle: () => void;
 }
-
-// Semi-transparent panel style - AC6 inspired
-const panelStyle = {
-  backgroundColor: 'rgba(15, 18, 22, 0.92)',
-  backdropFilter: 'blur(4px)',
-};
 
 export function AssemblyPage({
   vest,
@@ -66,17 +61,17 @@ export function AssemblyPage({
         {/* Main content - 3 column layout */}
         <div className="flex-1 flex gap-4 min-h-0">
           {/* Left panel - Unit selector */}
-          <div className="w-52 flex-shrink-0 p-4 overflow-hidden" style={panelStyle}>
+          <Panel3D className="w-52 flex-shrink-0 overflow-hidden">
             <UnitSelector selectedUnitType={selectedUnitType} onSelectUnit={onSelectUnit} />
-          </div>
+          </Panel3D>
 
           {/* Center panel - Unit stats */}
-          <div className="flex-1 p-4 overflow-y-auto" style={panelStyle}>
+          <Panel3D className="flex-1 overflow-y-auto">
             <UnitStatsPanel selectedUnitType={selectedUnitType} />
-          </div>
+          </Panel3D>
 
           {/* Right panel - Upgrades */}
-          <div className="w-80 flex-shrink-0 p-4 overflow-hidden" style={panelStyle}>
+          <Panel3D className="w-80 flex-shrink-0 overflow-hidden">
             <UpgradeListPanel
               selectedUnitType={selectedUnitType}
               upgradeStates={upgradeStates}
@@ -84,13 +79,13 @@ export function AssemblyPage({
               highestWave={highestWave}
               onPurchase={handlePurchase}
             />
-          </div>
+          </Panel3D>
         </div>
 
         {/* Bottom bar */}
-        <div
-          className="h-14 flex-shrink-0 px-6 flex items-center justify-between"
-          style={panelStyle}
+        <Panel3D
+          className="h-14 flex-shrink-0 flex items-center justify-between px-4"
+          padding="none"
         >
           {/* VEST display */}
           <div className="flex items-center gap-2">
@@ -125,7 +120,7 @@ export function AssemblyPage({
           <Button3D size="lg" onClick={onLaunchBattle}>
             SORTIE
           </Button3D>
-        </div>
+        </Panel3D>
       </div>
     </div>
   );
