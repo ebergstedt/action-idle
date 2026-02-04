@@ -10,6 +10,7 @@ import { BattleUpgradeStates } from '../../core/battle/upgrades/types';
 import { UnitSelector } from './UnitSelector';
 import { UnitStatsPanel } from './UnitStatsPanel';
 import { UpgradeListPanel } from './UpgradeListPanel';
+import { Button3D } from '../ui/Button3D';
 import hangarBg from '../../assets/hangar.png';
 
 interface AssemblyPageProps {
@@ -121,16 +122,9 @@ export function AssemblyPage({
           </div>
 
           {/* Sortie button */}
-          <button
-            className="px-8 py-2 text-lg font-bold tracking-widest transition-all hover:brightness-110"
-            style={{
-              backgroundColor: UI_COLORS.accentPrimary,
-              color: UI_COLORS.black,
-            }}
-            onClick={onLaunchBattle}
-          >
+          <Button3D size="lg" onClick={onLaunchBattle}>
             SORTIE
-          </button>
+          </Button3D>
         </div>
       </div>
     </div>

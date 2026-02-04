@@ -10,6 +10,7 @@ import { BattleSpeed } from '../../hooks/useBattle';
 import { UI_COLORS } from '../../core/theme/colors';
 import { formatNumber } from '../../core/utils/BigNumber';
 import { Decimal } from '../../core/utils/BigNumber';
+import { Button3D } from '../ui/Button3D';
 
 interface ControlsPanelProps {
   isRunning: boolean;
@@ -136,50 +137,34 @@ export function ControlsPanel({
       {/* Battle Controls */}
       <div className="space-y-2 mb-4">
         {!isRunning ? (
-          <button
-            onClick={onStart}
-            className="w-full py-2 font-bold uppercase tracking-wide"
-            style={{
-              backgroundColor: UI_COLORS.accentPrimary,
-              color: UI_COLORS.black,
-            }}
-          >
+          <Button3D size="sm" onClick={onStart} className="w-full">
             {hasStarted ? 'RESUME' : 'START'}
-          </button>
+          </Button3D>
         ) : (
-          <button
-            onClick={onStop}
-            className="w-full py-2 font-bold uppercase tracking-wide"
-            style={{
-              backgroundColor: UI_COLORS.warningOrange,
-              color: UI_COLORS.black,
-            }}
-          >
+          <Button3D size="sm" color={UI_COLORS.warningOrange} onClick={onStop} className="w-full">
             PAUSE
-          </button>
+          </Button3D>
         )}
 
         <div className="flex gap-2">
-          <button
+          <Button3D
+            size="sm"
+            color={UI_COLORS.metalDark}
+            textColor={UI_COLORS.textPrimary}
             onClick={onReset}
-            className="flex-1 py-2 font-medium uppercase tracking-wide"
-            style={{
-              backgroundColor: UI_COLORS.metalDark,
-              color: UI_COLORS.textPrimary,
-            }}
+            className="flex-1"
           >
             RESET
-          </button>
-          <button
+          </Button3D>
+          <Button3D
+            size="sm"
+            color={autoBattle ? UI_COLORS.accentSecondary : UI_COLORS.metalDark}
+            textColor={autoBattle ? UI_COLORS.white : UI_COLORS.textPrimary}
             onClick={onAutoBattleToggle}
-            className="flex-1 py-2 font-medium uppercase tracking-wide"
-            style={{
-              backgroundColor: autoBattle ? UI_COLORS.accentSecondary : UI_COLORS.metalDark,
-              color: autoBattle ? UI_COLORS.white : UI_COLORS.textPrimary,
-            }}
+            className="flex-1"
           >
             AUTO
-          </button>
+          </Button3D>
         </div>
       </div>
 
@@ -223,16 +208,15 @@ export function ControlsPanel({
               EARNED: <span style={{ color: UI_COLORS.accentPrimary }}>+{sessionVestEarned}V</span>
             </div>
           )}
-          <button
+          <Button3D
+            size="sm"
+            color={UI_COLORS.accentSecondary}
+            textColor={UI_COLORS.white}
             onClick={onReturnToAssembly}
-            className="w-full py-2 font-bold uppercase tracking-widest"
-            style={{
-              backgroundColor: UI_COLORS.accentSecondary,
-              color: UI_COLORS.white,
-            }}
+            className="w-full"
           >
             ASSEMBLY
-          </button>
+          </Button3D>
         </div>
       )}
     </div>
