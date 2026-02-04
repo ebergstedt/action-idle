@@ -50,6 +50,7 @@ const meshStyle: CSSProperties = {
   inset: 0,
   pointerEvents: 'none',
   backgroundImage: `
+    radial-gradient(circle at center, rgba(255, 255, 255, 0.03) 0px, transparent 1px),
     linear-gradient(rgba(0, 0, 0, 0.15) 1px, transparent 1px),
     linear-gradient(90deg, rgba(0, 0, 0, 0.15) 1px, transparent 1px)
   `,
@@ -61,7 +62,7 @@ export function Panel3D({
   className = '',
   padding = 'md',
   bgColor,
-  opacity = 0.85,
+  opacity = 0.6,
   innerClassName = '',
   showMarkers = true,
 }: Panel3DProps) {
@@ -81,6 +82,13 @@ export function Panel3D({
     height: '100%',
     width: '100%',
     position: 'relative',
+    // Subtle fade at very edge using mask (2px)
+    maskImage:
+      'linear-gradient(to right, rgba(0,0,0,0.3) 0px, black 2px, black calc(100% - 2px), rgba(0,0,0,0.3) 100%), linear-gradient(to bottom, rgba(0,0,0,0.3) 0px, black 2px, black calc(100% - 2px), rgba(0,0,0,0.3) 100%)',
+    maskComposite: 'intersect',
+    WebkitMaskImage:
+      'linear-gradient(to right, rgba(0,0,0,0.3) 0px, black 2px, black calc(100% - 2px), rgba(0,0,0,0.3) 100%), linear-gradient(to bottom, rgba(0,0,0,0.3) 0px, black 2px, black calc(100% - 2px), rgba(0,0,0,0.3) 100%)',
+    WebkitMaskComposite: 'source-in',
   };
 
   return (
