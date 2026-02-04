@@ -27,37 +27,47 @@ export function drawCastle(
   const halfHeight = castleHeight / 2;
 
   ctx.save();
-  ctx.translate(position.x, position.y);
+
+  // Round position to nearest pixel for crisp rendering
+  const x = Math.round(position.x);
+  const y = Math.round(position.y);
+  ctx.translate(x, y);
+
+  // Round dimensions to ensure pixel-perfect alignment
+  const roundedHalfWidth = Math.round(halfWidth);
+  const roundedHalfHeight = Math.round(halfHeight);
+  const roundedWidth = roundedHalfWidth * 2;
+  const roundedHeight = roundedHalfHeight * 2;
 
   // Main structure - fills full 4x4 grid footprint
   ctx.fillStyle = color;
 
   // Draw base platform (full rectangle matching grid footprint)
-  ctx.fillRect(-halfWidth, -halfHeight, castleWidth, castleHeight);
+  ctx.fillRect(-roundedHalfWidth, -roundedHalfHeight, roundedWidth, roundedHeight);
 
   // Draw border inside the footprint (inset by half lineWidth to stay within grid)
   ctx.strokeStyle = UI_COLORS.metalDark;
   ctx.lineWidth = 2;
   const borderInset = 1; // Half of lineWidth to keep stroke inside
   ctx.strokeRect(
-    -halfWidth + borderInset,
-    -halfHeight + borderInset,
-    castleWidth - borderInset * 2,
-    castleHeight - borderInset * 2
+    -roundedHalfWidth + borderInset,
+    -roundedHalfHeight + borderInset,
+    roundedWidth - borderInset * 2,
+    roundedHeight - borderInset * 2
   );
 
   // Inner panel - darker recessed area
-  const inset = Math.min(castleWidth, castleHeight) * 0.15;
+  const inset = Math.round(Math.min(roundedWidth, roundedHeight) * 0.15);
   ctx.fillStyle = CASTLE_COLORS.door;
   ctx.fillRect(
-    -halfWidth + inset,
-    -halfHeight + inset,
-    castleWidth - inset * 2,
-    castleHeight - inset * 2
+    -roundedHalfWidth + inset,
+    -roundedHalfHeight + inset,
+    roundedWidth - inset * 2,
+    roundedHeight - inset * 2
   );
 
   // Central core circle
-  const coreSize = Math.min(castleWidth, castleHeight) * 0.25;
+  const coreSize = Math.round(Math.min(roundedWidth, roundedHeight) * 0.25);
   ctx.fillStyle = color;
   ctx.beginPath();
   ctx.arc(0, 0, coreSize, 0, Math.PI * 2);
@@ -69,20 +79,30 @@ export function drawCastle(
   // Yellow accent border around the whole structure
   ctx.strokeStyle = CASTLE_COLORS.accent;
   ctx.lineWidth = 2;
-  ctx.strokeRect(-halfWidth + 2, -halfHeight + 2, castleWidth - 4, castleHeight - 4);
+  ctx.strokeRect(
+    -roundedHalfWidth + 2,
+    -roundedHalfHeight + 2,
+    roundedWidth - 4,
+    roundedHeight - 4
+  );
 
   // Corner details - small yellow squares
-  const cornerSize = Math.min(castleWidth, castleHeight) * 0.12;
+  const cornerSize = Math.round(Math.min(roundedWidth, roundedHeight) * 0.12);
   ctx.fillStyle = CASTLE_COLORS.accent;
 
   // Top-left corner
-  ctx.fillRect(-halfWidth, -halfHeight, cornerSize, cornerSize);
+  ctx.fillRect(-roundedHalfWidth, -roundedHalfHeight, cornerSize, cornerSize);
   // Top-right corner
-  ctx.fillRect(halfWidth - cornerSize, -halfHeight, cornerSize, cornerSize);
+  ctx.fillRect(roundedHalfWidth - cornerSize, -roundedHalfHeight, cornerSize, cornerSize);
   // Bottom-left corner
-  ctx.fillRect(-halfWidth, halfHeight - cornerSize, cornerSize, cornerSize);
+  ctx.fillRect(-roundedHalfWidth, roundedHalfHeight - cornerSize, cornerSize, cornerSize);
   // Bottom-right corner
-  ctx.fillRect(halfWidth - cornerSize, halfHeight - cornerSize, cornerSize, cornerSize);
+  ctx.fillRect(
+    roundedHalfWidth - cornerSize,
+    roundedHalfHeight - cornerSize,
+    cornerSize,
+    cornerSize
+  );
 
   ctx.restore();
 }

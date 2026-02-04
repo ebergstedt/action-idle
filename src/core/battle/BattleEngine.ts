@@ -556,11 +556,13 @@ export class BattleEngine {
     // Castle grid dimensions (4x4 footprint)
     const castleSize = 4;
 
-    // Horizontal positions: place castles at equal distance from arena edges
-    // Use actual arena width for symmetric positioning (grid may not fill full width)
-    const edgeOffset = (GRID_FLANK_COLS + castleSize / 2) * cellSize;
-    const leftX = edgeOffset;
-    const rightX = width - edgeOffset;
+    // Horizontal positions: use pure grid-based positioning for exact alignment
+    // Left castle: center at col 8 (occupies cols 6-9)
+    const leftCol = GRID_FLANK_COLS + castleSize / 2; // 6 + 2 = 8
+    // Right castle: center at col 64 (occupies cols 62-65)
+    const rightCol = GRID_TOTAL_COLS - GRID_FLANK_COLS - castleSize / 2; // 72 - 6 - 2 = 64
+    const leftX = leftCol * cellSize;
+    const rightX = rightCol * cellSize;
 
     // Vertical positions: center castles in deployment zones
     // Enemy deployment: rows 0-29 (30 rows), center 4-tall castle → top-left at row 13

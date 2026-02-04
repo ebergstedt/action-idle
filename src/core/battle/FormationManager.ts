@@ -619,11 +619,13 @@ function generateCastleObstacles(bounds: ArenaBounds): SquadBounds[] {
   // Castle grid dimensions (4x4 footprint)
   const castleSize = CASTLE_GRID_COLS; // 4
 
-  // Horizontal positions: place castles at equal distance from arena edges
-  // Use actual arena width for symmetric positioning
-  const edgeOffset = (GRID_FLANK_COLS + castleSize / 2) * cellSize;
-  const leftX = edgeOffset;
-  const rightX = width - edgeOffset;
+  // Horizontal positions: use pure grid-based positioning for exact alignment
+  // Left castle: center at col 8 (occupies cols 6-9)
+  const leftCol = GRID_FLANK_COLS + castleSize / 2; // 6 + 2 = 8
+  // Right castle: center at col 64 (occupies cols 62-65)
+  const rightCol = GRID_TOTAL_COLS - GRID_FLANK_COLS - castleSize / 2; // 72 - 6 - 2 = 64
+  const leftX = leftCol * cellSize;
+  const rightX = rightCol * cellSize;
 
   // Vertical positions: center castles in deployment zones
   const enemyRow = Math.floor((GRID_DEPLOYMENT_ROWS - castleSize) / 2); // row 13
