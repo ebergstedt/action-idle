@@ -75,11 +75,4 @@ export class AbilityRegistry implements IAbilityRegistry {
       .map((id) => this.tryGet(id))
       .filter((def): def is AbilityDefinition => def !== undefined);
   }
-
-  /**
-   * Clears all definitions (for testing).
-   */
-  clear(): void {
-    this.definitions.clear();
-  }
 }

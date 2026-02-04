@@ -348,10 +348,6 @@ export class UnitEntity extends BaseEntity implements IObstacle {
     );
   }
 
-  clearPendingModifiers(): void {
-    this.data.pendingModifiers = [];
-  }
-
   // === Main Update Loop ===
 
   override update(delta: number): void {

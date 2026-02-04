@@ -281,13 +281,4 @@ export class BattleUpgradeRegistry implements IBattleUpgradeRegistry {
   getLevel(states: BattleUpgradeStates, upgradeId: string): number {
     return states[upgradeId]?.level ?? 0;
   }
-
-  /**
-   * Clears all definitions (for testing).
-   */
-  clear(): void {
-    this.definitions.clear();
-    this.byScope.clear();
-    this.byTarget.clear();
-  }
 }

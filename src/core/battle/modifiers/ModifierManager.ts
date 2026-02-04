@@ -25,13 +25,6 @@ export class ModifierManager {
   }
 
   /**
-   * Set the owner's team (used for determining buff vs debuff).
-   */
-  setOwnerTeam(team: UnitTeam): void {
-    this.ownerTeam = team;
-  }
-
-  /**
    * Get all active modifiers.
    */
   getActiveModifiers(): readonly TemporaryModifier[] {
@@ -147,34 +140,6 @@ export class ModifierManager {
   }
 
   /**
-   * Remove all modifiers from a specific source.
-   * @returns true if any modifiers were removed
-   */
-  removeModifierBySource(sourceId: string): boolean {
-    const initialLength = this.activeModifiers.length;
-    this.activeModifiers = this.activeModifiers.filter((m) => m.sourceId !== sourceId);
-    return this.activeModifiers.length < initialLength;
-  }
-
-  /**
-   * Remove all modifiers (active and pending) linked to a specific unit.
-   * Called when the linked unit dies (e.g., attacker's debuff is cleared when defender dies).
-   * @returns true if any modifiers were removed
-   */
-  removeModifiersLinkedToUnit(unitId: string): boolean {
-    const initialActiveCount = this.activeModifiers.length;
-    const initialPendingCount = this.pendingModifiers.length;
-
-    this.activeModifiers = this.activeModifiers.filter((m) => m.linkedUnitId !== unitId);
-    this.pendingModifiers = this.pendingModifiers.filter((p) => p.modifier.linkedUnitId !== unitId);
-
-    return (
-      this.activeModifiers.length < initialActiveCount ||
-      this.pendingModifiers.length < initialPendingCount
-    );
-  }
-
-  /**
    * Clear all enemy debuffs (keeps friendly buffs).
    * A debuff is any modifier where sourceTeam differs from the owner's team.
    */
@@ -183,14 +148,6 @@ export class ModifierManager {
     this.pendingModifiers = this.pendingModifiers.filter(
       (p) => p.modifier.sourceTeam === this.ownerTeam
     );
-  }
-
-  /**
-   * Clear all modifiers (both active and pending).
-   */
-  clearAll(): void {
-    this.activeModifiers = [];
-    this.pendingModifiers = [];
   }
 
   /**
@@ -209,19 +166,5 @@ export class ModifierManager {
       sourceId: m.sourceId,
       remainingDuration: m.remainingDuration,
     }));
-  }
-
-  /**
-   * Check if any modifiers are active.
-   */
-  hasActiveModifiers(): boolean {
-    return this.activeModifiers.length > 0;
-  }
-
-  /**
-   * Check if any modifiers are pending.
-   */
-  hasPendingModifiers(): boolean {
-    return this.pendingModifiers.length > 0;
   }
 }

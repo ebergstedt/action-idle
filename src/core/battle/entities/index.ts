@@ -15,7 +15,7 @@ export { EventEmitter, WorldEventEmitter } from './EventEmitter';
 export { BaseEntity, type IEntityWorld } from './BaseEntity';
 
 // Battle world interface
-export type { IBattleWorld, ICombatHelpers, IWorldState } from './IBattleWorld';
+export type { IBattleWorld } from './IBattleWorld';
 
 export type { EntityKind } from '../IEntity';
 

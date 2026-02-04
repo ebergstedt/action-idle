@@ -11,15 +11,9 @@ import { WalkAnimationState, NULL_WALK_ANIMATION_STATE } from './IWalkAnimation'
 import { BounceWalkAnimation } from './BounceWalkAnimation';
 
 /**
- * Function signature for computing walk animation state from time.
- */
-export type WalkAnimationComputer = (time: number, unitSize: number) => WalkAnimationState;
-
-/**
  * Registry of available walk animations.
- * Add new animations here as they're created.
  */
-const animations: Record<string, WalkAnimationComputer> = {
+const animations: Record<string, (time: number, unitSize: number) => WalkAnimationState> = {
   none: () => NULL_WALK_ANIMATION_STATE,
   bounce: BounceWalkAnimation.computeStateFromTime,
 };
@@ -33,7 +27,9 @@ export const DEFAULT_WALK_ANIMATION = 'bounce';
  * Get a walk animation compute function by ID.
  * Returns the 'none' animation if ID is not found.
  */
-export function getWalkAnimation(animationId: string): WalkAnimationComputer {
+export function getWalkAnimation(
+  animationId: string
+): (time: number, unitSize: number) => WalkAnimationState {
   return animations[animationId] ?? animations.none;
 }
 
@@ -48,12 +44,4 @@ export function computeWalkAnimationState(
 ): WalkAnimationState {
   const compute = getWalkAnimation(animationId);
   return compute(time, unitSize);
-}
-
-/**
- * Register a new walk animation type.
- * Used for adding custom animations at runtime.
- */
-export function registerWalkAnimation(id: string, compute: WalkAnimationComputer): void {
-  animations[id] = compute;
 }

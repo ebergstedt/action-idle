@@ -125,24 +125,4 @@ describe('UnitRegistry', () => {
       expect(unlocked.map((u) => u.id)).toContain('elite_warrior');
     });
   });
-
-  describe('getAllIds', () => {
-    it('returns all registered IDs', () => {
-      registry.registerAll([warriorDef, archerDef]);
-
-      const ids = registry.getAllIds();
-      expect(ids).toContain('warrior');
-      expect(ids).toContain('archer');
-    });
-  });
-
-  describe('clear', () => {
-    it('removes all definitions', () => {
-      registry.registerAll([warriorDef, archerDef]);
-      registry.clear();
-
-      expect(registry.getAll()).toHaveLength(0);
-      expect(registry.has('warrior')).toBe(false);
-    });
-  });
 });

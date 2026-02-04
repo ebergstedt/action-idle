@@ -15,29 +15,10 @@ import { IEntityWorld } from './BaseEntity';
 import { UnitEntity } from './UnitEntity';
 
 /**
- * Combat helper interface for path blocking checks.
- */
-export interface ICombatHelpers {
-  /** Check if path between two points is blocked by units */
-  isPathBlocked(from: Vector2, to: Vector2, excludeUnit: UnitEntity): boolean;
-}
-
-/**
- * World state interface for bounds and ID generation.
- */
-export interface IWorldState {
-  /** Get current arena bounds */
-  getArenaBounds(): EntityBounds | null;
-
-  /** Get next unique modifier ID */
-  getNextModifierId(): number;
-}
-
-/**
  * Query interface for battle entities.
  * Extends IEntityWorld with battle-specific queries.
  */
-export interface IBattleWorld extends IEntityWorld, ICombatHelpers, IWorldState {
+export interface IBattleWorld extends IEntityWorld {
   // === Unit Queries ===
 
   /** Get all units (including castles) */
@@ -110,4 +91,17 @@ export interface IBattleWorld extends IEntityWorld, ICombatHelpers, IWorldState 
    * @param sourceTeam - Team that dealt the damage (for coloring)
    */
   spawnDamageNumber(position: Vector2, amount: number, sourceTeam: UnitTeam): void;
+
+  // === Combat Helpers ===
+
+  /** Check if path between two points is blocked by units */
+  isPathBlocked(from: Vector2, to: Vector2, excludeUnit: UnitEntity): boolean;
+
+  // === World State ===
+
+  /** Get current arena bounds */
+  getArenaBounds(): EntityBounds | null;
+
+  /** Get next unique modifier ID */
+  getNextModifierId(): number;
 }

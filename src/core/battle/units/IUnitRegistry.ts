@@ -39,9 +39,4 @@ export interface IUnitRegistry {
    * Gets all unlocked unit definitions based on unlock state.
    */
   getUnlocked(unlockedIds: Set<string>): UnitDefinition[];
-
-  /**
-   * Gets all unit IDs.
-   */
-  getAllIds(): string[];
 }

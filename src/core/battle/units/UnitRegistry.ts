@@ -77,18 +77,4 @@ export class UnitRegistry implements IUnitRegistry {
       return unlockedIds.has(def.id);
     });
   }
-
-  /**
-   * Gets all unit IDs.
-   */
-  getAllIds(): string[] {
-    return Array.from(this.definitions.keys());
-  }
-
-  /**
-   * Clears all definitions (for testing).
-   */
-  clear(): void {
-    this.definitions.clear();
-  }
 }
