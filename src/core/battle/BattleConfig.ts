@@ -290,8 +290,21 @@ export const CASTLE_GRID_COLS = 4;
 export const CASTLE_GRID_ROWS = 4;
 
 /**
+ * Distance in grid columns from arena edge to castle edge.
+ * Castle will be placed with its edge this many columns from the arena edge.
+ */
+export const CASTLE_EDGE_DISTANCE_COLS = 20;
+
+/**
+ * Distance in grid rows from the back of deployment zone to castle edge.
+ * Castles are placed at the back of each team's deployment zone.
+ */
+export const CASTLE_BACK_DISTANCE_ROWS = 10;
+
+/**
  * Base horizontal offset from arena edge for castle placement.
  * Scaled by arena size at runtime.
+ * @deprecated Use CASTLE_EDGE_DISTANCE_COLS for grid-based positioning
  */
 export const BASE_CASTLE_HORIZONTAL_MARGIN = 200;
 

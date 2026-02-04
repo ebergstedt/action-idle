@@ -155,10 +155,10 @@ export class UnitEntity extends BaseEntity implements IObstacle {
 
   /**
    * IObstacle: Whether this unit blocks movement of other units.
-   * Only stationary units block movement.
+   * Stationary units (castles) do NOT block movement - units can move through them.
    */
   get blocksMovement(): boolean {
-    return this.isStationary;
+    return false;
   }
 
   /**

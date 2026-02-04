@@ -11,13 +11,12 @@ import { Vector2 } from '../physics/Vector2';
 import { getUnitColor } from '../theme/colors';
 import {
   BATTLE_TIME_THRESHOLD,
+  CASTLE_BACK_DISTANCE_ROWS,
+  CASTLE_EDGE_DISTANCE_COLS,
   DEFAULT_ARENA_MARGIN,
   DRAG_OVERLAP_ITERATIONS,
   GRID_TOTAL_COLS,
   GRID_TOTAL_ROWS,
-  GRID_FLANK_COLS,
-  GRID_NO_MANS_LAND_ROWS,
-  GRID_DEPLOYMENT_ROWS,
   IDLE_DAMAGE_TIMEOUT,
   IDLE_SPEED_INCREMENT,
   MAX_IDLE_SPEED_BONUS,
@@ -557,25 +556,18 @@ export class BattleEngine {
     const castleSize = 4;
 
     // Horizontal positions: use pure grid-based positioning for exact alignment
-    // Left castle: center at col 8 (occupies cols 6-9)
-    const leftCol = GRID_FLANK_COLS + castleSize / 2; // 6 + 2 = 8
-    // Right castle: center at col 64 (occupies cols 62-65)
-    const rightCol = GRID_TOTAL_COLS - GRID_FLANK_COLS - castleSize / 2; // 72 - 6 - 2 = 64
+    // Left castle: center at col 22 (occupies cols 20-23, 20 squares from left edge)
+    const leftCol = CASTLE_EDGE_DISTANCE_COLS + castleSize / 2; // 20 + 2 = 22
+    // Right castle: center at col 50 (occupies cols 48-51, 20 squares from right edge)
+    const rightCol = GRID_TOTAL_COLS - CASTLE_EDGE_DISTANCE_COLS - castleSize / 2; // 72 - 20 - 2 = 50
     const leftX = leftCol * cellSize;
     const rightX = rightCol * cellSize;
 
-    // Vertical positions: center castles in deployment zones
-    // Enemy deployment: rows 0-29 (30 rows), center 4-tall castle → top-left at row 13
-    const enemyRow = Math.floor((GRID_DEPLOYMENT_ROWS - castleSize) / 2);
-    // Player deployment: rows 32-61 (30 rows), center 4-tall castle → top-left at row 45
-    const playerRow =
-      GRID_DEPLOYMENT_ROWS +
-      GRID_NO_MANS_LAND_ROWS +
-      Math.floor((GRID_DEPLOYMENT_ROWS - castleSize) / 2);
-
-    // Convert grid positions to pixel centers
-    const enemyY = (enemyRow + castleSize / 2) * cellSize;
-    const playerY = (playerRow + castleSize / 2) * cellSize;
+    // Vertical positions: place castles at the back of deployment zones (10 squares from edge)
+    // Enemy back is at top, center at row 12 (occupies rows 10-13)
+    const enemyY = (CASTLE_BACK_DISTANCE_ROWS + castleSize / 2) * cellSize; // (10 + 2) * cellSize
+    // Player back is at bottom, center at row 50 (occupies rows 48-51)
+    const playerY = (GRID_TOTAL_ROWS - CASTLE_BACK_DISTANCE_ROWS - castleSize / 2) * cellSize; // (62 - 10 - 2) * cellSize
 
     // Spawn player castles (bottom zone)
     this.spawnCastle('player', new Vector2(leftX, playerY), height);

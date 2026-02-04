@@ -217,6 +217,8 @@ import {
   ENEMY_ROLE_FRONT_RATIO,
   ENEMY_ROLE_BACK_RATIO,
   // Castle obstacle constants
+  CASTLE_BACK_DISTANCE_ROWS,
+  CASTLE_EDGE_DISTANCE_COLS,
   CASTLE_GRID_COLS,
   CASTLE_GRID_ROWS,
   // Grid constants for deployment zone
@@ -224,8 +226,6 @@ import {
   GRID_DEPLOYMENT_COLS,
   GRID_TOTAL_ROWS,
   GRID_TOTAL_COLS,
-  GRID_DEPLOYMENT_ROWS,
-  GRID_NO_MANS_LAND_ROWS,
 } from './BattleConfig';
 
 // =============================================================================
@@ -620,23 +620,18 @@ function generateCastleObstacles(bounds: ArenaBounds): SquadBounds[] {
   const castleSize = CASTLE_GRID_COLS; // 4
 
   // Horizontal positions: use pure grid-based positioning for exact alignment
-  // Left castle: center at col 8 (occupies cols 6-9)
-  const leftCol = GRID_FLANK_COLS + castleSize / 2; // 6 + 2 = 8
-  // Right castle: center at col 64 (occupies cols 62-65)
-  const rightCol = GRID_TOTAL_COLS - GRID_FLANK_COLS - castleSize / 2; // 72 - 6 - 2 = 64
+  // Left castle: center at col 22 (occupies cols 20-23, 20 squares from left edge)
+  const leftCol = CASTLE_EDGE_DISTANCE_COLS + castleSize / 2; // 20 + 2 = 22
+  // Right castle: center at col 50 (occupies cols 48-51, 20 squares from right edge)
+  const rightCol = GRID_TOTAL_COLS - CASTLE_EDGE_DISTANCE_COLS - castleSize / 2; // 72 - 20 - 2 = 50
   const leftX = leftCol * cellSize;
   const rightX = rightCol * cellSize;
 
-  // Vertical positions: center castles in deployment zones
-  const enemyRow = Math.floor((GRID_DEPLOYMENT_ROWS - castleSize) / 2); // row 13
-  const playerRow =
-    GRID_DEPLOYMENT_ROWS +
-    GRID_NO_MANS_LAND_ROWS +
-    Math.floor((GRID_DEPLOYMENT_ROWS - castleSize) / 2); // row 45
-
-  // Convert grid positions to pixel centers
-  const enemyY = (enemyRow + castleSize / 2) * cellSize;
-  const playerY = (playerRow + castleSize / 2) * cellSize;
+  // Vertical positions: place castles at the back of deployment zones (10 squares from edge)
+  // Enemy back is at top, center at row 12 (occupies rows 10-13)
+  const enemyY = (CASTLE_BACK_DISTANCE_ROWS + castleSize / 2) * cellSize; // (10 + 2) * cellSize
+  // Player back is at bottom, center at row 50 (occupies rows 48-51)
+  const playerY = (GRID_TOTAL_ROWS - CASTLE_BACK_DISTANCE_ROWS - castleSize / 2) * cellSize; // (62 - 10 - 2) * cellSize
 
   // Castle size from grid footprint (4x4 cells) - no padding, just like regular units
   const castleWidth = CASTLE_GRID_COLS * cellSize;
@@ -697,16 +692,13 @@ export function generateCastleObstacleGridBounds(
   // Castle grid dimensions (4x4 footprint)
   const castleSize = CASTLE_GRID_COLS; // 4
 
-  // Horizontal positions: place castles at equal distance from map edges
-  const leftCol = GRID_FLANK_COLS; // col 6
-  const rightCol = GRID_TOTAL_COLS - GRID_FLANK_COLS - castleSize; // col 62
+  // Horizontal positions: place castles at equal distance from map edges (20 squares)
+  const leftCol = CASTLE_EDGE_DISTANCE_COLS; // col 20
+  const rightCol = GRID_TOTAL_COLS - CASTLE_EDGE_DISTANCE_COLS - castleSize; // col 48
 
-  // Vertical positions: center castles in deployment zones
-  const enemyRow = Math.floor((GRID_DEPLOYMENT_ROWS - castleSize) / 2); // row 13
-  const playerRow =
-    GRID_DEPLOYMENT_ROWS +
-    GRID_NO_MANS_LAND_ROWS +
-    Math.floor((GRID_DEPLOYMENT_ROWS - castleSize) / 2); // row 45
+  // Vertical positions: place castles at the back of deployment zones (10 squares from edge)
+  const enemyRow = CASTLE_BACK_DISTANCE_ROWS; // row 10 (castle occupies rows 10-13)
+  const playerRow = GRID_TOTAL_ROWS - CASTLE_BACK_DISTANCE_ROWS - castleSize; // row 48 (castle occupies rows 48-51)
 
   // Helper to create grid bounds from castle grid position - no padding, just like regular units
   const createGridBounds = (col: number, row: number): GridBounds => {
