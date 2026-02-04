@@ -254,15 +254,13 @@ export class UnitEntity extends BaseEntity implements IObstacle {
   getAimingTarget(): Vector2 | null {
     if (!this.hasAimingLaser) return null;
     if (!this.target) return null;
-    // Only aim when in ranged mode (not melee)
+    // Only aim when unit has ranged attack
     const { ranged } = this.stats;
     if (!ranged) return null;
-    // Check distance to target
+    // Check distance to target - don't show laser in melee range
     const distToTarget = this.position.distanceTo(this.target.position);
-    // Not in melee range
     if (distToTarget <= MELEE_ATTACK_RANGE_THRESHOLD + this.size) return null;
-    // Must be within ranged attack range
-    if (distToTarget > ranged.range) return null;
+    // Show laser at any distance - sniper is tracking the target
     return this.target.position;
   }
 
@@ -607,11 +605,57 @@ export class UnitEntity extends BaseEntity implements IObstacle {
       walkAnimationTime: this.walkAnimationTime,
       walkAnimation: this.walkAnimation,
       aimingAt: this.getAimingTarget(),
+      aimProgress: this.getAimProgress(),
       gridFootprint: this.gridFootprint,
     };
   }
 
+  /**
+   * Calculate aim progress (0-1) for units with aiming visualization.
+   * Returns 0 if not applicable, otherwise progress toward next shot.
+   */
+  private getAimProgress(): number {
+    // Only show for units with the aiming laser
+    if (!this.hasAimingLaser || !this.target) return 0;
+
+    const attackMode = this.stats.ranged ?? this.stats.melee;
+    if (!attackMode) return 0;
+
+    const maxCooldown = this.stats.attackInterval ?? 1 / attackMode.attackSpeed;
+    if (maxCooldown <= 0) return 1;
+
+    // Progress is inverse of cooldown (0 = just fired, 1 = ready to fire)
+    const progress = 1 - this.attackCooldown / maxCooldown;
+    return Math.max(0, Math.min(1, progress));
+  }
+
   // === Private behavior methods ===
+
+  /**
+   * Set the unit's target, optionally resetting attack cooldown on target switch.
+   * This handles the resetAttackOnTargetSwitch behavior for snipers etc.
+   *
+   * @param newTarget - The new target (or null to clear)
+   */
+  private setTarget(newTarget: IDamageable | null): void {
+    const oldTarget = this.target;
+
+    // Only reset attack cooldown when SWITCHING to a different target (not clearing)
+    // This gives snipers time to "re-aim" when acquiring a new target
+    if (
+      this.data.stats.resetAttackOnTargetSwitch &&
+      newTarget !== null &&
+      oldTarget !== newTarget
+    ) {
+      // Reset to full attack interval
+      const attackMode = this.data.stats.ranged ?? this.data.stats.melee;
+      if (attackMode) {
+        this.attackCooldown = this.data.stats.attackInterval ?? 1 / attackMode.attackSpeed;
+      }
+    }
+
+    this.target = newTarget;
+  }
 
   private updateTargeting(): void {
     // Stationary units (like castles) don't target enemies
@@ -645,7 +689,7 @@ export class UnitEntity extends BaseEntity implements IObstacle {
         const nearestDist = this.position.distanceTo(nearestTarget.position);
         // Switch to closer target if it's significantly closer
         if (nearestDist < currentDist * TARGET_SWITCH_DISTANCE_RATIO) {
-          this.target = nearestTarget;
+          this.setTarget(nearestTarget);
           this.retargetCooldown = TARGET_SWITCH_COOLDOWN_SECONDS;
           return;
         }
@@ -653,7 +697,7 @@ export class UnitEntity extends BaseEntity implements IObstacle {
 
       // If no target yet, acquire one
       if (!this.target && nearestTarget) {
-        this.target = nearestTarget;
+        this.setTarget(nearestTarget);
         this.retargetCooldown = TARGET_SWITCH_COOLDOWN_SECONDS;
         return;
       }
@@ -673,7 +717,7 @@ export class UnitEntity extends BaseEntity implements IObstacle {
     const nearestInRange = this.findDamageableInAggroRadius();
 
     if (nearestInRange) {
-      this.target = nearestInRange;
+      this.setTarget(nearestInRange);
       return;
     }
 
@@ -811,12 +855,13 @@ export class UnitEntity extends BaseEntity implements IObstacle {
     // Stationary units (like castles) don't attack
     if (this.isStationary) return;
 
-    // Update cooldown
-    if (this.attackCooldown > 0) {
-      this.attackCooldown -= delta;
+    if (!this.target) {
+      // No target - still decrement cooldown for non-precision units
+      if (this.attackCooldown > 0 && !this.data.stats.resetAttackOnTargetSwitch) {
+        this.attackCooldown -= delta;
+      }
+      return;
     }
-
-    if (!this.target) return;
 
     const distanceToTarget = this.position.distanceTo(this.target.position);
     const attackMode = this.getAttackMode(distanceToTarget);
@@ -824,6 +869,14 @@ export class UnitEntity extends BaseEntity implements IObstacle {
     if (attackMode) {
       const effectiveRange = attackMode.range + this.size + this.target.size;
       const inRange = distanceToTarget <= effectiveRange;
+
+      // For precision units (resetAttackOnTargetSwitch), only charge when in range
+      // This ensures the aim dot visual matches actual attack timing
+      const shouldCharge = inRange || !this.data.stats.resetAttackOnTargetSwitch;
+
+      if (shouldCharge && this.attackCooldown > 0) {
+        this.attackCooldown -= delta;
+      }
 
       if (inRange && this.attackCooldown <= 0) {
         this.performAttack(this.target, attackMode);

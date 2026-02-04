@@ -76,6 +76,8 @@ export interface UnitStats {
   attackInterval?: number; // seconds between attacks (from Mechabellum)
   melee: AttackMode | null;
   ranged: AttackMode | null;
+  /** If true, attack cooldown resets when switching to a new target (e.g., snipers) */
+  resetAttackOnTargetSwitch?: boolean;
 }
 
 /**
@@ -124,6 +126,8 @@ export interface UnitRenderData {
   walkAnimation: string;
   /** Target position for aiming laser (null if not aiming or no laser) */
   aimingAt: Vector2 | null;
+  /** Aim charge progress 0-1 (for units with resetAttackOnTargetSwitch, shows dot on laser) */
+  aimProgress: number;
   /** Grid footprint for deployment positioning (from unit definition) */
   gridFootprint: GridFootprint;
 }

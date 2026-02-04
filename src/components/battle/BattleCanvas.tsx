@@ -14,6 +14,7 @@ import { Vector2, calculateZoom, createDefaultZoomState } from '../../core/physi
 import { calculateCellSize } from '../../core/battle/grid/GridManager';
 
 import { useCanvasInput, ZoomState } from './hooks/useCanvasInput';
+import { useCanvasPanning } from './hooks/useCanvasPanning';
 import { useDustParticles } from './hooks/useDustParticles';
 import { useGhostHealth } from './hooks/useGhostHealth';
 import { useInkSplatter } from './hooks/useInkSplatter';
@@ -54,6 +55,16 @@ export function BattleCanvas({
   useEffect(() => {
     setZoomState(createDefaultZoomState());
   }, [resetKey]);
+
+  // WASD and edge-of-screen panning (only when zoomed in)
+  const isPanningEnabled = zoomState.zoom > MIN_ZOOM;
+  useCanvasPanning({
+    setZoomState,
+    width,
+    height,
+    canvasRef,
+    enabled: isPanningEnabled,
+  });
 
   // Calculate cell size for grid snapping (only active during deployment)
   const cellSize = useMemo(() => {

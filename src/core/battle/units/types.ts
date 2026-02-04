@@ -62,6 +62,8 @@ export interface BaseStats {
   squadSize?: number; // number of units in a squad (default 1)
   melee: AttackModeStats | null; // null = no melee attack
   ranged: AttackModeStats | null; // null = no ranged attack
+  /** If true, attack cooldown resets when switching to a new target (e.g., snipers) */
+  resetAttackOnTargetSwitch?: boolean;
 }
 
 /**

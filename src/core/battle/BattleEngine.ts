@@ -423,6 +423,7 @@ export class BattleEngine {
       attackInterval: baseStats.attackInterval,
       melee: baseStats.melee,
       ranged: baseStats.ranged,
+      resetAttackOnTargetSwitch: baseStats.resetAttackOnTargetSwitch,
     };
 
     // Get color from theme using colorKey
