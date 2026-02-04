@@ -44,10 +44,10 @@ Crawlers excel at swarming single-target units, drawing fire from valuable units
 
 | Tech | Cost | Description |
 |------|------|-------------|
-| **Impact Drill** | 200 | Increases ATK by 125%. Essential for killing larger units. |
+| **Impact Drill** | 150 | Increases ATK by 125%. Essential for killing larger units. |
 | **Replicate** | 250 | Destroyed enemies become Crawlers. Arguably the best tech in the game. |
-| **Mechanical Rage** | 200 | Increases movement speed by 5 m/s and reduces attack interval by 0.4s. |
-| **Subterranean Blitz** | 300 | Increases speed by 3 m/s, tunnels underground when no enemies within 50m (nullifies 50% damage), emerges to attack near enemies. |
+| **Mechanical Rage** | 150 | Increases movement speed by 5 m/s and reduces attack interval by 0.2s. |
+| **Subterranean Blitz** | 300 | Increases speed by 3 m/s, tunnels underground when no enemies within 50m (nullifies 55% damage), emerges to attack near enemies. |
 | **Acidic Explosion** | 200 | Destroyed Crawlers leave acidic liquid in 9m radius. Units in acid lose 6% HP/sec and have reduced DEF. |
 | **Loose Formation** | 400 | Spreads units out to reduce AOE damage effectiveness. Reduces HP by 40%. |
 

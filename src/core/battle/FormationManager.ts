@@ -192,7 +192,7 @@ import { Vector2 } from '../physics/Vector2';
 import { createSeededRandom, shuffle } from '../utils/Random';
 import { UnitDefinition, FormationRole } from './units/types';
 import { IUnitRegistry } from './units/IUnitRegistry';
-import type { GridFootprint } from './grid/GridTypes';
+import type { GridFootprint, GridBounds } from './grid/GridTypes';
 import { getScaledUnitSize } from './types';
 import {
   FORMATION_SPAWN_MARGIN,
@@ -662,6 +662,72 @@ function generateCastleObstacles(bounds: ArenaBounds): SquadBounds[] {
       height: obstacleHeight,
     },
   ];
+
+  return obstacles;
+}
+
+/**
+ * Generate castle obstacle bounds in grid cell coordinates.
+ *
+ * This is the shared implementation used by both:
+ * - Formation spawning (via generateCastleObstacles which converts to SquadBounds)
+ * - Drag validation in React layer (directly as GridBounds)
+ *
+ * @param arenaWidth - Arena width in pixels
+ * @param arenaHeight - Arena height in pixels
+ * @param cellSize - Grid cell size in pixels
+ * @returns Array of GridBounds representing castle obstacle areas (in grid cells)
+ */
+export function generateCastleObstacleGridBounds(
+  arenaWidth: number,
+  arenaHeight: number,
+  cellSize: number
+): GridBounds[] {
+  if (cellSize <= 0) return [];
+
+  const zoneHeight = arenaHeight * ZONE_HEIGHT_PERCENT;
+
+  // Castle positions (same calculation as BattleEngine.spawnCastles)
+  const castleMargin = scaleValue(BASE_CASTLE_HORIZONTAL_MARGIN, arenaHeight);
+  const leftX = castleMargin;
+  const rightX = arenaWidth - castleMargin;
+
+  // Castle Y positions (centered in each zone)
+  const playerY = arenaHeight - zoneHeight / ZONE_MIDWAY_DIVISOR;
+  const enemyY = zoneHeight / ZONE_MIDWAY_DIVISOR;
+
+  // Castle size from grid footprint (4x4 cells) plus padding
+  const castleWidthPx = CASTLE_GRID_COLS * cellSize;
+  const castleHeightPx = CASTLE_GRID_ROWS * cellSize;
+  const padding = scaleValue(BASE_OBSTACLE_PADDING, arenaHeight);
+
+  // Calculate grid dimensions including padding
+  const castleGridCols = CASTLE_GRID_COLS + Math.ceil((padding * 2) / cellSize);
+  const castleGridRows = CASTLE_GRID_ROWS + Math.ceil((padding * 2) / cellSize);
+
+  // Helper to convert pixel center to grid bounds
+  const pixelToGridBounds = (centerX: number, centerY: number): GridBounds => {
+    const obstacleWidthPx = castleWidthPx + padding * 2;
+    const obstacleHeightPx = castleHeightPx + padding * 2;
+    const topLeftX = centerX - obstacleWidthPx / 2;
+    const topLeftY = centerY - obstacleHeightPx / 2;
+    return {
+      col: Math.floor(topLeftX / cellSize),
+      row: Math.floor(topLeftY / cellSize),
+      cols: castleGridCols,
+      rows: castleGridRows,
+    };
+  };
+
+  const obstacles: GridBounds[] = [];
+
+  // Player castles (bottom zone)
+  obstacles.push(pixelToGridBounds(leftX, playerY));
+  obstacles.push(pixelToGridBounds(rightX, playerY));
+
+  // Enemy castles (top zone)
+  obstacles.push(pixelToGridBounds(leftX, enemyY));
+  obstacles.push(pixelToGridBounds(rightX, enemyY));
 
   return obstacles;
 }

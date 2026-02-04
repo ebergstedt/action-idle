@@ -67,7 +67,7 @@ However, while more expensive than Marksmen, Phoenixes move much faster and can 
 | **Energy Shield** | 200 | Obtain energy shield equal to HP that blocks at least one instance of damage. |
 | **Launcher Overload** | 250 | Attack interval reduced by 50%, range decreased by 25m. Good for defending pushes or pushing yourself. |
 | **Range Enhancement** | 300 | Increases attack range by 40m. |
-| **Quantum Reassembly** | 200 | Destroyed Phoenix cockpit follows nearest ally, fully restored in 12s. Triggers only once per battle. |
+| **Quantum Reassembly** | 300 | Destroyed Phoenix cockpit follows nearest ally, fully restored in 15s. Triggers only once per battle. |
 | **Elite Marksman** | 400 | Increases range by 5m and ATK by 25% per level. |
 
 ### Tech Analysis

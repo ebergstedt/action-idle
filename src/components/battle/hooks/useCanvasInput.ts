@@ -15,14 +15,8 @@ import {
   GRID_FLANK_COLS,
   GRID_DEPLOYMENT_COLS,
   GRID_TOTAL_ROWS,
-  CASTLE_GRID_COLS,
-  CASTLE_GRID_ROWS,
-  BASE_CASTLE_HORIZONTAL_MARGIN,
-  BASE_OBSTACLE_PADDING,
-  ZONE_MIDWAY_DIVISOR,
-  scaleValue,
 } from '../../../core/battle/BattleConfig';
-import type { GridBounds } from '../../../core/battle/grid/GridTypes';
+import { generateCastleObstacleGridBounds } from '../../../core/battle/FormationManager';
 import { Vector2 } from '../../../core/physics/Vector2';
 import {
   startDrag,
@@ -49,67 +43,6 @@ import {
   isBoxSelectActive,
   BoxSelectSession,
 } from '../../../core/battle/BoxSelectController';
-
-/**
- * Generate castle obstacle bounds for deployment validation.
- * Prevents units from being placed inside castle areas.
- * This mirrors FormationManager.generateCastleObstacles but returns GridBounds format.
- */
-function generateCastleObstacleBounds(
-  arenaWidth: number,
-  arenaHeight: number,
-  cellSize: number
-): GridBounds[] {
-  if (cellSize <= 0) return [];
-
-  const zoneHeight = arenaHeight * ZONE_HEIGHT_PERCENT;
-
-  // Castle positions (same calculation as BattleEngine.spawnCastles)
-  const castleMargin = scaleValue(BASE_CASTLE_HORIZONTAL_MARGIN, arenaHeight);
-  const leftX = castleMargin;
-  const rightX = arenaWidth - castleMargin;
-
-  // Castle Y positions (centered in each zone)
-  const playerY = arenaHeight - zoneHeight / ZONE_MIDWAY_DIVISOR;
-  const enemyY = zoneHeight / ZONE_MIDWAY_DIVISOR;
-
-  // Castle size from grid footprint (4x4 cells) plus padding
-  const castleWidthPx = CASTLE_GRID_COLS * cellSize;
-  const castleHeightPx = CASTLE_GRID_ROWS * cellSize;
-  const padding = scaleValue(BASE_OBSTACLE_PADDING, arenaHeight);
-
-  // Convert to grid bounds (in grid cells, not pixels)
-  // GridBounds uses { col, row, cols, rows } - top-left corner + size
-  const castleGridCols = CASTLE_GRID_COLS + Math.ceil((padding * 2) / cellSize);
-  const castleGridRows = CASTLE_GRID_ROWS + Math.ceil((padding * 2) / cellSize);
-
-  // Calculate grid positions for each castle
-  const obstacles: GridBounds[] = [];
-
-  // Helper to convert pixel center to grid bounds
-  const pixelToGridBounds = (centerX: number, centerY: number): GridBounds => {
-    const obstacleWidthPx = castleWidthPx + padding * 2;
-    const obstacleHeightPx = castleHeightPx + padding * 2;
-    const topLeftX = centerX - obstacleWidthPx / 2;
-    const topLeftY = centerY - obstacleHeightPx / 2;
-    return {
-      col: Math.floor(topLeftX / cellSize),
-      row: Math.floor(topLeftY / cellSize),
-      cols: castleGridCols,
-      rows: castleGridRows,
-    };
-  };
-
-  // Player castles (bottom zone) - only check these for player deployment
-  obstacles.push(pixelToGridBounds(leftX, playerY));
-  obstacles.push(pixelToGridBounds(rightX, playerY));
-
-  // Enemy castles (top zone) - included for completeness, though players deploy at bottom
-  obstacles.push(pixelToGridBounds(leftX, enemyY));
-  obstacles.push(pixelToGridBounds(rightX, enemyY));
-
-  return obstacles;
-}
 
 /** Zoom state for coordinate transformation */
 export interface ZoomState {
@@ -273,7 +206,28 @@ export function useCanvasInput<T extends ISelectable = ISelectable>({
           continue;
         }
 
-        // Calculate squad centroid (average position)
+        /**
+         * Squad-based centroid grid snapping algorithm:
+         *
+         * When moving a squad, we want the entire squad to snap to the grid as a unit,
+         * while maintaining the relative positions of individual units within the squad.
+         *
+         * Algorithm:
+         * 1. Calculate the centroid (geometric center) of all units in the squad
+         * 2. Snap the centroid to the nearest valid grid position for the squad's footprint
+         * 3. Calculate the delta (offset) between original and snapped centroid
+         * 4. Apply the same delta to ALL units in the squad
+         *
+         * This ensures:
+         * - The squad maintains its internal formation (relative unit positions unchanged)
+         * - The squad aligns properly to grid cells based on its footprint size
+         * - All units move together by the same offset amount
+         *
+         * Example: A 3x2 squad of fangs with centroid at (150, 200)
+         * - Centroid snaps to (144, 192) (nearest grid-aligned position)
+         * - Delta = (-6, -8)
+         * - Each unit's position shifts by (-6, -8), preserving formation
+         */
         let centroidX = 0;
         let centroidY = 0;
         for (const su of squadUnits) {
@@ -301,7 +255,7 @@ export function useCanvasInput<T extends ISelectable = ISelectable>({
       }
 
       // Generate castle obstacle bounds to prevent units from being placed inside castles
-      const castleObstacleBounds = generateCastleObstacleBounds(width, height, cellSize);
+      const castleObstacleBounds = generateCastleObstacleGridBounds(width, height, cellSize);
 
       // Validate moves to prevent squad overlaps during deployment
       // Pass initial positions so invalid moves revert to drag start, not current frame

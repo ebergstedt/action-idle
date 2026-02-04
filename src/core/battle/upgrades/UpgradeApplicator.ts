@@ -10,8 +10,59 @@
 import { ActiveModifier, Modifier, ModifierSource } from '../modifiers/types';
 import { createActiveModifier } from '../modifiers/ModifierCalculator';
 import { UnitDefinition } from '../units/types';
-import { BattleUpgradeStates, ComputedUpgradeModifiers } from './types';
+import {
+  BattleUpgradeDefinition,
+  BattleUpgradeStates,
+  ComputedUpgradeModifiers,
+  UpgradeType,
+} from './types';
 import { IBattleUpgradeRegistry } from './IBattleUpgradeRegistry';
+
+/**
+ * Context passed to upgrade type handlers.
+ */
+interface UpgradeHandlerContext {
+  upgrade: BattleUpgradeDefinition;
+  level: number;
+  modifiers: Modifier[];
+  grantedAbilities: string[];
+}
+
+/**
+ * Handler function signature for processing upgrade types.
+ * OCP-compliant: Add new handlers without modifying existing code.
+ */
+type UpgradeTypeHandler = (ctx: UpgradeHandlerContext) => void;
+
+/**
+ * Handler map for upgrade types (OCP pattern).
+ * To add new upgrade types, add entries here - no switch modification needed.
+ */
+const UPGRADE_TYPE_HANDLERS: Record<UpgradeType, UpgradeTypeHandler> = {
+  stat_modifier: (ctx) => {
+    // Apply modifiers scaled by level
+    if (ctx.upgrade.modifiers) {
+      for (const mod of ctx.upgrade.modifiers) {
+        ctx.modifiers.push({
+          ...mod,
+          value: mod.value * ctx.level,
+          id: `${mod.id}_lv${ctx.level}`,
+        });
+      }
+    }
+  },
+
+  ability_grant: (ctx) => {
+    // Grant ability if upgrade is purchased
+    if (ctx.upgrade.abilityId) {
+      ctx.grantedAbilities.push(ctx.upgrade.abilityId);
+    }
+  },
+
+  unlock_unit: () => {
+    // Unit unlocks are handled elsewhere (getUnlockedUnits method)
+  },
+};
 
 /**
  * Applies upgrade effects to units.
@@ -43,34 +94,10 @@ export class UpgradeApplicator {
 
       if (level === 0) continue;
 
-      switch (upgrade.upgradeType) {
-        case 'stat_modifier': {
-          // Apply modifiers scaled by level
-          if (upgrade.modifiers) {
-            for (const mod of upgrade.modifiers) {
-              // Scale the modifier value by level
-              modifiers.push({
-                ...mod,
-                value: mod.value * level,
-                id: `${mod.id}_lv${level}`, // Make ID unique per level
-              });
-            }
-          }
-          break;
-        }
-
-        case 'ability_grant': {
-          // Grant ability if upgrade is purchased
-          if (upgrade.abilityId) {
-            grantedAbilities.push(upgrade.abilityId);
-          }
-          break;
-        }
-
-        case 'unlock_unit': {
-          // Unit unlocks are handled elsewhere
-          break;
-        }
+      // Use handler map (OCP pattern) instead of switch
+      const handler = UPGRADE_TYPE_HANDLERS[upgrade.upgradeType];
+      if (handler) {
+        handler({ upgrade, level, modifiers, grantedAbilities });
       }
     }
 

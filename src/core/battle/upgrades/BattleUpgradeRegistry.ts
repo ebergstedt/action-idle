@@ -12,9 +12,98 @@ import {
   BattleUpgradeDefinition,
   BattleUpgradeStates,
   UpgradeCostResult,
+  UpgradePrerequisite,
   UpgradePrerequisiteContext,
   UpgradeScope,
 } from './types';
+
+/**
+ * Result of a prerequisite check.
+ */
+interface PrerequisiteCheckResult {
+  met: boolean;
+  failureResult?: UpgradeCostResult;
+}
+
+/**
+ * Handler function signature for checking prerequisites.
+ * OCP-compliant: Add new handlers without modifying existing code.
+ */
+type PrerequisiteHandler = (
+  prereq: UpgradePrerequisite,
+  context: UpgradePrerequisiteContext
+) => PrerequisiteCheckResult;
+
+/**
+ * Handler map for prerequisite types (OCP pattern).
+ * To add new prerequisite types, add entries here - no switch modification needed.
+ */
+const PREREQUISITE_HANDLERS: Record<UpgradePrerequisite['type'], PrerequisiteHandler> = {
+  upgrade: (prereq, context) => {
+    const requiredLevel = prereq.level ?? 1;
+    const currentPrereqLevel = context.upgradeLevels[prereq.targetId] ?? 0;
+    if (currentPrereqLevel < requiredLevel) {
+      return {
+        met: false,
+        failureResult: {
+          cost: 0,
+          canPurchase: false,
+          reason: 'prerequisite_not_met',
+          missingPrerequisite: {
+            type: 'upgrade',
+            targetId: prereq.targetId,
+            required: requiredLevel,
+            current: currentPrereqLevel,
+          },
+        },
+      };
+    }
+    return { met: true };
+  },
+
+  wave: (prereq, context) => {
+    const requiredWave = parseInt(prereq.targetId, 10);
+    if (context.waveNumber < requiredWave) {
+      return {
+        met: false,
+        failureResult: {
+          cost: 0,
+          canPurchase: false,
+          reason: 'prerequisite_not_met',
+          missingPrerequisite: {
+            type: 'wave',
+            targetId: prereq.targetId,
+            required: requiredWave,
+            current: context.waveNumber,
+          },
+        },
+      };
+    }
+    return { met: true };
+  },
+
+  unit_count: (prereq, context) => {
+    const requiredCount = prereq.count ?? 1;
+    const currentCount = context.unitCounts[prereq.targetId] ?? 0;
+    if (currentCount < requiredCount) {
+      return {
+        met: false,
+        failureResult: {
+          cost: 0,
+          canPurchase: false,
+          reason: 'prerequisite_not_met',
+          missingPrerequisite: {
+            type: 'unit_count',
+            targetId: prereq.targetId,
+            required: requiredCount,
+            current: currentCount,
+          },
+        },
+      };
+    }
+    return { met: true };
+  },
+};
 
 /**
  * Registry for battle upgrade definitions.
@@ -135,61 +224,13 @@ export class BattleUpgradeRegistry implements IBattleUpgradeRegistry {
       return { cost: 0, canPurchase: false, reason: 'max_level' };
     }
 
-    // Check prerequisites
+    // Check prerequisites using handler map (OCP pattern)
     for (const prereq of def.prerequisites) {
-      switch (prereq.type) {
-        case 'upgrade': {
-          const requiredLevel = prereq.level ?? 1;
-          const currentPrereqLevel = context.upgradeLevels[prereq.targetId] ?? 0;
-          if (currentPrereqLevel < requiredLevel) {
-            return {
-              cost: 0,
-              canPurchase: false,
-              reason: 'prerequisite_not_met',
-              missingPrerequisite: {
-                type: 'upgrade',
-                targetId: prereq.targetId,
-                required: requiredLevel,
-                current: currentPrereqLevel,
-              },
-            };
-          }
-          break;
-        }
-        case 'wave': {
-          const requiredWave = parseInt(prereq.targetId, 10);
-          if (context.waveNumber < requiredWave) {
-            return {
-              cost: 0,
-              canPurchase: false,
-              reason: 'prerequisite_not_met',
-              missingPrerequisite: {
-                type: 'wave',
-                targetId: prereq.targetId,
-                required: requiredWave,
-                current: context.waveNumber,
-              },
-            };
-          }
-          break;
-        }
-        case 'unit_count': {
-          const requiredCount = prereq.count ?? 1;
-          const currentCount = context.unitCounts[prereq.targetId] ?? 0;
-          if (currentCount < requiredCount) {
-            return {
-              cost: 0,
-              canPurchase: false,
-              reason: 'prerequisite_not_met',
-              missingPrerequisite: {
-                type: 'unit_count',
-                targetId: prereq.targetId,
-                required: requiredCount,
-                current: currentCount,
-              },
-            };
-          }
-          break;
+      const handler = PREREQUISITE_HANDLERS[prereq.type];
+      if (handler) {
+        const result = handler(prereq, context);
+        if (!result.met && result.failureResult) {
+          return result.failureResult;
         }
       }
     }

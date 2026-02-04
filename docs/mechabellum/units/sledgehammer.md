@@ -52,12 +52,12 @@ Sledgehammers are the most reliable unit for creating a solid frontline. They ha
 | Tech | Cost | Description |
 |------|------|-------------|
 | **Field Maintenance** | 200 | Increases HP by 30%, automatically restores 4.5% Max HP per second upon taking damage. Almost always the first (and only) tech. |
-| **Armor Enhancement** | 300 | Reduces damage received by 60 per level, increases HP by 20%. Good against Mustangs or Vulcans. |
+| **Armor Enhancement** | 300 | HP +35% and 60 damage blocked (+60/rank). Good against Mustangs or Vulcans. |
 | **Mechanical Rage** | 300 | Increases movement speed by 4 m/s and reduces attack interval by 1.5s. Increases DPS and chaff clear speed. |
 | **Electromagnetic Shot** | 300 | Causes electromagnetic interference on hit, temporarily disabling target's Tech and reducing movement speed by 40%. |
 | **Range Enhancement** | 300 | Increases attack range by 40m. Not usually recommended - you want Sledges tanking, not in backline. |
-| **Armor-Piercing Bullets** | 250 | Increases ATK by 150% and attack interval increases by 20%. Gives enough damage to threaten anything smaller than a Vulcan. |
-| **Damage Sharing** | 200 | Chains adjacent Sledgehammers together, increasing HP by 120% and sharing damage received equally. Dangerous - vulnerable to Melting Point. |
+| **Armor-Piercing Bullets** | 200 | Increases ATK by 200% and attack interval increases by 30%. Gives enough damage to threaten anything smaller than a Vulcan. |
+| **High-Explosive Ammo** | 200 | Increases splash damage range by 7m, reduces ATK by 30%. |
 
 ### Tech Analysis
 

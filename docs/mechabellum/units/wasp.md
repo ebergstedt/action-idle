@@ -65,7 +65,7 @@ Wasps excel in the late game, serving as the perfect counter for mass Overlord o
 | **Electromagnetic Shot** | 200 | Disables target tech and reduces movement speed by 40%. |
 | **Energy Shield** | 300 | Obtain an energy shield that absorbs damage equal to HP, blocks at least one instance of damage. |
 | **Range Enhancement** | 300 | Increases attack range by 40m. |
-| **Elite Marksman** | 300 | Increases range by 5m and ATK by 25% per level. Final upgrade for Wasps. |
+| **Elite Marksman** | 300 | Increases range by 5m and ATK by 25% per level. |
 
 ### Tech Analysis
 

@@ -50,8 +50,7 @@ Hounds are versatile ground-targeting units with adequate quantity, appropriate 
 |------|------|-------------|
 | **Incendiary Bomb** | 300 | Launches 1 incendiary bomb every 16s (range 40-120m), igniting ground beneath enemies. |
 | **Fire Extinguisher** | 200 | Clears fire and acid effects on the ground within 30m radius. |
-| **Light Unit Targeting** | 150 | Prioritizes lowest-HP enemy unit within range when switching targets. |
-| **Armor Enhancement** | 400 | Reduces damage by 60 per level, increases HP by 20%. |
+| **Armor Enhancement** | 400 | HP increased by 20% and 60 damage blocked when attacked. Blocking increases by 60 per level. |
 | **Range Enhancement** | 300 | Increases attack range by 40m. |
 | **Mechanical Rage** | 300 | Increases movement speed by 4 m/s, reduces attack interval by 0.8s. |
 
@@ -60,8 +59,6 @@ Hounds are versatile ground-targeting units with adequate quantity, appropriate 
 **Incendiary Bomb** - The signature Hound tech. Launches fire bombs every 16 seconds with 40-120m range. Devastating against all light units. With a 100-cost unit, you can position Hounds everywhere fire matters. The range is affected by the Hound's base range. Note: Fire bombs can be intercepted by anti-missile systems like Mustangs.
 
 **Fire Extinguisher** - An "absolutely crazy tech" for countering enemy fire and acid effects. Position Hounds in front of your Crawlers or Mustangs to protect them from fire damage. Essential against fire-heavy compositions. Important: Do not combine with Range Enhancement, as increased range makes Hounds stand too far back to effectively clean fire for your frontline.
-
-**Light Unit Targeting** - Ensures Hounds focus on the squishiest targets first. Good for maximizing chaff clear efficiency.
 
 **Armor Enhancement** - At level 3, Hounds with Armor can tank against other chaff effectively while costing similar to level 1 tanks but with better armor scaling. Take this when you need Hounds to survive rather than deal damage.
 

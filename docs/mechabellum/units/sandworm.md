@@ -67,14 +67,13 @@ The Sandworm excels at protecting Wasps with its Sandstorm ability, disrupting e
 
 | Tech | Cost | Description |
 |------|------|-------------|
-| **Mechanical Rage** | 150 | Movement speed +5, attack interval reduced. |
-| **Armor Enhancement** | 200 | HP +35% and 60 damage blocked (+60/rank). |
-| **Mechanical Division** | 150 | Spawns four rank 1 Larvae when Sandworm is destroyed. |
-| **Anti-Aerial** | 100 | Range +20m and enables Sandworm to attack aerial targets. |
-| **Burrow Maintenance** | 200 | HP +20%, recovers 20% Max HP per second while burrowed. |
-| **Replicate** | 250 | Creates one Larva each time Sandworm emerges from ground. |
-| **Sandstorm** | 250 | When emerging, creates 120m radius sandstorm lasting 5s. Units inside have range -50% and ranged damage taken -30%. |
-| **Strike** | - | First attack after emerging: ATK +30%, splash range +10m, faster emergence. |
+| **Mechanical Rage** | 200 | Movement speed +4m/s, attack interval -0.8s. |
+| **Armor Enhancement** | 350 | HP +50% and 60 damage blocked (+60/rank). |
+| **Mechanical Division** | 350 | Spawns four level 1 Larvae when Sandworm is destroyed. |
+| **Anti-Air** | 100 | Enables Sandworm to attack aerial targets. |
+| **Underground Maintenance** | 250 | Recovers 15% Max HP per second while burrowed. |
+| **Replicate** | 200 | Creates one Larva each time Sandworm emerges from ground. |
+| **Sandstorm** | 350 | When emerging, creates 120m radius sandstorm lasting 10s. Units inside have range -50% and ranged damage taken -30%. |
 
 ### Tech Analysis
 

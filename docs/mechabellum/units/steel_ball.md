@@ -67,12 +67,12 @@ The Steel Ball's signature mechanic is its ramping laser damage. Unlike other un
 
 | Tech | Cost | Description |
 |------|------|-------------|
-| **Energy Absorption** | 200 | Increases HP by 40% and converts damage dealt to HP (lifesteal). |
+| **Fortified Target Lock** | 200 | When switching targets, lock-on priority is given to the unit with the highest HP in range. |
+| **Energy Absorption** | 250 | Increases HP by 40% and converts damage dealt to HP (lifesteal). |
 | **Damage Sharing** | 250 | Chains adjacent Steel Balls together, increasing HP by 120% and sharing damage received equally between them. |
 | **Range Enhancement** | 300 | Increases attack range by 40m. |
 | **Mechanical Division** | 350 | Destroyed Steel Balls create 5 level 1 Crawlers to continue fighting. |
-| **Armor Enhancement** | 350 | Reduces damage received by 60 per level, increases HP by 35%. |
-| **Heavy Target** | 200 | Decreases range by 10m, but alters attack behavior to always prioritize the enemy with the highest HP. |
+| **Armor Enhancement** | 350 | HP +35% and 60 damage blocked (+60/rank). |
 
 ### Tech Analysis
 

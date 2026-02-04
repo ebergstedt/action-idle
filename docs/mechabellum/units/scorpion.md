@@ -50,10 +50,10 @@ Scorpions excel at melting Steel Balls, Sledgehammers, and War Factory turrets. 
 | Tech | Cost | Description |
 |------|------|-------------|
 | **Armor Enhancement** | 200 | HP increased by 35% and 60 damage blocked when attacked. Blocking increases by 60 per level. |
-| **Field Maintenance** | 300 | Automatically restores 4.5% Max HP per second upon taking damage. |
+| **Field Maintenance** | 200 | HP increased by 30%, automatically restores 4.5% Max HP per second upon taking damage. |
 | **Doubleshot** | 300 | Each attack fires 2 shells in succession but increases reload time by 12%. |
 | **Range Enhancement** | 300 | Increases attack range by 40m. |
-| **Siege Mode** | 300 | Range +70m, ATK -35%, cannot attack within 75m, attack interval +1.5s. |
+| **Siege Mode** | 300 | Range +70m, ATK -40%, cannot attack within 75m. |
 | **Acid Attack** | 300 | Creates acid area (15m radius) at hit point. Lasts 40s. Units in acid lose 3% HP/sec and take 250% damage. |
 
 ### Tech Analysis

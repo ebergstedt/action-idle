@@ -68,12 +68,12 @@ Rhinos excel at destroying small groups of units (Sledgehammers, Steel Balls) as
 
 | Tech | Cost | Description |
 |------|------|-------------|
-| **Wreckage Recycling** | 100 | Upon destroying an enemy, recovers HP equal to enemy's HP and increases ATK by 20%. Great value for low cost. |
-| **Armor Enhancement** | 200 | Reduces damage received by 60 per level. More effective vs high fire-rate units (Mustangs). |
+| **Wreckage Recycling** | 100 | Upon destroying an enemy, recovers HP equal to enemy's HP. |
+| **Armor Enhancement** | 200 | HP +50% and 60 damage blocked (+60/rank). More effective vs high fire-rate units (Mustangs). |
 | **Mechanical Rage** | 200 | Increases movement speed by 5 m/s and reduces attack interval by 0.3s. Most important for Rhino rushes. |
 | **Final Blitz** | 250 | Activates self-destruct at 0 HP, dealing damage equal to Rhino's Max HP within 48m radius. A must-pick. |
-| **Whirlwind** | 250 | When multiple enemies around, uses Whirlwind attack dealing 1.5x damage to all surrounding enemies. |
-| **Photon Coating** | 300 | Reduces damage by 30% for first 25s, grants immunity to electromagnetic, ignition, and acid effects. |
+| **Whirlwind** | 250 | When multiple enemies around, uses Whirlwind attack dealing 1.5x damage to all surrounding enemies over a long time. |
+| **Photon Coating** | 300 | Reduces damage by 30% for first 16s, grants immunity to electromagnetic, ignition, degenerate beam, and acid effects. |
 | **Field Maintenance** | 300 | Automatically restores 4.5% Max HP per second upon taking damage. |
 | **Power Armor** | 300 | Increases HP by 25% and grants immunity to slow. Counters Sentry Missiles. |
 

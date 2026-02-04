@@ -75,12 +75,10 @@ This rare unit is best used as a midgame support unit (rounds 3-5). You usually 
 
 | Tech | Cost | Description |
 |------|------|-------------|
-| **Double Shot** | 100 | Each attack fires 2 shells in succession but increases reload time by 12%. Crazy tempo unit tech. |
-| **Missile Interceptor** | 200 | Intercepts enemy missiles within 150m. One Sabertooth can interrupt approximately one Stormcaller. |
+| **Doubleshot** | 100 | Each attack fires 2 shells in succession but increases reload time by 12%. |
+| **Missile Interceptor** | 200 | Intercepts enemy missiles within 150m. Continuous interception over time leads to decline in interception efficiency. |
 | **Field Maintenance** | 300 | Increases HP by 30%, automatically restores 4.5% Max HP per second upon taking damage. |
 | **Range Enhancement** | 300 | Increases attack range by 40m. |
-| **Field Entrenchment** | (New) | Deploys trench at battle start. While entrenched: cannot move, HP +70%, Range +30. Leaves trench if no enemies in range for 7s. |
-| **Culling Rounds** | (New) | Attacks instantly destroy targets with current HP below 300 (+300 per additional level). |
 
 ### Tech Analysis
 

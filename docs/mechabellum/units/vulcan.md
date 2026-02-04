@@ -61,13 +61,13 @@ The Vulcan has good synergy with high-damage-per-shot units like Marksmen becaus
 
 | Tech | Cost | Description |
 |------|------|-------------|
-| **Scorching Fire** | 300 | Increases ATK by 85%. |
+| **Scorching Flames** | 250 | Increases ATK by 125%. |
 | **Range Enhancement** | 300 | Increases attack range by 40m. |
-| **Armor Enhancement** | 150 | HP +50% and 60 damage blocked when attacked. Blocking +60 per rank. |
-| **Sticky Oil Bomb** | 200 | Launches sticky deceleration bombs every 16s. Range 40-180m. |
+| **Armor Enhancement** | 200 | HP +35% and 60 damage blocked when attacked. Blocking +60 per rank. |
+| **Sticky Oil Bomb** | 250 | Launches sticky deceleration bombs every 16s. Range 40-180m. |
 | **Incendiary Bomb** | 300 | Launches ignition barrage every 16s. Deals damage and leaves lingering fire. Range 40-180m. |
-| **Best Partner** | 250 | Summons 1 Marksman at the same Rank as Vulcan at combat start. |
-| **Ignite** | 250 | Attacks ignite targets, causing 6% HP loss per second for 2s. |
+| **Best Partner** | 200 | Summons 1 Marksman at the same Rank as Vulcan at combat start. |
+| **Ignite** | 200 | Attacks ignite targets, causing 6% HP loss per second for 2s. |
 
 ### Tech Analysis
 

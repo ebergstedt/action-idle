@@ -45,11 +45,11 @@ Mustangs excel at clearing chaff units like Fangs and Crawlers in the early game
 
 | Tech | Cost | Description |
 |------|------|-------------|
-| **Range Enhancement** | 300 | Increases attack range by 40m. Usually the first tech to get. |
-| **High-Explosive Ammo** | 50 | Increases splash damage range by 7m, but reduces ATK by 35%. Good vs Fangs, Crawlers, and Wasps. |
-| **Armor-Piercing Bullets** | 300 | Increases ATK by 50%. Late game tech for high-level carry Mustangs. Great vs barrier shields, Sledgehammers, Overlord, and armored units. |
-| **Aerial Specialization** | 300 | ATK increases by 90% to aerial units, increases range by 30 when attacking aerial units. Must-have for air battles. |
+| **High-Explosive Ammo** | 150 | Increases splash damage range by 7m, but reduces ATK by 30%. Good vs Fangs, Crawlers, and Wasps. |
 | **Missile Intercept** | 200 | Mustang will attempt to intercept enemy missiles within 150m (battlefield skills cannot be intercepted). Continuous interception decreases success rate over time. |
+| **Aerial Specialization** | 300 | ATK increases by 90% to aerial units, increases range by 30 when attacking aerial units. Must-have for air battles. |
+| **Armor-Piercing Bullets** | 300 | Increases ATK by 50%. Late game tech for high-level carry Mustangs. Great vs barrier shields, Sledgehammers, Overlord, and armored units. |
+| **Range Enhancement** | 300 | Increases attack range by 40m. Usually the first tech to get. |
 
 ### Tech Analysis
 

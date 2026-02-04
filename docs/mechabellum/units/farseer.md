@@ -48,7 +48,7 @@ The Farseer is a **Rare unit** that can only be obtained through Random Reinforc
 | **Range Enhancement** | 300 | Increases attack range by 40m. |
 | **Electromagnetic Explosion (EMP)** | 100 | Causes electromagnetic interference on hit, disabling target Tech and reducing movement speed by 40%. |
 | **Missile Interceptor** | 200 | Intercepts enemy missiles within 150m. Continuous interception reduces efficiency over time. |
-| **Photon Emission** | 400 | At combat start, emits photon coating on allied ground forces within 100m. Reduces damage by 30% for 20s and grants immunity to electromagnetic, ignition, and acid effects. |
+| **Photon Emission** | 400 | At combat start, emits photon coating on allied ground forces (excluding user) within 100m. Reduces damage by 30% for 20s and grants immunity to electromagnetic, ignition, and acid effects. |
 | **Scanning Radar** | 300 | Aura increases range of all allied units within 100m by 10. Effects don't stack from multiple Farseers. |
 
 ### Tech Analysis

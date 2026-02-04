@@ -63,10 +63,10 @@ Stormcallers reign as Mechabellum's ultimate artillery, raining destruction on c
 
 | Tech | Cost | Description |
 |------|------|-------------|
-| **High-Explosive Ammo** | 200 | Increases splash range by 5m, reduces ATK by 40%. Usually the first choice for chaff clear. |
-| **Incendiary Bomb** | 350 | Ignites an area of 5.5m radius for 15s, dealing 350 damage per second. Allied forces vulnerable to this damage. |
+| **High-Explosive Ammo** | 200 | Increases splash range by 5m, reduces ATK by 50%. Usually the first choice for chaff clear. |
+| **Incendiary Bomb** | 350 | Range decreased by 20m. Ignites an area of 5.5m radius for 15s, dealing 350 damage per second. Allied forces vulnerable to this damage. |
 | **Electromagnetic Explosion** | 300 | Temporarily disables target's tech and reduces movement speed by 40%. Good vs War Factory, Mechanical Division Steel Balls. |
-| **Armor-Piercing Bullets (HEAT)** | 200 | ATK increases by 100%, attack interval increases by 15%. Not recommended - makes missiles more interceptable. |
+| **High-Explosive Anti-Tank Shells** | 200 | ATK increases by 100%, attack interval increases by 15%. Not recommended - makes missiles more interceptable. |
 | **Launcher Overload** | 300 | Attack interval reduced by 50%, range reduced by 40m, movement speed increased by 5 m/s. Good vs missile intercept. |
 | **Range Enhancement** | 300 | Increases attack range by 40m. Key when enemy deploys long-range units. |
 

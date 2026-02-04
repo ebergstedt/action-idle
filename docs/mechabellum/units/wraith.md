@@ -65,13 +65,12 @@ Unlike other chaff clear units, the Wraith always targets up to 4 different unit
 
 | Tech | Cost | Description |
 |------|------|-------------|
-| **High-Explosive Ammo** | 150 | Splash damage range +7m, ATK -30%. |
+| **High-Explosive Ammo** | 150 | Splash damage range of the floating cannon +5m, ATK -40%. |
 | **Field Maintenance** | 200 | HP +30%, restores 4.5% Max HP/sec when taking damage. |
 | **Armor Enhancement** | 200 | HP +35% and 60 damage blocked (+60/rank). |
-| **Range Enhancement** | 300 | Attack range +40m (to 100m total). |
-| **Degeneration Beam** | 200 | Projects debuff beam to ground units within 120m. Reduces movement speed by 40%, ATK by 20%, and increases damage taken by 30%. |
-| **Floating Artillery Array** | 400 | Increases floating cannons from 4 to 8, movement speed -3. |
-| **Land Cruiser** | 300 | Becomes ground unit; loses air targeting; range +50m, attack interval +0.5s. |
+| **Range Enhancement** | 300 | Attack range +40m. |
+| **Degenerate Beam** | 200 | Projects debuff beam to enemy units within 120m. Reduces movement speed by 40%, ATK by 30%, and increases damage taken by 30%. |
+| **Floating Artillery Array** | 400 | Increases floating cannons from 4 to 8. |
 
 ### Tech Analysis
 

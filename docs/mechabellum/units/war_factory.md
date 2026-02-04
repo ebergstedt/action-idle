@@ -89,16 +89,16 @@ The War Factory's main weapon is housed in four turrets along its hull that can 
 
 | Tech | Cost | Description |
 |------|------|-------------|
-| **Efficient Maintenance** | 200 | Upkeep cost reduced by 150 (from 200 to 50 per round). |
-| **High-Explosive Ammo** | 350 | Splash damage range +7m, ATK -40%. |
-| **Sledgehammer Production** | 400 | Produces 1 Sledgehammer every 6s (17 total per battle). |
-| **Steel Ball Production** | 450 | Produces 1 Steel Ball every 8.8s (11 total per battle). |
-| **Phoenix Production** | 500 | Produces 1 Phoenix every 15.6s (7 total per battle). |
-| **Photon Coating** | 300 | Damage -30% for first 30s, immunity to EM, ignition, acid, and degeneration effects. |
-| **Launcher Overload** | 350 | Attack interval -50%, range -20m. |
-| **Missile Interceptor** | 350 | Intercepts enemy missiles within 150m. |
-| **Armor Enhancement** | 400 | HP +50%, blocks 60 damage per hit (+60/level). |
-| **Range Enhancement** | 500 | Attack range +40m. |
+| **Efficient Maintenance** | 50 | Upkeep cost reduced by 100 (from 200 to 100 per round). |
+| **High-Explosive Ammo** | 150 | Splash damage range +5m, ATK -40%. |
+| **Sledgehammer Production** | 250 | Produces 1 Sledgehammer every 4.6s (12 total per battle). |
+| **Steel Ball Production** | 300 | Produces 1 Steel Ball every 6.5s (9 total per battle). |
+| **Phoenix Production** | 350 | Produces 1 Phoenix every 13s (5 total per battle). |
+| **Photon Coating** | 200 | Damage -30% for first 25s, immunity to EM, ignition, acid, and degeneration effects. |
+| **Launcher Overload** | 200 | Attack interval -50%, range -20m. |
+| **Missile Interceptor** | 250 | Intercepts enemy missiles within 150m. |
+| **Armor Enhancement** | 200 | HP +50%, blocks 60 damage per hit (+60/level). |
+| **Range Enhancement** | 300 | Attack range +40m. |
 
 *Note: Tech costs updated as of patch 1.8.1.1 which reduced costs for Photon Coating (400->300), Launcher Overload (400->350), and Missile Interceptor (400->350). Production intervals were increased in the same patch.*
 

@@ -7,7 +7,38 @@
  * Godot-portable: No React/browser dependencies.
  */
 
-import { ActiveModifier, Modifier, ModifierResult, ModifiersByTarget } from './types';
+import { ActiveModifier, Modifier, ModifierResult, ModifiersByTarget, ModifierType } from './types';
+
+/**
+ * Accumulator for modifier calculation.
+ */
+interface ModifierAccumulator {
+  flatBonus: number;
+  percentBonus: number;
+  multiplier: number;
+}
+
+/**
+ * Handler function signature for applying modifier values.
+ * OCP-compliant: Add new handlers without modifying existing code.
+ */
+type ModifierTypeHandler = (acc: ModifierAccumulator, effectiveValue: number) => void;
+
+/**
+ * Handler map for modifier types (OCP pattern).
+ * To add new modifier types, add entries here - no switch modification needed.
+ */
+const MODIFIER_TYPE_HANDLERS: Record<ModifierType, ModifierTypeHandler> = {
+  flat: (acc, value) => {
+    acc.flatBonus += value;
+  },
+  percent: (acc, value) => {
+    acc.percentBonus += value;
+  },
+  multiply: (acc, value) => {
+    acc.multiplier *= value;
+  },
+};
 
 /**
  * Groups active modifiers by their target stat.
@@ -76,36 +107,32 @@ export function calculateModifiedStat(base: number, modifiers: ActiveModifier[])
   // Resolve non-stacking groups first
   const resolved = resolveStackingGroups(modifiers);
 
-  let flatBonus = 0;
-  let percentBonus = 0;
-  let multiplier = 1;
+  // Initialize accumulator
+  const acc: ModifierAccumulator = {
+    flatBonus: 0,
+    percentBonus: 0,
+    multiplier: 1,
+  };
 
+  // Apply each modifier using handler map (OCP pattern)
   for (const active of resolved) {
     const effectiveValue = active.modifier.value * active.stacks;
-
-    switch (active.modifier.type) {
-      case 'flat':
-        flatBonus += effectiveValue;
-        break;
-      case 'percent':
-        percentBonus += effectiveValue;
-        break;
-      case 'multiply':
-        multiplier *= effectiveValue;
-        break;
+    const handler = MODIFIER_TYPE_HANDLERS[active.modifier.type];
+    if (handler) {
+      handler(acc, effectiveValue);
     }
   }
 
   // Apply formula: (Base + Flat) * (1 + Percent) * Multiply
-  const afterFlat = base + flatBonus;
-  const afterPercent = afterFlat * (1 + percentBonus);
-  const final = afterPercent * multiplier;
+  const afterFlat = base + acc.flatBonus;
+  const afterPercent = afterFlat * (1 + acc.percentBonus);
+  const final = afterPercent * acc.multiplier;
 
   return {
     base,
-    flatBonus,
-    percentBonus,
-    multiplier,
+    flatBonus: acc.flatBonus,
+    percentBonus: acc.percentBonus,
+    multiplier: acc.multiplier,
     final: Math.max(0, final), // Stats can't go negative
   };
 }

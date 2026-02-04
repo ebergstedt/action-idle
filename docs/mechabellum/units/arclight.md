@@ -46,10 +46,10 @@ Fully upgraded Arclights function similarly to Marksmen but fire significantly f
 
 | Tech | Cost | Description |
 |------|------|-------------|
-| **Charged Shot** | 300 | Increases ATK by 200%. Core carry tech. |
-| **Elite Marksman** | 300 | Effect scales with level: +5m range and +25% ATK per level. |
+| **Charged Shot** | 150 | Increases ATK by 300% but increases attack interval by 35%. Core carry tech. |
+| **Elite Marksman** | 400 | Effect scales with level: +5m range and +22% ATK per level. |
 | **Range Enhancement** | 300 | Increases attack range by 40m. |
-| **Armor Enhancement** | 150 | Reduces damage by 60 per level; increases HP by 35%. |
+| **Armor Enhancement** | 150 | HP increased by 35% and 60 damage blocked when attacked. Blocking increases by 60 per level. |
 | **Anti-Aircraft Ammunition** | 300 | Can target aerial units. |
 | **Electromagnetic Shot (EMP)** | 200 | Disables target's tech and reduces movement speed by 40%. |
 

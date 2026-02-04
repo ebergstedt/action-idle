@@ -46,12 +46,12 @@ A team of Marksmen deployed in the back of your army can easily rack up kills fr
 | Tech | Cost | Description |
 |------|------|-------------|
 | **Range Enhancement** | 300 | Increases attack range by 40m. Priority tech in most games. |
-| **Elite Marksman** | 400 | +8m range and +20% ATK per level. Late-game scaling tech. |
-| **Aerial Specialization** | 200 | +75% ATK vs air, +30 range when attacking air. |
+| **Elite Marksman** | 400 | +5m range and +17% ATK per level. Late-game scaling tech. |
+| **Aerial Specialization** | 250 | +75% ATK vs air, +30 range when attacking air. |
 | **Quick Reload** | 300 | Multiplies attack speed but reduces damage per shot. |
-| **Doubleshot** | 300 | Fires 2 bullets per attack, increases reload by 15%. |
-| **Electromagnetic Shot (EMP)** | 300 | Disables enemy tech and reduces movement speed by 40%. |
-| **Assault Mode** | 150 | -70 range, +500% HP, +3 m/s speed, attacks gain 9m area damage. |
+| **Doubleshot** | 250 | Fires 2 bullets per attack, increases reload by 15%. |
+| **Electromagnetic Shot (EMP)** | 250 | Disables enemy tech and reduces movement speed by 40%. |
+| **Assault Mode** | 150 | -70 range, +500% HP, +3 m/s speed, +30% ATK, attacks gain 9m area damage. |
 | **Shooting Squad** | 300 | Spawns 5 Fangs at Marksman's level at battle start. |
 
 ### Tech Analysis

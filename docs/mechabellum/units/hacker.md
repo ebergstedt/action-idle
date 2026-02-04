@@ -68,9 +68,9 @@ The Hacker does not deal true damage. Instead, it fills a "hack bar" on the targ
 | Tech | Cost | Description |
 |------|------|-------------|
 | **Electromagnetic Interference** | 100 | Causes electromagnetic interference on hit, disabling target tech and reducing movement speed by 40%. |
-| **Multiple Control** | 250 | Range reduced by 25m (to 85m), but fires 5 control beams at once (each at 17% control efficiency). |
+| **Multiple Control** | 250 | Range reduced by 25m, but fires 5 control beams at once (each at 17% control efficiency). |
 | **Enhanced Control** | 300 | Units under Hacker's control immediately recover their maximum HP. |
-| **Barrier** | 300 | Generates large-scale shield protecting all allies within it. Shield HP increases by 20,000 per unit level. |
+| **Barrier** | 400 | Generates large-scale shield protecting all allies within it. Shield HP increases by 16,000 per unit level. |
 | **Range Enhancement** | 300 | Increases attack range by 40m. Usually the first tech to get. |
 
 ### Tech Analysis

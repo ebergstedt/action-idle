@@ -59,13 +59,13 @@ Look to use Tarantulas against boards heavy in chaff that also have Arclights or
 
 | Tech | Cost | Description |
 |------|------|-------------|
-| **High-Explosive Ammo** | 150 | Increases splash damage range by 5m, reduces ATK by 30%. Good chaff clear vs Crawlers and Fangs. |
 | **Anti-Aircraft Ammunition** | 150 | Enables attacks against aerial units. |
-| **Armor Enhancement** | 200 | Reduces damage received by 60 per level, increases HP by 35%. Cheap and good vs Mustangs. |
-| **Armor-Piercing Bullets** | 200 | Increases ATK by 50%. |
-| **Spider Mine** | 300 | Fires 2 Spider Mines with 750 HP every 15s. Mines charge at enemies and self-destruct, dealing 4,500 damage within 9m radius. Stats enhance with level. |
+| **Armor-Piercing Bullets** | 150 | Increases ATK by 50%. |
+| **Armor Enhancement** | 200 | HP +35% and 60 damage blocked (+60/rank). Cheap and good vs Mustangs. |
+| **High-Explosive Ammo** | 200 | Increases splash damage range by 7m, reduces ATK by 40%. Good chaff clear vs Crawlers and Fangs. |
 | **Field Maintenance** | 300 | Increases HP by 30%, automatically restores 4.5% Max HP per second upon taking damage. |
 | **Range Enhancement** | 300 | Increases attack range by 40m. |
+| **Spider Mines** | 300 | Fires 2 Spider Mines with 750 HP every 15s. Mines charge at enemies and self-destruct, dealing 4,500 damage within 9m radius. HP +750 and damage +4,500 per unit rank. |
 | **Mechanical Rage** | 400 | Increases movement speed by 4 m/s and reduces attack interval by 0.2s. Expensive but powerful. |
 
 ### Tech Analysis

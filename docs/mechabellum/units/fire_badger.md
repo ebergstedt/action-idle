@@ -68,8 +68,8 @@ The role of Fire Badger is not to be a "carry unit," but to burn away enemy chaf
 
 | Tech | Cost | Description |
 |------|------|-------------|
-| **Ignite** | 200 | Attacks have a chance to ignite the target. Ignited units lose 6% HP per second for 2s. |
-| **Liquid Fire (Scorching Ground)** | 200 | Attack ignites the ground within 15m of target. Ground fires last for 20s and cause 350 damage per second. |
+| **Ignite** | 200 | Attacks ignite the target. Ignited units lose 6% HP per second for 2s. |
+| **Liquid Fire** | 200 | Attack ignites the ground within 15m of target. Ground fires last for 20s and cause 350 damage per second. |
 | **Scorching Fire** | 250 | Increases Fire Badgers' ATK by 125%. |
 | **Field Maintenance** | 300 | Increases HP by 30%, automatically restores 4.5% Max HP per second upon taking damage. |
 | **Range Enhancement** | 300 | Increases attack range by 40m. |

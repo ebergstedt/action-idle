@@ -57,7 +57,7 @@ The Typhoon is a **Rare unit** that can only be obtained through Random Reinforc
 |------|------|-------------|
 | **Mechanical Rage** | 300 | Movement speed +4, ATK +50%. Great for aggressive plays. |
 | **Aerial Specialization** | 300 | ATK +90% vs aerial units, Range +30 when attacking air. |
-| **Barrier** | 400 | Generates large-scale shield protecting allies within it. Shield HP increases by 8,000 per unit level. |
+| **Barrier** | 300 | Generates large-scale shield protecting allies within it. Shield HP increases by 11,000 per unit level. |
 | **Homing Missiles** | 300 | Launches 4 homing missiles every 8s. Each deals 675 damage (+450 per level). Max range 180m, min range 60m. |
 
 ### Tech Analysis

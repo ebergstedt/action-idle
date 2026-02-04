@@ -72,9 +72,9 @@ The Raiden is incredibly fragile for a giant unit, with even less base HP than t
 | Tech | Cost | Description |
 |------|------|-------------|
 | **Electromagnetic Shot (EMP)** | 300 | Causes electromagnetic interference on hit, disabling Tech and reducing movement speed by 40%. |
-| **Ionization** | 100 | ATK -70%, but attacks cause additional damage equal to 50% of target's current HP. |
-| **Chain Lightning** | 200 | Range -20m, lightning bolts jump to enemies within 60m radius, dealing 25% damage. |
-| **Fork** | 250 | Range -10m, increases lightning bolts from 3 to 5 per attack. |
+| **Ionization** | 100 | ATK -70%, but attacks cause additional damage equal to 40% of target's current HP. |
+| **Chain** | 300 | Range -20m, lightning bolts jump to enemies within 60m radius, dealing 25% damage. |
+| **Fork** | 250 | Range -15m, increases lightning bolts from 3 to 5 per attack. |
 | **Range Enhancement** | 300 | Attack range +40m. |
 
 ### Tech Analysis

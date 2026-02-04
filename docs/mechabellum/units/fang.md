@@ -45,8 +45,8 @@ Fangs excel in a support role - they are rarely the star of your army but consis
 
 | Tech | Cost | Description |
 |------|------|-------------|
-| **Ignite** | 300 | Attacks have a chance to ignite targets. Ignited units lose 6% HP/sec for 2s. |
-| **Portable Shield** | 450 | Each Fang gets an energy shield equal to its HP that blocks at least one hit. |
+| **Ignite** | 200 | Attacks have a chance to ignite targets. Ignited units lose 6% HP/sec for 2s. |
+| **Portable Shield** | 500 | Each Fang gets an energy shield equal to its HP that blocks at least one hit. |
 | **Armor-Piercing Bullets** | 250 | Increases ATK by 50%. Late-game carry option. |
 | **Range Enhancement** | 300 | Increases attack range by 40m. |
 | **Mechanical Rage** | 300 | Increases movement speed by 5 m/s and reduces attack interval by 0.5s. |

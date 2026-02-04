@@ -67,12 +67,12 @@ This spider tank fires an energy beam that builds up damage over time. A level 1
 
 | Tech | Cost | Description |
 |------|------|-------------|
-| **Energy Absorption** | 200 | HP +60% and converts damage dealt to HP (lifesteal). |
+| **Energy Absorption** | 300 | HP +40% and converts damage dealt to HP (lifesteal). |
 | **Range Enhancement** | 300 | Attack range +40m. |
-| **Crawler Production** | 300 | Produces 8 Crawlers to join the battle every 36s for 3 times. |
-| **Electromagnetic Barrage** | 300 | Launches 16 EMP shots every 15s. 4,000 damage to shields, slows targets, disables Tech for 8s. Range 180m. |
-| **Armor Enhancement** | 100 | HP +50% and 60 damage blocked (+60/rank). |
-| **Energy Diffraction** | 150 | Fires 5 rays at 17% damage each instead of single beam. Range -30m. |
+| **Crawler Summoning** | 300 | Produces 10 Crawlers to join the combat every 32s. |
+| **Electromagnetic Barrage** | 300 | Launches 16 EMP shots every 13s. 4,000 damage to shields, slows targets, disables Tech for 13s. Range 180m. |
+| **Armor Enhancement** | 200 | HP +35% and 60 damage blocked (+60/rank). |
+| **Energy Diffraction** | 250 | Fires 5 rays at 17% damage each instead of single beam. Range -30m. |
 
 ### Tech Analysis
 

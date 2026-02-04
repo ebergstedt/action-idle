@@ -61,15 +61,15 @@ Fortresses can face off against any units you put them up against, and they have
 
 | Tech | Cost | Description |
 |------|------|-------------|
-| **Rocket Punch** | 300 | Launches fists at 85% and 55% HP thresholds. 180m range, 12,000 damage (+12,000/rank) in 25m radius. |
-| **Elite Marksman** | 150 | Range +5m and ATK +25% per rank. |
-| **Launcher Overload** | 150 | Attack interval -50%, range -20m. |
-| **Armor Enhancement** | 150 | HP +50% and 60 damage blocked when attacked (+60/rank). |
-| **Doubleshot** | 100 | Fires 2 shells per attack but reload time +12%. |
-| **Barrier** | 500 | Generates large protective dome for allies. Shield HP 40,000 per unit rank. |
-| **Fang Production** | 300 | Generates 8 Fangs three times over 36-second intervals. |
+| **Rocket Punch** | 250 | Launches fists at 85% and 55% HP thresholds. 180m range, 15,000 damage (+15,000/rank) in 25m radius. |
+| **Elite Marksman** | 200 | Range +8m and ATK +20% per rank. |
+| **Launcher Overload** | 200 | Attack interval -50%, range -20m. |
+| **Armor Enhancement** | 200 | HP +35% and 60 damage blocked when attacked (+60/rank). |
+| **Doubleshot** | 200 | Fires 2 shells per attack but reload time +12%. |
+| **Barrier** | 300 | Generates large protective dome for allies. Shield HP 40,000 per unit rank. |
+| **Fang Summoning** | 300 | Produces 12 Fangs to join the combat every 28s. |
 | **Range Enhancement** | 300 | Attack range +40m. |
-| **Anti-Air Barrage** | 200 | Launches 16 anti-air missiles every 10s. 900 damage each, 170m range. Air targets only. |
+| **Anti-Air Barrage** | 200 | Launches 16 anti-air missiles every 10s. 900 damage each, 180m range. Air targets only. |
 | **Solid Shot** | 200 | Range +60m, attack interval +0.7s, splash range -2m. |
 
 ### Tech Analysis
