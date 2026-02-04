@@ -3,6 +3,8 @@
  *
  * Factory interfaces and implementations for entity creation.
  * Enables dependency injection for testing and extensibility.
+ *
+ * Godot equivalent: Factory autoloads or spawner nodes.
  */
 
 // Factory interfaces

@@ -176,9 +176,23 @@ export interface ShockwaveRenderData {
 }
 
 /**
+ * Battle outcome constants.
+ * Use these instead of string literals for type-safe comparisons.
+ *
+ * @example
+ * if (outcome === BattleOutcomes.PlayerVictory) { ... }
+ */
+export const BattleOutcomes = {
+  Pending: 'pending',
+  PlayerVictory: 'player_victory',
+  EnemyVictory: 'enemy_victory',
+  Draw: 'draw',
+} as const;
+
+/**
  * Battle outcome after battle ends.
  */
-export type BattleOutcome = 'pending' | 'player_victory' | 'enemy_victory' | 'draw';
+export type BattleOutcome = (typeof BattleOutcomes)[keyof typeof BattleOutcomes];
 
 /**
  * Result of handling a battle outcome.

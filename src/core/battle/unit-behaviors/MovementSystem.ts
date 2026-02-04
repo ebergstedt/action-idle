@@ -20,6 +20,7 @@ import {
 } from '../BattleConfig';
 import { IDamageable } from '../IEntity';
 import { calculateObstacleAvoidance } from '../obstacles/Obstacle';
+import { getForwardY } from '../TeamUtils';
 import { UnitTeam } from '../types';
 import { AllyData, MovementContext } from './types';
 
@@ -28,8 +29,7 @@ import { AllyData, MovementContext } from './types';
  * Player advances upward (Y-), enemy advances downward (Y+).
  */
 export function getForwardDirection(team: UnitTeam): Vector2 {
-  const forwardY = team === 'player' ? -1 : 1;
-  return new Vector2(0, forwardY);
+  return new Vector2(0, getForwardY(team));
 }
 
 /**

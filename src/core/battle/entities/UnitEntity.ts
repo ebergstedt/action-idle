@@ -32,6 +32,7 @@ import {
 import { clampToArenaInPlace } from '../BoundsEnforcer';
 import { EntityKind, IDamageable, IMeleeTarget } from '../IEntity';
 import { applyShuffle } from '../shuffle';
+import { getEnemyTeam } from '../TeamUtils';
 import { AttackMode, UnitRenderData, UnitStats, UnitTeam, UnitType, UnitShape } from '../types';
 import type { GridFootprint } from '../grid/GridTypes';
 import type { IObstacle } from '../obstacles/Obstacle';
@@ -603,8 +604,7 @@ export class UnitEntity extends BaseEntity implements IObstacle {
   }
 
   private createMovementContext(world: IBattleWorld): MovementContext {
-    const enemyTeam = this.team === 'player' ? 'enemy' : 'player';
-    const initialCastleCount = world.getInitialCastleCount(enemyTeam);
+    const initialCastleCount = world.getInitialCastleCount(getEnemyTeam(this.team));
     const currentCastles = world.getEnemyCastlesOf(this);
     const currentCount = currentCastles.filter((c) => !c.isDestroyed() && c.health > 0).length;
 
@@ -691,7 +691,7 @@ export class UnitEntity extends BaseEntity implements IObstacle {
 
     const world = this.getBattleWorld();
     if (world && amount > 0) {
-      const sourceTeam = attacker?.team ?? (this.team === 'player' ? 'enemy' : 'player');
+      const sourceTeam = attacker?.team ?? getEnemyTeam(this.team);
       world.spawnDamageNumber(this.position.clone(), amount, sourceTeam);
     }
 

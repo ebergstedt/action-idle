@@ -12,6 +12,7 @@
 import { Vector2 } from '../../physics/Vector2';
 import {
   ALLY_PUSH_MULTIPLIER,
+  DAMAGE_NUMBER_DURATION,
   ENEMY_PUSH_MULTIPLIER,
   PATH_BLOCK_RADIUS_MULTIPLIER,
   BASE_SEPARATION_FORCE,
@@ -20,6 +21,7 @@ import {
   scaleValue,
 } from '../BattleConfig';
 import { EntityBounds } from '../BoundsEnforcer';
+import { isPlayerTeam } from '../TeamUtils';
 import { UnitTeam } from '../units/types';
 import {
   IDamageable,
@@ -38,7 +40,6 @@ import { ProjectileEntity, createProjectile } from './ProjectileEntity';
 import { ShockwaveEntity, createShockwave } from './ShockwaveEntity';
 import { DamageNumberEntity, DamageNumberData } from './DamageNumberEntity';
 import { WorldEventEmitter } from './EventEmitter';
-import { DAMAGE_NUMBER_DURATION } from '../BattleConfig';
 
 /**
  * Battle world - manages all battle entities.
@@ -565,14 +566,14 @@ export class BattleWorld implements IEntityWorld, IBattleWorld, IWorldEventEmitt
    * Get mobile player units (excluding castles).
    */
   getMobilePlayerUnits(): UnitEntity[] {
-    return this.units.filter((u) => u.team === 'player' && !u.isStationary && !u.isDestroyed());
+    return this.units.filter((u) => isPlayerTeam(u.team) && !u.isStationary && !u.isDestroyed());
   }
 
   /**
    * Get mobile enemy units (excluding castles).
    */
   getMobileEnemyUnits(): UnitEntity[] {
-    return this.units.filter((u) => u.team === 'enemy' && !u.isStationary && !u.isDestroyed());
+    return this.units.filter((u) => !isPlayerTeam(u.team) && !u.isStationary && !u.isDestroyed());
   }
 
   /**

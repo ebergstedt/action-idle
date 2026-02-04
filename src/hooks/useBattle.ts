@@ -2,30 +2,26 @@
  * Battle Hook
  *
  * Main orchestration hook for the battle system.
- * Composes useBattleSettings, useBattleLoop, and engine management.
+ * Composes focused sub-hooks for engine, selection, controls, deployment, and outcome.
  *
  * SRP: Orchestrates battle components, delegates to focused hooks.
  */
 
-import { useCallback, useEffect, useRef, useState } from 'react';
-import {
-  BattleEngine,
-  BattleState,
-  BattleStats,
-  BattleStatistics,
-  BattleOutcomeResult,
-  UnitRegistry,
-  spawnWaveUnits,
-  resolveAllOverlaps,
-  resolvePlayerOverlaps,
-} from '../core/battle';
+import { useCallback, useEffect, useRef } from 'react';
 import type { IPersistenceAdapter } from '../core/persistence/IPersistenceAdapter';
 import { LocalStorageAdapter } from '../adapters/LocalStorageAdapter';
+import { BattleState, BattleStatistics, BattleOutcomeResult } from '../core/battle';
 import { Vector2 } from '../core/physics/Vector2';
-import { unitDefinitions } from '../data/units';
 import { useBattleSettings, BattleSpeed } from './useBattleSettings';
 import { useBattleLoop } from './useBattleLoop';
 import { useAutoBattleTimer } from './useAutoBattleTimer';
+import {
+  useBattleEngine,
+  useBattleSelection,
+  useBattleControls,
+  useBattleDeployment,
+  useBattleOutcome,
+} from './battle';
 
 /** Default persistence adapter - created lazily to avoid instantiation at module load */
 let defaultAdapter: IPersistenceAdapter | null = null;
@@ -63,84 +59,15 @@ export interface UseBattleReturn {
   selectUnits: (unitIds: string[]) => void;
   setBattleSpeed: (speed: BattleSpeed) => void;
   setAutoBattle: (enabled: boolean) => void;
-  /**
-   * Toggle auto-battle on/off.
-   * If enabling and battle is not running, automatically starts the battle.
-   * This consolidates auto-battle toggle logic in one place.
-   */
   toggleAutoBattle: () => void;
   setWave: (wave: number) => void;
-  /** Handle battle outcome - awards gold, transitions wave. Returns result. */
   handleBattleOutcome: () => BattleOutcomeResult | null;
-  /** Get gold reward for current wave (display only, doesn't award) */
   getWaveGoldReward: () => number;
-  /**
-   * Handle outcome dismissal with auto-battle support.
-   * Processes outcome, resets battle, and auto-starts next if enabled.
-   * @param onReset - Optional callback after reset (e.g., to trigger re-spawn)
-   */
   handleOutcomeAndContinue: (onReset?: OnBattleResetCallback) => void;
 }
 
-/**
- * Create and initialize the unit registry from JSON data.
- */
-function createUnitRegistry(): UnitRegistry {
-  const registry = new UnitRegistry();
-  registry.registerAll(unitDefinitions);
-  return registry;
-}
-
-const EMPTY_STATS: BattleStatistics = {
-  player: {
-    kills: 0,
-    deaths: 0,
-    damageDealt: 0,
-    damageTaken: 0,
-    unitsSpawned: 0,
-    attacksPerformed: 0,
-    meleeAttacks: 0,
-    rangedAttacks: 0,
-  },
-  enemy: {
-    kills: 0,
-    deaths: 0,
-    damageDealt: 0,
-    damageTaken: 0,
-    unitsSpawned: 0,
-    attacksPerformed: 0,
-    meleeAttacks: 0,
-    rangedAttacks: 0,
-  },
-  battleDuration: 0,
-  totalKills: 0,
-};
-
 export function useBattle(options: UseBattleOptions = {}): UseBattleReturn {
   const { persistenceAdapter = getDefaultAdapter() } = options;
-
-  // Core engine refs
-  const engineRef = useRef<BattleEngine | null>(null);
-  const statsRef = useRef<BattleStats | null>(null);
-  const arenaDimensionsRef = useRef<{ width: number; height: number }>({ width: 0, height: 0 });
-
-  // Battle state
-  const [state, setState] = useState<BattleState>({
-    units: [],
-    projectiles: [],
-    castles: [],
-    shockwaves: [],
-    damageNumbers: [],
-    isRunning: false,
-    hasStarted: false,
-    waveNumber: 1,
-    highestWave: 1,
-    gold: 0,
-    outcome: 'pending',
-    timeScale: 1,
-  });
-  const [stats, setStats] = useState<BattleStatistics>(EMPTY_STATS);
-  const [selectedUnitIds, setSelectedUnitIds] = useState<string[]>([]);
 
   // Use settings hook for persistence
   const {
@@ -153,260 +80,141 @@ export function useBattle(options: UseBattleOptions = {}): UseBattleReturn {
     getLoadedSettings,
   } = useBattleSettings(persistenceAdapter);
 
-  // Auto-start callback for auto-battle timer
-  const handleAutoStart = useCallback(() => {
-    if (engineRef.current) {
-      engineRef.current.start();
-      setState({ ...engineRef.current.getState() });
-    }
-  }, []);
+  // Core engine management - define first so other hooks can reference it
+  // Note: We pass a stable callback that reads from ref, avoiding effect re-runs
+  const cancelAutoStartRef = useRef<() => void>(() => {});
+  const onEngineCleanup = useCallback(() => cancelAutoStartRef.current(), []);
+  const engine = useBattleEngine(onEngineCleanup);
 
-  // Auto-battle timer hook
+  // Auto-battle timer hook - uses engine refs directly
+  const handleAutoStart = useCallback(() => {
+    if (engine.engineRef.current) {
+      engine.engineRef.current.start();
+      engine.syncState();
+    }
+  }, [engine.engineRef, engine.syncState]);
+
   const { scheduleAutoStart, cancelAutoStart } = useAutoBattleTimer(autoBattle, handleAutoStart);
 
-  // Initialize engine
+  // Store cancelAutoStart in ref so engine cleanup can call it
   useEffect(() => {
-    const registry = createUnitRegistry();
-    engineRef.current = new BattleEngine(registry);
-    statsRef.current = new BattleStats();
-
-    return () => {
-      statsRef.current?.detach();
-      statsRef.current = null;
-      engineRef.current = null;
-      cancelAutoStart();
-    };
+    cancelAutoStartRef.current = cancelAutoStart;
   }, [cancelAutoStart]);
+
+  // Selection state
+  const selection = useBattleSelection();
+
+  // Battle controls
+  const controls = useBattleControls({
+    engineRef: engine.engineRef,
+    syncState: engine.syncState,
+    resetStats: engine.resetStats,
+  });
+
+  // Deployment operations
+  const deployment = useBattleDeployment({
+    engineRef: engine.engineRef,
+    statsRef: engine.statsRef,
+    syncState: engine.syncState,
+    syncStats: engine.syncStats,
+  });
+
+  // Outcome handling
+  const outcome = useBattleOutcome({
+    engineRef: engine.engineRef,
+    syncState: engine.syncState,
+    performReset: controls.reset,
+    scheduleAutoStart,
+  });
 
   // Apply loaded settings to engine once both are ready
   useEffect(() => {
-    if (!settingsLoaded || !engineRef.current) return;
+    if (!settingsLoaded || !engine.engineRef.current) return;
 
     const settings = getLoadedSettings();
     if (settings) {
-      engineRef.current.setWave(settings.waveNumber);
-      engineRef.current.setHighestWave(settings.highestWave);
-      engineRef.current.setGold(settings.gold);
-      setState({ ...engineRef.current.getState() });
+      engine.engineRef.current.setWave(settings.waveNumber);
+      engine.engineRef.current.setHighestWave(settings.highestWave);
+      engine.engineRef.current.setGold(settings.gold);
+      engine.syncState();
     }
-  }, [settingsLoaded, getLoadedSettings]);
+  }, [settingsLoaded, getLoadedSettings, engine.engineRef, engine.syncState]);
 
   // Save settings when relevant values change
   useEffect(() => {
-    if (settingsLoaded && engineRef.current) {
-      saveSettingsWithState(state.waveNumber, state.highestWave, state.gold);
+    if (settingsLoaded && engine.engineRef.current) {
+      saveSettingsWithState(engine.state.waveNumber, engine.state.highestWave, engine.state.gold);
     }
   }, [
     autoBattle,
     battleSpeed,
-    state.waveNumber,
-    state.highestWave,
-    state.gold,
+    engine.state.waveNumber,
+    engine.state.highestWave,
+    engine.state.gold,
     settingsLoaded,
     saveSettingsWithState,
   ]);
 
   // Game loop tick handler
-  const handleTick = useCallback((scaledDelta: number) => {
-    if (engineRef.current) {
-      engineRef.current.tick(scaledDelta);
-      setState({ ...engineRef.current.getState() });
+  const handleTick = useCallback(
+    (scaledDelta: number) => {
+      if (engine.engineRef.current) {
+        engine.engineRef.current.tick(scaledDelta);
+        engine.syncState();
 
-      // Update stats
-      if (statsRef.current) {
-        statsRef.current.updateDuration(scaledDelta);
-        setStats({ ...statsRef.current.getStats() });
+        if (engine.statsRef.current) {
+          engine.statsRef.current.updateDuration(scaledDelta);
+          engine.syncStats();
+        }
       }
-    }
-  }, []);
+    },
+    [engine.engineRef, engine.statsRef, engine.syncState, engine.syncStats]
+  );
 
-  // Sync battle speed to engine (for additive speed calculation)
+  // Sync battle speed to engine
   useEffect(() => {
-    if (engineRef.current) {
-      engineRef.current.setBattleSpeed(battleSpeed);
+    if (engine.engineRef.current) {
+      engine.engineRef.current.setBattleSpeed(battleSpeed);
     }
-  }, [battleSpeed]);
+  }, [battleSpeed, engine.engineRef]);
 
-  // Use game loop hook
+  // Game loop
   useBattleLoop({
-    isRunning: state.isRunning,
+    isRunning: engine.state.isRunning,
     onTick: handleTick,
   });
-
-  // Battle control functions
-  const start = useCallback(() => {
-    if (engineRef.current) {
-      engineRef.current.start();
-      setState({ ...engineRef.current.getState() });
-    }
-  }, []);
-
-  const stop = useCallback(() => {
-    if (engineRef.current) {
-      engineRef.current.stop();
-      setState({ ...engineRef.current.getState() });
-    }
-  }, []);
-
-  const reset = useCallback(() => {
-    if (engineRef.current) {
-      engineRef.current.stop();
-      engineRef.current.clear();
-      setState({ ...engineRef.current.getState() });
-
-      // Reset stats
-      if (statsRef.current) {
-        statsRef.current.detach();
-        statsRef.current.reset();
-        setStats(EMPTY_STATS);
-      }
-    }
-  }, []);
-
-  // Wave spawning - delegates to DeploymentService
-  const spawnWave = useCallback((arenaWidth: number, arenaHeight: number) => {
-    if (!engineRef.current) return;
-
-    const engine = engineRef.current;
-    const waveNumber = engine.getState().waveNumber;
-
-    // Attach stats tracker to world before spawning
-    if (statsRef.current) {
-      statsRef.current.attach(engine.getWorld());
-    }
-
-    // Spawn all units for the wave
-    spawnWaveUnits(engine, { waveNumber, arenaWidth, arenaHeight });
-
-    // Resolve any overlapping squads after spawning
-    resolveAllOverlaps(engine, arenaWidth, arenaHeight);
-
-    // Store arena dimensions for later use in moveUnits
-    arenaDimensionsRef.current = { width: arenaWidth, height: arenaHeight };
-
-    setState({ ...engine.getState() });
-    if (statsRef.current) {
-      setStats({ ...statsRef.current.getStats() });
-    }
-  }, []);
-
-  // Unit movement
-  const moveUnit = useCallback((unitId: string, position: Vector2) => {
-    if (engineRef.current) {
-      engineRef.current.moveUnit(unitId, position);
-      setState({ ...engineRef.current.getState() });
-    }
-  }, []);
-
-  const moveUnits = useCallback((moves: Array<{ unitId: string; position: Vector2 }>) => {
-    if (engineRef.current) {
-      const engine = engineRef.current;
-
-      for (const { unitId, position } of moves) {
-        engine.moveUnit(unitId, position);
-      }
-
-      // During deployment phase, resolve any overlaps caused by the move
-      const currentState = engine.getState();
-      const { width: arenaW, height: arenaH } = arenaDimensionsRef.current;
-      if (!currentState.hasStarted && arenaW > 0 && arenaH > 0) {
-        resolvePlayerOverlaps(engine, arenaW, arenaH);
-      }
-
-      setState({ ...engine.getState() });
-    }
-  }, []);
-
-  // Selection
-  const selectUnit = useCallback((unitId: string | null) => {
-    setSelectedUnitIds(unitId ? [unitId] : []);
-  }, []);
-
-  const selectUnits = useCallback((unitIds: string[]) => {
-    setSelectedUnitIds(unitIds);
-  }, []);
-
-  // Wave management
-  const setWave = useCallback((wave: number) => {
-    if (engineRef.current) {
-      engineRef.current.setWave(wave);
-      setState({ ...engineRef.current.getState() });
-    }
-  }, []);
 
   // Auto-battle toggle - consolidates toggle + auto-start logic
   const toggleAutoBattle = useCallback(() => {
     const newValue = !autoBattle;
     setAutoBattle(newValue);
-    // If enabling auto-battle and battle is not running, start it
-    if (newValue && engineRef.current && !engineRef.current.getState().isRunning) {
-      engineRef.current.start();
-      setState({ ...engineRef.current.getState() });
+    if (newValue && engine.engineRef.current && !engine.engineRef.current.getState().isRunning) {
+      engine.engineRef.current.start();
+      engine.syncState();
     }
-  }, [autoBattle, setAutoBattle]);
-
-  // Battle outcome handling
-  const handleBattleOutcome = useCallback((): BattleOutcomeResult | null => {
-    if (!engineRef.current) return null;
-    const result = engineRef.current.handleBattleOutcome();
-    setState({ ...engineRef.current.getState() });
-    return result;
-  }, []);
-
-  const getWaveGoldReward = useCallback((): number => {
-    if (!engineRef.current) return 0;
-    return engineRef.current.getWaveGoldReward();
-  }, []);
-
-  // Auto-battle flow: outcome → reset → auto-start
-  const handleOutcomeAndContinue = useCallback(
-    (onReset?: OnBattleResetCallback) => {
-      // Process outcome (awards gold, transitions wave)
-      if (engineRef.current) {
-        engineRef.current.handleBattleOutcome();
-        setState({ ...engineRef.current.getState() });
-      }
-
-      // Reset battle state
-      if (engineRef.current) {
-        engineRef.current.stop();
-        engineRef.current.clear();
-        setState({ ...engineRef.current.getState() });
-
-        if (statsRef.current) {
-          statsRef.current.detach();
-          statsRef.current.reset();
-          setStats(EMPTY_STATS);
-        }
-      }
-
-      // Schedule auto-start (calls onReset immediately, then auto-starts if enabled)
-      scheduleAutoStart(onReset);
-    },
-    [scheduleAutoStart]
-  );
+  }, [autoBattle, setAutoBattle, engine.engineRef, engine.syncState]);
 
   return {
-    state,
-    stats,
-    selectedUnitIds,
+    state: engine.state,
+    stats: engine.stats,
+    selectedUnitIds: selection.selectedUnitIds,
     battleSpeed,
     autoBattle,
     settingsLoaded,
-    start,
-    stop,
-    reset,
-    spawnWave,
-    moveUnit,
-    moveUnits,
-    selectUnit,
-    selectUnits,
+    start: controls.start,
+    stop: controls.stop,
+    reset: controls.reset,
+    spawnWave: deployment.spawnWave,
+    moveUnit: deployment.moveUnit,
+    moveUnits: deployment.moveUnits,
+    selectUnit: selection.selectUnit,
+    selectUnits: selection.selectUnits,
     setBattleSpeed,
     setAutoBattle,
     toggleAutoBattle,
-    setWave,
-    handleBattleOutcome,
-    getWaveGoldReward,
-    handleOutcomeAndContinue,
+    setWave: controls.setWave,
+    handleBattleOutcome: outcome.handleBattleOutcome,
+    getWaveGoldReward: outcome.getWaveGoldReward,
+    handleOutcomeAndContinue: outcome.handleOutcomeAndContinue,
   };
 }

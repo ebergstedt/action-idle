@@ -42,6 +42,7 @@ import { EntityBounds } from './BoundsEnforcer';
 import { DEFAULT_WALK_ANIMATION } from './animations';
 import { BattleWorld, UnitEntity, UnitData } from './entities';
 import { DamagedEvent, EntityAddedEvent, EventListener } from './IEntity';
+import { isPlayerTeam } from './TeamUtils';
 import {
   BattleState,
   BattleOutcome,
@@ -775,7 +776,7 @@ export class BattleEngine {
     if (this.hasStarted) return;
 
     const entity = this.world.getUnitById(id);
-    if (entity && entity.team === 'player') {
+    if (entity && isPlayerTeam(entity.team)) {
       // Set position directly - grid-based validation handles overlap prevention at squad level
       entity.position = position.clone();
     }

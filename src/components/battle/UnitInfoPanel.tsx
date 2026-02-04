@@ -5,7 +5,7 @@
  * Shows health, stats, active modifiers, and position.
  */
 
-import { UnitRenderData } from '../../core/battle';
+import { UnitRenderData, calculateHealthPercent } from '../../core/battle';
 import { UI_COLORS, ARENA_COLORS } from '../../core/theme/colors';
 import { calculateDPS } from '../../core/battle/BattleConfig';
 import { ModifierDisplay } from './ModifierDisplay';
@@ -17,13 +17,6 @@ const styles = {
   textDark: { color: UI_COLORS.textPrimary },
   healthBarBg: { backgroundColor: UI_COLORS.panelDark },
 };
-
-/**
- * Calculate health as a percentage (0-100).
- */
-function calculateHealthPercent(health: number, maxHealth: number): number {
-  return Math.round((health / maxHealth) * 100);
-}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Extracted Components (reduce nesting and DRY violations)

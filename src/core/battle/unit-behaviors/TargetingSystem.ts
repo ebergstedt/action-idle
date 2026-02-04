@@ -16,6 +16,7 @@ import {
   scaleValue,
 } from '../BattleConfig';
 import { IDamageable } from '../IEntity';
+import { getEnemyTeam, isPlayerTeam } from '../TeamUtils';
 import { UnitTeam } from '../types';
 import { TargetableUnit, TargetingContext, TargetingResult } from './types';
 
@@ -41,11 +42,13 @@ export function isDeepInEnemyZone(
   if (!bounds) return false;
 
   const zoneHeight = bounds.height * ZONE_HEIGHT_PERCENT;
+  const threshold = zoneHeight / ZONE_MIDWAY_DIVISOR;
 
-  if (team === 'player') {
-    return position.y < zoneHeight / ZONE_MIDWAY_DIVISOR;
+  // Player's enemy zone is at the top (Y = 0), enemy's zone is at the bottom
+  if (isPlayerTeam(team)) {
+    return position.y < threshold;
   } else {
-    return position.y > bounds.height - zoneHeight / ZONE_MIDWAY_DIVISOR;
+    return position.y > bounds.height - threshold;
   }
 }
 
@@ -53,8 +56,7 @@ export function isDeepInEnemyZone(
  * Check if all enemy castles have been destroyed.
  */
 export function areAllEnemyCastlesDestroyed(team: UnitTeam, context: TargetingContext): boolean {
-  const enemyTeam = team === 'player' ? 'enemy' : 'player';
-  const initialCount = context.getInitialCastleCount(enemyTeam);
+  const initialCount = context.getInitialCastleCount(getEnemyTeam(team));
   const currentCastles = context.getEnemyCastles();
   const currentCount = currentCastles.filter((c) => !c.isDestroyed() && c.health > 0).length;
 

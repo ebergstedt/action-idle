@@ -9,6 +9,7 @@
 
 import { Vector2 } from '../physics/Vector2';
 import { ISelectable } from './ISelectable';
+import { isPlayerTeam } from './TeamUtils';
 import type { GridFootprint, GridBounds, GridPosition } from './grid/GridTypes';
 import {
   snapFootprintToGrid,
@@ -670,8 +671,9 @@ export function resolveSquadOverlaps(
 ): Array<{ unitId: string; position: Vector2 }> {
   if (cellSize <= 0) return [];
 
-  const deploymentBounds =
-    team === 'player' ? getPlayerDeploymentBounds() : getEnemyDeploymentBounds();
+  const deploymentBounds = isPlayerTeam(team)
+    ? getPlayerDeploymentBounds()
+    : getEnemyDeploymentBounds();
   const squads = collectSquadInfo(units, team);
 
   if (squads.length === 0) return [];

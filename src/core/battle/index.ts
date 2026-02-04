@@ -1,6 +1,9 @@
 // Configuration (centralized constants)
 export * from './BattleConfig';
 
+// Team utilities (Godot-portable)
+export * from './TeamUtils';
+
 // Render data types (for React rendering layer)
 export * from './types';
 export * from './shuffle';

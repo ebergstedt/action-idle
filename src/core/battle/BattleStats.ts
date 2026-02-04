@@ -18,6 +18,7 @@ import {
 } from './IEntity';
 import { BattleWorld } from './entities/BattleWorld';
 import { UnitEntity } from './entities/UnitEntity';
+import { getTeamValue, TeamDataMap } from './TeamUtils';
 import { UnitTeam } from './units/types';
 
 /**
@@ -267,7 +268,11 @@ export class BattleStats {
   }
 
   private getTeamStats(team: UnitTeam): TeamStats {
-    return team === 'player' ? this.stats.player : this.stats.enemy;
+    const teamMap: TeamDataMap<TeamStats> = {
+      player: this.stats.player,
+      enemy: this.stats.enemy,
+    };
+    return getTeamValue(teamMap, team);
   }
 }
 
