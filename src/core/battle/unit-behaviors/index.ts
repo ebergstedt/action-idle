@@ -67,3 +67,20 @@ export {
   marchForward,
   moveTowardTarget,
 } from './MovementSystem';
+
+// Modifier System
+export type { ApplyModifierResult, TickModifiersResult, TickPendingResult } from './ModifierSystem';
+export {
+  applyModifier,
+  tickModifiers,
+  calculateModifiedMoveSpeed,
+  calculateDamageMultiplier,
+  calculateCollisionSize,
+  hasModifierFromSource,
+  removeModifiersBySource,
+  clearEnemyDebuffs,
+  removeModifiersLinkedToUnit,
+  tickPendingModifiers,
+  removePendingModifiersLinkedToUnit,
+  queueModifier,
+} from './ModifierSystem';
