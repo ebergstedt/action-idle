@@ -61,17 +61,17 @@ export function AssemblyPage({
         {/* Main content - 3 column layout */}
         <div className="flex-1 flex gap-4 min-h-0">
           {/* Left panel - Unit selector */}
-          <Panel3D className="w-52 flex-shrink-0 overflow-hidden">
+          <Panel3D className="w-52 flex-shrink-0">
             <UnitSelector selectedUnitType={selectedUnitType} onSelectUnit={onSelectUnit} />
           </Panel3D>
 
           {/* Center panel - Unit stats */}
-          <Panel3D className="flex-1 overflow-y-auto">
+          <Panel3D className="flex-1">
             <UnitStatsPanel selectedUnitType={selectedUnitType} />
           </Panel3D>
 
           {/* Right panel - Upgrades */}
-          <Panel3D className="w-80 flex-shrink-0 overflow-hidden">
+          <Panel3D className="w-80 flex-shrink-0">
             <UpgradeListPanel
               selectedUnitType={selectedUnitType}
               upgradeStates={upgradeStates}
@@ -84,8 +84,10 @@ export function AssemblyPage({
 
         {/* Bottom bar */}
         <Panel3D
-          className="h-14 flex-shrink-0 flex items-center justify-between px-4"
+          className="h-14 flex-shrink-0"
+          innerClassName="flex items-center justify-between px-4"
           padding="none"
+          showMarkers={false}
         >
           {/* VEST display */}
           <div className="flex items-center gap-2">
