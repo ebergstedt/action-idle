@@ -1,20 +1,22 @@
 /**
  * App Root Component
  *
- * Handles page routing between Assembly (home) and Battle scenes.
+ * Handles page routing between Hangar sections and Battle.
  * Godot mapping: Main scene with scene switching logic.
  */
 
 import { useState, useCallback, useEffect } from 'react';
 import { BattleView } from './battle';
-import { AssemblyPage } from './assembly';
+import { GarageContent } from './assembly';
+import { HangarPage, HangarSection } from './hangar';
 import { UI_COLORS } from '../core/theme/colors';
 import { useAssembly } from '../hooks/useAssembly';
 import { LocalStorageAdapter } from '../adapters/LocalStorageAdapter';
 import { initializeBattleData, battleUpgradeRegistry } from '../data/battle';
+import { Panel3D } from './ui/Panel3D';
 
 /** Current page/scene in the app */
-type AppPage = 'assembly' | 'battle';
+type AppPage = 'hangar' | 'battle';
 
 // Initialize registries on module load
 initializeBattleData();
@@ -23,7 +25,8 @@ initializeBattleData();
 const persistenceAdapter = new LocalStorageAdapter();
 
 function App() {
-  const [currentPage, setCurrentPage] = useState<AppPage>('assembly');
+  const [currentPage, setCurrentPage] = useState<AppPage>('hangar');
+  const [hangarSection, setHangarSection] = useState<HangarSection>('garage');
 
   // Assembly state management
   const assembly = useAssembly({
@@ -48,10 +51,16 @@ function App() {
       if (newHighestWave > assembly.highestWave) {
         assembly.setHighestWave(newHighestWave);
       }
-      setCurrentPage('assembly');
+      setCurrentPage('hangar');
+      setHangarSection('garage');
     },
     [assembly]
   );
+
+  // Handle section selection
+  const handleSelectSection = useCallback((section: HangarSection) => {
+    setHangarSection(section);
+  }, []);
 
   // Auto-select first unit type if none selected
   useEffect(() => {
@@ -59,6 +68,33 @@ function App() {
       assembly.selectUnit('hound');
     }
   }, [assembly]);
+
+  // Render content based on current hangar section
+  const renderHangarContent = () => {
+    switch (hangarSection) {
+      case 'garage':
+        return (
+          <GarageContent
+            selectedUnitType={assembly.selectedUnitType}
+            onSelectUnit={assembly.selectUnit}
+          />
+        );
+      case 'assembly':
+        return (
+          <Panel3D className="h-full flex items-center justify-center">
+            <div style={{ color: UI_COLORS.textSecondary }}>ASSEMBLY - Coming Soon</div>
+          </Panel3D>
+        );
+      case 'virtuality':
+        return (
+          <Panel3D className="h-full flex items-center justify-center">
+            <div style={{ color: UI_COLORS.textSecondary }}>VIRTUALITY - Coming Soon</div>
+          </Panel3D>
+        );
+      default:
+        return null;
+    }
+  };
 
   return (
     <div
@@ -69,16 +105,16 @@ function App() {
       }}
     >
       <main className="flex-1 p-4 overflow-hidden">
-        {currentPage === 'assembly' ? (
-          <AssemblyPage
+        {currentPage === 'hangar' ? (
+          <HangarPage
+            currentSection={hangarSection}
+            onSelectSection={handleSelectSection}
             vest={assembly.vest}
-            upgradeStates={assembly.upgradeStates}
-            selectedUnitType={assembly.selectedUnitType}
             highestWave={assembly.highestWave}
-            onSelectUnit={assembly.selectUnit}
-            onPurchase={assembly.purchase}
-            onLaunchBattle={handleLaunchBattle}
-          />
+            onSortie={handleLaunchBattle}
+          >
+            {renderHangarContent()}
+          </HangarPage>
         ) : (
           <BattleView vest={assembly.vest} onReturnToAssembly={handleReturnToAssembly} />
         )}

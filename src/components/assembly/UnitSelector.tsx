@@ -29,7 +29,7 @@ export function UnitSelector({ selectedUnitType, onSelectUnit }: UnitSelectorPro
           borderBottom: `1px solid ${UI_COLORS.metalDark}`,
         }}
       >
-        ASSEMBLY
+        GARAGE
       </div>
 
       {/* Unit list */}
