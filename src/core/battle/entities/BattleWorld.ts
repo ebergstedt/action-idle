@@ -289,6 +289,9 @@ export class BattleWorld implements IEntityWorld, IBattleWorld, IWorldEventEmitt
         const unitB = this.units[j];
         if (unitB.isDestroyed()) continue;
 
+        // Skip collision with stationary units (castles) - units can move through them
+        if (unitA.isStationary || unitB.isStationary) continue;
+
         const diff = unitA.position.subtract(unitB.position);
         const dist = diff.magnitude();
         const minDist = (unitA.getCollisionSize() + unitB.getCollisionSize()) * UNIT_SPACING;

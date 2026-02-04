@@ -603,6 +603,9 @@ export class BattleEngine {
           // Skip units in the same squad - they move as a unit
           if (unitA.squadId === unitB.squadId) continue;
 
+          // Skip collision with stationary units (castles) - units can move through them
+          if (unitA.isStationary || unitB.isStationary) continue;
+
           const diff = unitA.position.subtract(unitB.position);
           const dist = diff.magnitude();
           const minDist = (unitA.size + unitB.size) * UNIT_SPACING;
@@ -619,24 +622,9 @@ export class BattleEngine {
                   ).normalize();
             const pushAmount = overlap * OVERLAP_PUSH_FACTOR + OVERLAP_BASE_PUSH;
 
-            // Castles (stationary units) never move - only push the other unit
-            const aIsStationary = unitA.isStationary;
-            const bIsStationary = unitB.isStationary;
-
-            if (aIsStationary && bIsStationary) {
-              // Both stationary - do nothing (shouldn't happen if spawned correctly)
-              continue;
-            } else if (aIsStationary) {
-              // Only push B away (double the amount since A won't move)
-              unitB.position = unitB.position.subtract(pushDir.multiply(pushAmount * 2));
-            } else if (bIsStationary) {
-              // Only push A away (double the amount since B won't move)
-              unitA.position = unitA.position.add(pushDir.multiply(pushAmount * 2));
-            } else {
-              // Neither stationary - push both equally
-              unitA.position = unitA.position.add(pushDir.multiply(pushAmount));
-              unitB.position = unitB.position.subtract(pushDir.multiply(pushAmount));
-            }
+            // Push both units equally
+            unitA.position = unitA.position.add(pushDir.multiply(pushAmount));
+            unitB.position = unitB.position.subtract(pushDir.multiply(pushAmount));
           }
         }
       }
