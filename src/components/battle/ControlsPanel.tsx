@@ -178,7 +178,7 @@ export function ControlsPanel({
               key={speed}
               size="xs"
               color={battleSpeed === speed ? UI_COLORS.accentPrimary : UI_COLORS.metalDark}
-              textColor={battleSpeed === speed ? UI_COLORS.black : UI_COLORS.textMuted}
+              textColor={battleSpeed === speed ? UI_COLORS.black : UI_COLORS.white}
               onClick={() => onSpeedChange(speed)}
               className="flex-1"
             >
