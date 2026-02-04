@@ -361,6 +361,12 @@ export const PATH_BLOCK_RADIUS_MULTIPLIER = 1.5;
 export const MIN_MOVE_DISTANCE = 1;
 
 /**
+ * Minimum velocity magnitude for obstacle avoidance calculations.
+ * Below this value, units are considered stationary and skip avoidance.
+ */
+export const OBSTACLE_MIN_VELOCITY_THRESHOLD = 0.001;
+
+/**
  * Multiplier for direction check distance.
  * Used when checking if a perpendicular direction is clear of allies.
  */

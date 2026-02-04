@@ -32,6 +32,8 @@ import {
   selectSquad,
   filterSelectionByTeam,
   expandSelectionToSquads,
+  isUnitMovable,
+  filterMovableUnits,
 } from '../../../core/battle/SelectionManager';
 import {
   startBoxSelect,
@@ -271,18 +273,15 @@ export function useCanvasInput<T extends ISelectable = ISelectable>({
         }
 
         // Start drag for player units - drag entire squad
-        // Castles (stationary units) cannot be repositioned
-        if (clickedUnit.team === 'player' && clickedUnit.type !== 'castle') {
-          // Filter to only player units (game logic delegated to core)
-          // Also exclude castles from drag
-          const unitsToMove = (
+        // Use core functions for movability checks (castles are stationary)
+        if (clickedUnit.team === 'player' && isUnitMovable(clickedUnit)) {
+          // Filter to only player units that can be moved (delegated to core)
+          const unitsToMove = filterMovableUnits(
             isAlreadySelected
               ? filterSelectionByTeam(selectedUnitIds, units, 'player')
-              : squadSelection.selectedIds
-          ).filter((id) => {
-            const foundUnit = units.find((unit) => unit.id === id);
-            return foundUnit && foundUnit.type !== 'castle';
-          });
+              : squadSelection.selectedIds,
+            units
+          );
 
           if (unitsToMove.length > 0) {
             const session = startDrag(clickedUnit.id, pos, unitsToMove, units);

@@ -96,7 +96,6 @@ export function drawUnitShadow(ctx: CanvasRenderingContext2D, unit: UnitRenderDa
 export function drawUnitBody(
   ctx: CanvasRenderingContext2D,
   unit: UnitRenderData,
-  _isSelected: boolean,
   isBeingDragged: boolean
 ): void {
   const {

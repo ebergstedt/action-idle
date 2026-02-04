@@ -87,7 +87,7 @@ export function renderBattle(context: RenderContext): void {
   drawSpawnZones(ctx, width, height);
 
   // 2.5. Faint background grid (always visible) and flank zones during deployment
-  drawBackgroundGrid(ctx, width, height, cellSize);
+  drawBackgroundGrid(ctx, width, cellSize);
   if (!state.hasStarted) {
     drawFlankZones(ctx, width, height, cellSize, 0.1);
   }
@@ -127,9 +127,8 @@ export function renderBattle(context: RenderContext): void {
 
   // 8. Unit bodies
   for (const unit of mobileUnits) {
-    const isSelected = selectedUnitIds.includes(unit.id);
     const isBeingDragged = isDragging && draggedUnitIds.includes(unit.id);
-    drawUnitBody(ctx, unit, isSelected, isBeingDragged);
+    drawUnitBody(ctx, unit, isBeingDragged);
   }
 
   // 8.5. Squad selection outlines (after unit bodies, before dust)

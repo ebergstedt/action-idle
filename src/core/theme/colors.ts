@@ -117,6 +117,10 @@ export const ARENA_COLORS = {
   allyZoneFill: 'rgba(0, 168, 232, 0.15)', // Tech blue
   allyZoneBorder: 'rgba(0, 168, 232, 0.5)',
 
+  // Placement validity indicators
+  validPlacement: '#22c55e', // Green - valid position
+  invalidPlacement: '#ef4444', // Red - invalid position
+
   // Selection and indicators
   selectionRing: '#F5A623', // Amber highlight
   moveIndicator: 'rgba(0, 168, 232, 0.3)', // Blue movement ghost

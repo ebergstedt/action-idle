@@ -12,7 +12,7 @@ import {
   GRID_NO_MANS_LAND_ROWS,
   GRID_DEPLOYMENT_ROWS,
 } from '../../../core/battle/BattleConfig';
-import { ARENA_COLORS, hexToRgba } from '../../../core/theme/colors';
+import { ARENA_COLORS, UI_COLORS, hexToRgba } from '../../../core/theme/colors';
 import type { GridPosition, GridFootprint } from '../../../core/battle/grid/GridTypes';
 
 /**
@@ -20,16 +20,12 @@ import type { GridPosition, GridFootprint } from '../../../core/battle/grid/Grid
  * Shows valid placement cells for the specified team.
  *
  * @param ctx - Canvas rendering context
- * @param arenaWidth - Arena width in pixels
- * @param arenaHeight - Arena height in pixels
  * @param cellSize - Size of each grid cell in pixels
  * @param team - Which team's deployment zone to highlight
  * @param alpha - Opacity of the grid (0-1)
  */
 export function drawDeploymentGrid(
   ctx: CanvasRenderingContext2D,
-  _arenaWidth: number,
-  _arenaHeight: number,
   cellSize: number,
   team: 'player' | 'enemy',
   alpha: number = 0.3
@@ -106,7 +102,7 @@ export function drawFootprintPreview(
   ctx.save();
 
   // Fill with semi-transparent color
-  const color = isValid ? '#22c55e' : '#ef4444'; // green or red
+  const color = isValid ? ARENA_COLORS.validPlacement : ARENA_COLORS.invalidPlacement;
   ctx.fillStyle = hexToRgba(color, 0.3);
   ctx.fillRect(x, y, width, height);
 
@@ -143,7 +139,7 @@ export function drawNoMansLand(
 
   ctx.save();
   ctx.globalAlpha = alpha;
-  ctx.fillStyle = ARENA_COLORS.noMansLand || '#8b5a2b';
+  ctx.fillStyle = ARENA_COLORS.noMansLand;
   ctx.fillRect(0, y, arenaWidth, height);
   ctx.restore();
 }
@@ -172,7 +168,7 @@ export function drawFlankZones(
 
   ctx.save();
   ctx.globalAlpha = alpha;
-  ctx.fillStyle = ARENA_COLORS.flankZone || '#654321';
+  ctx.fillStyle = ARENA_COLORS.flankZone;
 
   // Left flank
   ctx.fillRect(0, 0, flankWidth, arenaHeight);
@@ -202,8 +198,8 @@ export function drawDeploymentOverlay(
   drawFlankZones(ctx, arenaWidth, arenaHeight, cellSize, 0.1);
 
   // Draw deployment grids for both teams
-  drawDeploymentGrid(ctx, arenaWidth, arenaHeight, cellSize, 'player', 0.25);
-  drawDeploymentGrid(ctx, arenaWidth, arenaHeight, cellSize, 'enemy', 0.15);
+  drawDeploymentGrid(ctx, cellSize, 'player', 0.25);
+  drawDeploymentGrid(ctx, cellSize, 'enemy', 0.15);
 }
 
 /**
@@ -213,14 +209,12 @@ export function drawDeploymentOverlay(
  *
  * @param ctx - Canvas rendering context
  * @param arenaWidth - Arena width in pixels
- * @param arenaHeight - Arena height in pixels
  * @param cellSize - Size of each grid cell in pixels
  * @param alpha - Opacity of the grid lines (0-1)
  */
 export function drawBackgroundGrid(
   ctx: CanvasRenderingContext2D,
   arenaWidth: number,
-  _arenaHeight: number,
   cellSize: number,
   alpha: number = 0.35
 ): void {
@@ -228,7 +222,7 @@ export function drawBackgroundGrid(
 
   ctx.save();
   ctx.globalAlpha = alpha;
-  ctx.strokeStyle = '#000000'; // Black grid lines
+  ctx.strokeStyle = UI_COLORS.black;
   ctx.lineWidth = 1;
 
   // Grid boundaries

@@ -14,7 +14,6 @@ import { WaxSealOverlay } from './WaxSealOverlay';
 import { UnitInfoPanel } from './UnitInfoPanel';
 import { ControlsPanel } from './ControlsPanel';
 import { getUniformSelectionUnit } from '../../core/battle/SelectionManager';
-import { BattleUpgradeStates } from '../../core/battle/upgrades/types';
 import battlegroundBg from '../../assets/battleground1.png';
 
 // Semi-transparent panel style - AC6 inspired
@@ -26,17 +25,11 @@ const panelStyle = {
 export interface BattleViewProps {
   /** Current VEST from assembly */
   vest?: number;
-  /** Upgrade states from assembly (for applying modifiers) */
-  upgradeStates?: BattleUpgradeStates;
   /** Callback when returning to assembly with VEST earned and new highest wave */
   onReturnToAssembly?: (vestEarned: number, highestWave: number) => void;
 }
 
-export function BattleView({
-  vest = 0,
-  upgradeStates: _upgradeStates,
-  onReturnToAssembly,
-}: BattleViewProps) {
+export function BattleView({ vest = 0, onReturnToAssembly }: BattleViewProps) {
   const {
     state,
     selectedUnitIds,

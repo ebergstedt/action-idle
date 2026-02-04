@@ -195,3 +195,31 @@ export function filterSelectionByTeam<T extends ISelectable>(
     return unit?.team === team;
   });
 }
+
+/**
+ * Checks if a unit can be repositioned/moved by the player.
+ * Some unit types (like castles) are stationary and cannot be moved.
+ *
+ * @param unit - The unit to check
+ * @returns True if the unit can be moved, false otherwise
+ */
+export function isUnitMovable(unit: ISelectable): boolean {
+  // Castles are stationary structures that cannot be repositioned
+  if (unit.type === 'castle') return false;
+  return true;
+}
+
+/**
+ * Filters unit IDs to only include units that can be moved.
+ * Excludes stationary units like castles.
+ *
+ * @param unitIds - Unit IDs to filter
+ * @param units - All available units
+ * @returns Array of unit IDs that can be moved
+ */
+export function filterMovableUnits<T extends ISelectable>(unitIds: string[], units: T[]): string[] {
+  return unitIds.filter((id) => {
+    const unit = units.find((u) => u.id === id);
+    return unit && isUnitMovable(unit);
+  });
+}

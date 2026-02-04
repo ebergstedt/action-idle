@@ -80,11 +80,7 @@ function App() {
             onLaunchBattle={handleLaunchBattle}
           />
         ) : (
-          <BattleView
-            vest={assembly.vest}
-            upgradeStates={assembly.upgradeStates}
-            onReturnToAssembly={handleReturnToAssembly}
-          />
+          <BattleView vest={assembly.vest} onReturnToAssembly={handleReturnToAssembly} />
         )}
       </main>
     </div>

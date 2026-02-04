@@ -14,6 +14,7 @@
 
 import { Vector2 } from '../../physics/Vector2';
 import type { GridFootprint } from '../grid/GridTypes';
+import { OBSTACLE_MIN_VELOCITY_THRESHOLD, PATH_DOT_THRESHOLD } from '../BattleConfig';
 
 /**
  * Axis-aligned bounding box for obstacle collision.
@@ -160,12 +161,12 @@ export function calculateObstacleAvoidance(
   }
 
   const velocityMag = velocity.magnitude();
-  if (velocityMag < 0.001) return Vector2.zero(); // Not moving
+  if (velocityMag < OBSTACLE_MIN_VELOCITY_THRESHOLD) return Vector2.zero(); // Not moving
 
   const velocityDir = velocity.normalize();
   const dot = velocityDir.dot(toObstacle.normalize());
 
-  if (dot < 0.3) return Vector2.zero(); // Not heading toward obstacle
+  if (dot < PATH_DOT_THRESHOLD) return Vector2.zero(); // Not heading toward obstacle
 
   // Calculate perpendicular avoidance direction
   const perpendicular = new Vector2(-velocityDir.y, velocityDir.x);
