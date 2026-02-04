@@ -45,7 +45,7 @@ const MODIFIER_DISPLAY_INFO: Record<string, ModifierInfo> = {
     ],
     bgColor: hexToRgba(DEBUFF_COLORS.shockwave, 0.2),
     iconBgColor: DEBUFF_COLORS.shockwave,
-    textColor: UI_COLORS.black,
+    textColor: UI_COLORS.textPrimary,
   },
 };
 
@@ -58,7 +58,7 @@ const DEFAULT_MODIFIER_INFO: ModifierInfo = {
   effects: ['Unknown effect'],
   bgColor: 'rgba(128, 128, 128, 0.2)',
   iconBgColor: '#808080',
-  textColor: UI_COLORS.black,
+  textColor: UI_COLORS.textPrimary,
 };
 
 /**
