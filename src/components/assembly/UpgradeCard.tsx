@@ -34,11 +34,11 @@ export function UpgradeCard({ upgrade, level, costResult, onPurchase }: UpgradeC
   if (isMaxed) {
     buttonText = 'MAX';
     buttonColor = UI_COLORS.metalDark;
-    buttonTextColor = UI_COLORS.textMuted;
+    buttonTextColor = UI_COLORS.white;
   } else if (isLocked) {
     buttonText = 'LOCKED';
     buttonColor = UI_COLORS.metalDark;
-    buttonTextColor = UI_COLORS.textMuted;
+    buttonTextColor = UI_COLORS.white;
   } else if (!canAfford) {
     buttonText = `${costResult.cost}V`;
     buttonColor = UI_COLORS.metalDark;
@@ -65,7 +65,7 @@ export function UpgradeCard({ upgrade, level, costResult, onPurchase }: UpgradeC
       className="py-2 px-3"
       style={{
         opacity: isLocked ? 0.5 : 1,
-        borderLeft: `2px solid ${isLocked ? UI_COLORS.metalDark : canAfford ? UI_COLORS.accentPrimary : UI_COLORS.textMuted}`,
+        borderLeft: `2px solid ${isLocked ? UI_COLORS.metalDark : canAfford ? UI_COLORS.accentPrimary : UI_COLORS.white}`,
         backgroundColor: 'rgba(255, 255, 255, 0.02)',
       }}
     >
@@ -80,7 +80,7 @@ export function UpgradeCard({ upgrade, level, costResult, onPurchase }: UpgradeC
               {upgrade.name}
             </span>
             {upgrade.maxLevel > 0 && (
-              <span className="text-sm font-mono" style={{ color: UI_COLORS.textMuted }}>
+              <span className="text-sm font-mono" style={{ color: UI_COLORS.white }}>
                 {level}/{upgrade.maxLevel}
               </span>
             )}

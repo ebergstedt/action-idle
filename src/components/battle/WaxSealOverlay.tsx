@@ -154,7 +154,7 @@ export function WaxSealOverlay({
         <p
           className="text-sm mt-4"
           style={{
-            color: UI_COLORS.textMuted,
+            color: UI_COLORS.white,
           }}
         >
           {autoBattle ? `Next sortie in ${countdown}s...` : 'Click anywhere to continue'}

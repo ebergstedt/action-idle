@@ -90,10 +90,10 @@ export function ControlsPanel({
           </span>
         </div>
         <div className="flex justify-between items-center">
-          <span className="text-sm uppercase tracking-wide" style={{ color: UI_COLORS.textMuted }}>
+          <span className="text-sm uppercase tracking-wide" style={{ color: UI_COLORS.white }}>
             BEST
           </span>
-          <span className="font-mono" style={{ color: UI_COLORS.textMuted }}>
+          <span className="font-mono" style={{ color: UI_COLORS.white }}>
             {highestWave}
           </span>
         </div>
@@ -115,7 +115,7 @@ export function ControlsPanel({
         </Button3D>
         <div
           className="flex-1 text-center text-sm uppercase tracking-wide"
-          style={{ color: UI_COLORS.textMuted }}
+          style={{ color: UI_COLORS.white }}
         >
           SELECT WAVE
         </div>
@@ -168,7 +168,7 @@ export function ControlsPanel({
       <div className="mb-4 pb-4" style={{ borderBottom: `1px solid ${UI_COLORS.metalDark}` }}>
         <div
           className="text-sm font-medium tracking-widest mb-2"
-          style={{ color: UI_COLORS.textMuted }}
+          style={{ color: UI_COLORS.white }}
         >
           SPEED
         </div>
@@ -197,7 +197,7 @@ export function ControlsPanel({
           {sessionVestEarned > 0 && (
             <div
               className="text-sm mb-2 text-center uppercase tracking-wide"
-              style={{ color: UI_COLORS.textMuted }}
+              style={{ color: UI_COLORS.white }}
             >
               EARNED: <span style={{ color: UI_COLORS.accentPrimary }}>+{sessionVestEarned}V</span>
             </div>

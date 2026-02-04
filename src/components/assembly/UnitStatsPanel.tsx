@@ -55,7 +55,7 @@ export function UnitStatsPanel({ selectedUnitType }: UnitStatsPanelProps) {
   if (!unit) {
     return (
       <div className="flex flex-col h-full items-center justify-center">
-        <div className="uppercase tracking-wide" style={{ color: UI_COLORS.textMuted }}>
+        <div className="uppercase tracking-wide" style={{ color: UI_COLORS.white }}>
           Select a unit to view stats
         </div>
       </div>

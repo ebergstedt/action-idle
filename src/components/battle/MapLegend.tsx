@@ -77,7 +77,7 @@ export function MapLegend({ className = '' }: MapLegendProps) {
         style={{
           width: '40px',
           height: '1px',
-          background: `linear-gradient(90deg, transparent, ${UI_COLORS.textMuted}, transparent)`,
+          background: `linear-gradient(90deg, transparent, ${UI_COLORS.white}, transparent)`,
         }}
       />
     </div>

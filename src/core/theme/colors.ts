@@ -59,7 +59,6 @@ export const UI_COLORS = {
   // Text colors
   textPrimary: '#E8ECF0', // Primary text - off-white
   textSecondary: '#9AA4B0', // Secondary text - steel gray
-  textMuted: '#5A6470', // Muted/disabled
   black: '#000000',
   white: '#FFFFFF',
 

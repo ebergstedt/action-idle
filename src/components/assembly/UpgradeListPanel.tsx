@@ -98,7 +98,7 @@ export function UpgradeListPanel({
 
         {/* Empty state */}
         {unitUpgrades.length === 0 && globalUpgrades.length === 0 && !selectedUnitType && (
-          <div className="text-sm uppercase tracking-wide" style={{ color: UI_COLORS.textMuted }}>
+          <div className="text-sm uppercase tracking-wide" style={{ color: UI_COLORS.white }}>
             Select a unit to view upgrades
           </div>
         )}

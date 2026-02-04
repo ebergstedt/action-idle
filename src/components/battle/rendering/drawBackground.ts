@@ -53,7 +53,7 @@ function generateNoiseCanvas(width: number, height: number): HTMLCanvasElement {
   const random = seededRandom(42);
 
   // Draw noise dots in metallic tones for industrial floor texture
-  ctx.fillStyle = UI_COLORS.textMuted;
+  ctx.fillStyle = UI_COLORS.white;
   ctx.globalAlpha = PARCHMENT_NOISE_OPACITY;
 
   for (let i = 0; i < dotCount; i++) {
