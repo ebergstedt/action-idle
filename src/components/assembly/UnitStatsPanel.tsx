@@ -24,7 +24,9 @@ function formatStat(value: number | null | undefined): string {
 function StatRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex justify-between items-center py-1">
-      <span style={{ color: UI_COLORS.textSecondary }}>{label}</span>
+      <span className="uppercase tracking-wide" style={{ color: UI_COLORS.textSecondary }}>
+        {label}
+      </span>
       <span className="font-mono" style={{ color: UI_COLORS.textPrimary }}>
         {value}
       </span>
@@ -41,7 +43,9 @@ export function UnitStatsPanel({ selectedUnitType }: UnitStatsPanelProps) {
   if (!unit) {
     return (
       <div className="flex flex-col h-full items-center justify-center">
-        <div style={{ color: UI_COLORS.textMuted }}>Select a unit to view stats</div>
+        <div className="uppercase tracking-wide" style={{ color: UI_COLORS.textMuted }}>
+          Select a unit to view stats
+        </div>
       </div>
     );
   }
@@ -64,12 +68,12 @@ export function UnitStatsPanel({ selectedUnitType }: UnitStatsPanelProps) {
       {/* Unit name and description */}
       <div className="mb-4">
         <div
-          className="text-xl font-bold tracking-wide mb-1"
+          className="text-xl font-bold tracking-wide mb-1 uppercase"
           style={{ color: UI_COLORS.accentPrimary }}
         >
           {unit.name}
         </div>
-        <div className="text-sm" style={{ color: UI_COLORS.textSecondary }}>
+        <div className="text-sm uppercase tracking-wide" style={{ color: UI_COLORS.textSecondary }}>
           {unit.description}
         </div>
       </div>
@@ -213,7 +217,9 @@ export function UnitStatsPanel({ selectedUnitType }: UnitStatsPanelProps) {
             ABILITIES
           </div>
 
-          <div style={{ color: UI_COLORS.textMuted }}>No innate abilities</div>
+          <div className="uppercase tracking-wide" style={{ color: UI_COLORS.textMuted }}>
+            No innate abilities
+          </div>
         </div>
       )}
     </div>

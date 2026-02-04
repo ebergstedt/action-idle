@@ -123,7 +123,7 @@ export function WaxSealOverlay({
           {outcomeText?.subtitle}
         </p>
 
-        {/* Gold earned (victory only) */}
+        {/* VEST earned (victory only) */}
         {outcome === 'player_victory' && goldEarned !== undefined && goldEarned > 0 && (
           <div
             className="flex items-center gap-2 px-4 py-2 rounded"
@@ -132,7 +132,7 @@ export function WaxSealOverlay({
             }}
           >
             <span className="text-xl font-bold" style={{ color: UI_COLORS.accentPrimary }}>
-              +{goldEarned.toLocaleString()} Gold
+              +{goldEarned.toLocaleString()} VEST
             </span>
           </div>
         )}

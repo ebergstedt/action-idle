@@ -4,4 +4,5 @@
 
 body {
   @apply bg-gray-900 text-gray-100 min-h-screen;
+  font-family: "Exo 2", sans-serif;
 }

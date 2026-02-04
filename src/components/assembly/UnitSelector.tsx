@@ -49,9 +49,12 @@ export function UnitSelector({ selectedUnitType, onSelectUnit }: UnitSelectorPro
               }}
               onClick={() => onSelectUnit(unit.id)}
             >
-              <div className="font-medium tracking-wide">{unit.name}</div>
-              <div className="text-sm" style={{ color: UI_COLORS.textMuted }}>
-                {unit.category.charAt(0).toUpperCase() + unit.category.slice(1)}
+              <div className="font-medium tracking-wide uppercase">{unit.name}</div>
+              <div
+                className="text-sm uppercase tracking-wider"
+                style={{ color: UI_COLORS.textMuted }}
+              >
+                {unit.category}
               </div>
             </button>
           );

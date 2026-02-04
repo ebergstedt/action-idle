@@ -43,14 +43,14 @@ export function UpgradeCard({ upgrade, level, costResult, onPurchase }: UpgradeC
       cursor: 'default',
     };
   } else if (!canAfford) {
-    buttonText = `${costResult.cost}g`;
+    buttonText = `${costResult.cost}V`;
     buttonStyle = {
       backgroundColor: UI_COLORS.metalDark,
       color: UI_COLORS.warningRed,
       cursor: 'not-allowed',
     };
   } else {
-    buttonText = `${costResult.cost}g`;
+    buttonText = `${costResult.cost}V`;
     buttonStyle = {
       backgroundColor: UI_COLORS.accentPrimary,
       color: UI_COLORS.black,
@@ -82,19 +82,22 @@ export function UpgradeCard({ upgrade, level, costResult, onPurchase }: UpgradeC
       <div className="flex justify-between items-start mb-2">
         <div className="flex-1">
           <div
-            className="text-sm font-medium tracking-wide"
+            className="text-sm font-medium tracking-wide uppercase"
             style={{ color: UI_COLORS.textPrimary }}
           >
             {upgrade.name}
           </div>
           {upgrade.maxLevel > 0 && (
-            <div className="text-sm" style={{ color: UI_COLORS.textSecondary }}>
-              Level {level}/{upgrade.maxLevel}
+            <div
+              className="text-sm uppercase tracking-wide"
+              style={{ color: UI_COLORS.textSecondary }}
+            >
+              LV {level}/{upgrade.maxLevel}
             </div>
           )}
         </div>
         <button
-          className="px-3 py-1 text-sm font-bold rounded transition-opacity"
+          className="px-3 py-1 text-sm font-bold rounded transition-opacity uppercase tracking-wide"
           style={buttonStyle}
           onClick={canAfford && !isMaxed && !isLocked ? onPurchase : undefined}
           disabled={!canAfford || isMaxed || isLocked}
@@ -104,13 +107,16 @@ export function UpgradeCard({ upgrade, level, costResult, onPurchase }: UpgradeC
       </div>
 
       {/* Description */}
-      <div className="text-sm" style={{ color: UI_COLORS.textMuted }}>
+      <div className="text-sm uppercase tracking-wide" style={{ color: UI_COLORS.textMuted }}>
         {upgrade.description}
       </div>
 
       {/* Prerequisite warning */}
       {prereqText && (
-        <div className="mt-2 text-sm" style={{ color: UI_COLORS.warningOrange }}>
+        <div
+          className="mt-2 text-sm uppercase tracking-wide"
+          style={{ color: UI_COLORS.warningOrange }}
+        >
           {prereqText}
         </div>
       )}

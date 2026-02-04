@@ -93,13 +93,13 @@ export function AssemblyPage({
           border: `1px solid ${UI_COLORS.metalDark}`,
         }}
       >
-        {/* Gold display */}
+        {/* VEST display */}
         <div className="flex items-center gap-3">
           <span
             className="text-sm font-bold tracking-widest"
             style={{ color: UI_COLORS.textSecondary }}
           >
-            GOLD
+            VEST
           </span>
           <span className="text-xl font-bold font-mono" style={{ color: UI_COLORS.accentPrimary }}>
             {gold.toLocaleString()}
