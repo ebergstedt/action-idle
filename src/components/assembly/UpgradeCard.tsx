@@ -71,33 +71,32 @@ export function UpgradeCard({ upgrade, level, costResult, onPurchase }: UpgradeC
 
   return (
     <div
-      className="p-3 rounded"
+      className="py-2 px-3"
       style={{
-        backgroundColor: UI_COLORS.panelBase,
-        border: `1px solid ${UI_COLORS.metalDark}`,
-        opacity: isLocked ? 0.6 : 1,
+        opacity: isLocked ? 0.5 : 1,
+        borderLeft: `2px solid ${isLocked ? UI_COLORS.metalDark : canAfford ? UI_COLORS.accentPrimary : UI_COLORS.textMuted}`,
+        backgroundColor: 'rgba(255, 255, 255, 0.02)',
       }}
     >
       {/* Header row */}
-      <div className="flex justify-between items-start mb-2">
+      <div className="flex justify-between items-center">
         <div className="flex-1">
-          <div
-            className="text-sm font-medium tracking-wide uppercase"
-            style={{ color: UI_COLORS.textPrimary }}
-          >
-            {upgrade.name}
-          </div>
-          {upgrade.maxLevel > 0 && (
-            <div
-              className="text-sm uppercase tracking-wide"
-              style={{ color: UI_COLORS.textSecondary }}
+          <div className="flex items-center gap-2">
+            <span
+              className="text-sm font-medium tracking-wide uppercase"
+              style={{ color: UI_COLORS.textPrimary }}
             >
-              LV {level}/{upgrade.maxLevel}
-            </div>
-          )}
+              {upgrade.name}
+            </span>
+            {upgrade.maxLevel > 0 && (
+              <span className="text-sm font-mono" style={{ color: UI_COLORS.textMuted }}>
+                {level}/{upgrade.maxLevel}
+              </span>
+            )}
+          </div>
         </div>
         <button
-          className="px-3 py-1 text-sm font-bold rounded transition-opacity uppercase tracking-wide"
+          className="px-2 py-0.5 text-sm font-bold transition-opacity uppercase tracking-wide"
           style={buttonStyle}
           onClick={canAfford && !isMaxed && !isLocked ? onPurchase : undefined}
           disabled={!canAfford || isMaxed || isLocked}
@@ -106,17 +105,9 @@ export function UpgradeCard({ upgrade, level, costResult, onPurchase }: UpgradeC
         </button>
       </div>
 
-      {/* Description */}
-      <div className="text-sm uppercase tracking-wide" style={{ color: UI_COLORS.textMuted }}>
-        {upgrade.description}
-      </div>
-
       {/* Prerequisite warning */}
       {prereqText && (
-        <div
-          className="mt-2 text-sm uppercase tracking-wide"
-          style={{ color: UI_COLORS.warningOrange }}
-        >
+        <div className="mt-1 text-sm tracking-wide" style={{ color: UI_COLORS.warningOrange }}>
           {prereqText}
         </div>
       )}

@@ -2,7 +2,7 @@
  * Unit Stats Panel Component
  *
  * Center panel showing detailed stats for selected unit.
- * AC6-inspired industrial styling with monospace stat displays.
+ * AC6-inspired minimal styling with clean stat displays.
  */
 
 import { UI_COLORS } from '../../core/theme/colors';
@@ -20,16 +20,28 @@ function formatStat(value: number | null | undefined): string {
   return value.toLocaleString();
 }
 
-/** Stat row component */
+/** Stat row component - minimal AC6 style */
 function StatRow({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex justify-between items-center py-1">
-      <span className="uppercase tracking-wide" style={{ color: UI_COLORS.textSecondary }}>
+    <div className="flex justify-between items-center py-0.5">
+      <span className="uppercase tracking-wide text-sm" style={{ color: UI_COLORS.textPrimary }}>
         {label}
       </span>
       <span className="font-mono" style={{ color: UI_COLORS.textPrimary }}>
         {value}
       </span>
+    </div>
+  );
+}
+
+/** Section header */
+function SectionHeader({ children }: { children: React.ReactNode }) {
+  return (
+    <div
+      className="text-sm font-medium tracking-widest mb-2 mt-4 first:mt-0"
+      style={{ color: UI_COLORS.accentSecondary }}
+    >
+      {children}
     </div>
   );
 }
@@ -54,174 +66,63 @@ export function UnitStatsPanel({ selectedUnitType }: UnitStatsPanelProps) {
 
   return (
     <div className="flex flex-col h-full">
-      {/* Header */}
+      {/* Unit name */}
       <div
-        className="text-sm font-bold tracking-widest mb-4 pb-2"
+        className="text-2xl font-bold tracking-wide uppercase mb-1"
+        style={{ color: UI_COLORS.accentPrimary }}
+      >
+        {unit.name}
+      </div>
+
+      {/* Description */}
+      <div
+        className="text-sm mb-4 pb-4"
         style={{
           color: UI_COLORS.textSecondary,
           borderBottom: `1px solid ${UI_COLORS.metalDark}`,
         }}
       >
-        UNIT DETAILS
+        {unit.description}
       </div>
 
-      {/* Unit name and description */}
-      <div className="mb-4">
-        <div
-          className="text-xl font-bold tracking-wide mb-1 uppercase"
-          style={{ color: UI_COLORS.accentPrimary }}
-        >
-          {unit.name}
-        </div>
-        <div className="text-sm uppercase tracking-wide" style={{ color: UI_COLORS.textSecondary }}>
-          {unit.description}
-        </div>
-      </div>
+      {/* Stats sections */}
+      <div className="flex-1 overflow-y-auto">
+        {/* Base Stats */}
+        <SectionHeader>SPEC</SectionHeader>
+        <StatRow label="HP" value={formatStat(baseStats.maxHealth)} />
+        <StatRow label="SQUAD" value={formatStat(baseStats.squadSize)} />
+        <StatRow label="SPEED" value={formatStat(baseStats.moveSpeed)} />
+        <StatRow label="ARMOR" value={formatStat(baseStats.armor)} />
 
-      {/* Stats grid */}
-      <div
-        className="p-4 rounded mb-4"
-        style={{
-          backgroundColor: UI_COLORS.panelBase,
-          border: `1px solid ${UI_COLORS.metalDark}`,
-        }}
-      >
-        <div
-          className="text-sm font-medium tracking-wide mb-3"
-          style={{ color: UI_COLORS.accentSecondary }}
-        >
-          BASE STATS
-        </div>
-
-        <div className="space-y-1">
-          <StatRow label="Health" value={formatStat(baseStats.maxHealth)} />
-          <StatRow label="Squad Size" value={formatStat(baseStats.squadSize)} />
-          <StatRow label="Move Speed" value={formatStat(baseStats.moveSpeed)} />
-          <StatRow label="Armor" value={formatStat(baseStats.armor)} />
-          <StatRow label="Attack Interval" value={`${baseStats.attackInterval}s`} />
-        </div>
-      </div>
-
-      {/* Ranged stats */}
-      {baseStats.ranged && (
-        <div
-          className="p-4 rounded mb-4"
-          style={{
-            backgroundColor: UI_COLORS.panelBase,
-            border: `1px solid ${UI_COLORS.metalDark}`,
-          }}
-        >
-          <div
-            className="text-sm font-medium tracking-wide mb-3"
-            style={{ color: UI_COLORS.accentSecondary }}
-          >
-            RANGED ATTACK
-          </div>
-
-          <div className="space-y-1">
-            <StatRow label="Damage" value={formatStat(baseStats.ranged.damage)} />
-            <StatRow label="Range" value={formatStat(baseStats.ranged.range)} />
-            <StatRow label="Attack Speed" value={`${baseStats.ranged.attackSpeed}s`} />
+        {/* Ranged stats */}
+        {baseStats.ranged && (
+          <>
+            <SectionHeader>RANGED</SectionHeader>
+            <StatRow label="DAMAGE" value={formatStat(baseStats.ranged.damage)} />
+            <StatRow label="RANGE" value={formatStat(baseStats.ranged.range)} />
+            <StatRow label="RATE" value={`${baseStats.ranged.attackSpeed}/s`} />
             {baseStats.ranged.splashRadius && (
-              <StatRow label="Splash Radius" value={formatStat(baseStats.ranged.splashRadius)} />
+              <StatRow label="SPLASH" value={formatStat(baseStats.ranged.splashRadius)} />
             )}
-          </div>
-        </div>
-      )}
+          </>
+        )}
 
-      {/* Melee stats */}
-      {baseStats.melee && (
-        <div
-          className="p-4 rounded mb-4"
-          style={{
-            backgroundColor: UI_COLORS.panelBase,
-            border: `1px solid ${UI_COLORS.metalDark}`,
-          }}
-        >
-          <div
-            className="text-sm font-medium tracking-wide mb-3"
-            style={{ color: UI_COLORS.accentSecondary }}
-          >
-            MELEE ATTACK
-          </div>
+        {/* Melee stats */}
+        {baseStats.melee && (
+          <>
+            <SectionHeader>MELEE</SectionHeader>
+            <StatRow label="DAMAGE" value={formatStat(baseStats.melee.damage)} />
+            <StatRow label="RANGE" value={formatStat(baseStats.melee.range)} />
+            <StatRow label="RATE" value={`${baseStats.melee.attackSpeed}/s`} />
+          </>
+        )}
 
-          <div className="space-y-1">
-            <StatRow label="Damage" value={formatStat(baseStats.melee.damage)} />
-            <StatRow label="Range" value={formatStat(baseStats.melee.range)} />
-            <StatRow label="Attack Speed" value={`${baseStats.melee.attackSpeed}s`} />
-          </div>
-        </div>
-      )}
-
-      {/* Unit info */}
-      <div
-        className="p-4 rounded"
-        style={{
-          backgroundColor: UI_COLORS.panelBase,
-          border: `1px solid ${UI_COLORS.metalDark}`,
-        }}
-      >
-        <div
-          className="text-sm font-medium tracking-wide mb-3"
-          style={{ color: UI_COLORS.accentSecondary }}
-        >
-          INFO
-        </div>
-
-        <div className="space-y-1">
-          <StatRow label="Category" value={unit.category.toUpperCase()} />
-          <StatRow label="Tier" value={`T${unit.tier}`} />
-          <StatRow label="Role" value={unit.formationRole.toUpperCase()} />
-        </div>
+        {/* Classification */}
+        <SectionHeader>CLASS</SectionHeader>
+        <StatRow label="TYPE" value={unit.category.toUpperCase()} />
+        <StatRow label="TIER" value={`T${unit.tier}`} />
+        <StatRow label="ROLE" value={unit.formationRole.toUpperCase()} />
       </div>
-
-      {/* Abilities section */}
-      {unit.innateAbilities && unit.innateAbilities.length > 0 && (
-        <div
-          className="p-4 rounded mt-4"
-          style={{
-            backgroundColor: UI_COLORS.panelBase,
-            border: `1px solid ${UI_COLORS.metalDark}`,
-          }}
-        >
-          <div
-            className="text-sm font-medium tracking-wide mb-3"
-            style={{ color: UI_COLORS.accentTertiary }}
-          >
-            ABILITIES
-          </div>
-
-          <div className="space-y-1">
-            {unit.innateAbilities.map((ability) => (
-              <div key={ability} style={{ color: UI_COLORS.textPrimary }}>
-                {ability}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* No abilities state */}
-      {(!unit.innateAbilities || unit.innateAbilities.length === 0) && (
-        <div
-          className="p-4 rounded mt-4"
-          style={{
-            backgroundColor: UI_COLORS.panelBase,
-            border: `1px solid ${UI_COLORS.metalDark}`,
-          }}
-        >
-          <div
-            className="text-sm font-medium tracking-wide mb-3"
-            style={{ color: UI_COLORS.accentTertiary }}
-          >
-            ABILITIES
-          </div>
-
-          <div className="uppercase tracking-wide" style={{ color: UI_COLORS.textMuted }}>
-            No innate abilities
-          </div>
-        </div>
-      )}
     </div>
   );
 }

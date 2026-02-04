@@ -62,9 +62,9 @@ export function UpgradeListPanel({
     <div className="flex flex-col h-full">
       {/* Header */}
       <div
-        className="text-sm font-bold tracking-widest mb-4 pb-2"
+        className="text-sm font-medium tracking-widest mb-4 pb-2"
         style={{
-          color: UI_COLORS.textSecondary,
+          color: UI_COLORS.accentPrimary,
           borderBottom: `1px solid ${UI_COLORS.metalDark}`,
         }}
       >

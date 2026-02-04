@@ -3,23 +3,13 @@
  *
  * Battle control panel with VEST display, wave selector,
  * start/stop/reset buttons, and speed controls.
- * AC6-inspired industrial styling with uppercase text.
+ * AC6-inspired minimal styling.
  */
 
 import { BattleSpeed } from '../../hooks/useBattle';
-import { UI_COLORS, ARENA_COLORS, hexToRgba } from '../../core/theme/colors';
+import { UI_COLORS } from '../../core/theme/colors';
 import { formatNumber } from '../../core/utils/BigNumber';
 import { Decimal } from '../../core/utils/BigNumber';
-
-// Industrial theme styles
-const styles = {
-  text: { color: UI_COLORS.textPrimary },
-  textFaded: { color: UI_COLORS.textSecondary },
-  buttonSecondary: {
-    backgroundColor: UI_COLORS.metalDark,
-    color: UI_COLORS.textPrimary,
-  },
-};
 
 interface ControlsPanelProps {
   isRunning: boolean;
@@ -57,145 +47,158 @@ export function ControlsPanel({
   onReturnToAssembly,
 }: ControlsPanelProps) {
   const speeds: BattleSpeed[] = [0.5, 1, 2];
-
-  // Format gold using the standard number formatter for consistency
   const formattedGold = formatNumber(new Decimal(gold));
 
   return (
-    <div className="flex flex-col gap-4" style={styles.text}>
-      {/* VEST Display */}
+    <div className="flex flex-col h-full">
+      {/* Header */}
       <div
-        className="p-3 rounded-lg"
-        style={{ backgroundColor: hexToRgba(UI_COLORS.accentPrimary, 0.2) }}
+        className="text-sm font-medium tracking-widest mb-4 pb-2"
+        style={{
+          color: UI_COLORS.accentPrimary,
+          borderBottom: `1px solid ${UI_COLORS.metalDark}`,
+        }}
       >
-        <div className="flex items-center justify-between">
+        BATTLE
+      </div>
+
+      {/* VEST & Wave Info */}
+      <div className="space-y-2 mb-4">
+        <div className="flex justify-between items-center">
           <span
-            className="text-sm font-semibold uppercase tracking-widest"
-            style={styles.textFaded}
+            className="text-sm uppercase tracking-wide"
+            style={{ color: UI_COLORS.textPrimary }}
           >
             VEST
           </span>
-          <span className="text-xl font-bold font-mono" style={{ color: UI_COLORS.accentPrimary }}>
+          <span className="font-mono font-bold" style={{ color: UI_COLORS.accentPrimary }}>
             {formattedGold}
           </span>
         </div>
-      </div>
-
-      {/* Wave Display & Selector */}
-      <div
-        className="p-3 rounded-lg"
-        style={{ backgroundColor: hexToRgba(UI_COLORS.metalDark, 0.5) }}
-      >
-        <div className="flex items-center justify-between mb-2">
+        <div className="flex justify-between items-center">
           <span
-            className="text-sm font-semibold uppercase tracking-widest"
-            style={styles.textFaded}
+            className="text-sm uppercase tracking-wide"
+            style={{ color: UI_COLORS.textPrimary }}
           >
             WAVE
           </span>
-          <span className="text-lg font-bold font-mono" style={{ color: UI_COLORS.textPrimary }}>
+          <span className="font-mono font-bold" style={{ color: UI_COLORS.textPrimary }}>
             {waveNumber}
           </span>
         </div>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => onWaveChange(waveNumber - 1)}
-            disabled={waveNumber <= 1 || hasStarted}
-            className="px-3 py-1 rounded font-bold text-lg disabled:opacity-30"
-            style={styles.buttonSecondary}
-          >
-            -
-          </button>
-          <div
-            className="flex-1 text-center text-sm uppercase tracking-wide"
-            style={styles.textFaded}
-          >
-            BEST: {highestWave}
-          </div>
-          <button
-            onClick={() => onWaveChange(waveNumber + 1)}
-            disabled={hasStarted}
-            className="px-3 py-1 rounded font-bold text-lg disabled:opacity-30"
-            style={styles.buttonSecondary}
-          >
-            +
-          </button>
+        <div className="flex justify-between items-center">
+          <span className="text-sm uppercase tracking-wide" style={{ color: UI_COLORS.textMuted }}>
+            BEST
+          </span>
+          <span className="font-mono" style={{ color: UI_COLORS.textMuted }}>
+            {highestWave}
+          </span>
         </div>
       </div>
 
-      {/* Battle Controls */}
-      <div className="flex flex-col gap-2">
-        <div className="flex gap-2">
-          {!isRunning ? (
-            <button
-              onClick={onStart}
-              className="flex-1 px-4 py-2 rounded font-semibold uppercase tracking-wide hover:opacity-90"
-              style={{
-                backgroundColor: ARENA_COLORS.healthHigh,
-                color: UI_COLORS.white,
-              }}
-            >
-              {hasStarted ? 'RESUME' : 'START'}
-            </button>
-          ) : (
-            <button
-              onClick={onStop}
-              className="flex-1 px-4 py-2 rounded font-semibold uppercase tracking-wide hover:opacity-90"
-              style={{
-                backgroundColor: ARENA_COLORS.healthMedium,
-                color: UI_COLORS.black,
-              }}
-            >
-              PAUSE
-            </button>
-          )}
+      {/* Wave Selector */}
+      <div
+        className="flex items-center gap-2 mb-4 pb-4"
+        style={{ borderBottom: `1px solid ${UI_COLORS.metalDark}` }}
+      >
+        <button
+          onClick={() => onWaveChange(waveNumber - 1)}
+          disabled={waveNumber <= 1 || hasStarted}
+          className="px-3 py-1 font-bold disabled:opacity-30"
+          style={{
+            backgroundColor: UI_COLORS.metalDark,
+            color: UI_COLORS.textPrimary,
+          }}
+        >
+          -
+        </button>
+        <div
+          className="flex-1 text-center text-sm uppercase tracking-wide"
+          style={{ color: UI_COLORS.textMuted }}
+        >
+          SELECT WAVE
+        </div>
+        <button
+          onClick={() => onWaveChange(waveNumber + 1)}
+          disabled={hasStarted}
+          className="px-3 py-1 font-bold disabled:opacity-30"
+          style={{
+            backgroundColor: UI_COLORS.metalDark,
+            color: UI_COLORS.textPrimary,
+          }}
+        >
+          +
+        </button>
+      </div>
 
-          {/* Auto-Battle Toggle */}
+      {/* Battle Controls */}
+      <div className="space-y-2 mb-4">
+        {!isRunning ? (
+          <button
+            onClick={onStart}
+            className="w-full py-2 font-bold uppercase tracking-wide"
+            style={{
+              backgroundColor: UI_COLORS.accentPrimary,
+              color: UI_COLORS.black,
+            }}
+          >
+            {hasStarted ? 'RESUME' : 'START'}
+          </button>
+        ) : (
+          <button
+            onClick={onStop}
+            className="w-full py-2 font-bold uppercase tracking-wide"
+            style={{
+              backgroundColor: UI_COLORS.warningOrange,
+              color: UI_COLORS.black,
+            }}
+          >
+            PAUSE
+          </button>
+        )}
+
+        <div className="flex gap-2">
+          <button
+            onClick={onReset}
+            className="flex-1 py-2 font-medium uppercase tracking-wide"
+            style={{
+              backgroundColor: UI_COLORS.metalDark,
+              color: UI_COLORS.textPrimary,
+            }}
+          >
+            RESET
+          </button>
           <button
             onClick={onAutoBattleToggle}
-            className="px-3 py-2 rounded font-semibold uppercase tracking-wide hover:opacity-90"
-            title={autoBattle ? 'Disable Auto-Battle' : 'Enable Auto-Battle'}
+            className="flex-1 py-2 font-medium uppercase tracking-wide"
             style={{
-              backgroundColor: autoBattle ? ARENA_COLORS.healthHigh : UI_COLORS.metalDark,
+              backgroundColor: autoBattle ? UI_COLORS.accentSecondary : UI_COLORS.metalDark,
               color: autoBattle ? UI_COLORS.white : UI_COLORS.textPrimary,
-              border: autoBattle ? `2px solid ${UI_COLORS.white}` : '2px solid transparent',
             }}
           >
             AUTO
           </button>
         </div>
-
-        <button
-          onClick={onReset}
-          className="w-full px-4 py-2 rounded font-semibold uppercase tracking-wide hover:opacity-90"
-          style={styles.buttonSecondary}
-        >
-          RESET
-        </button>
       </div>
 
-      {/* Battle Speed Control */}
-      <div className="pt-4" style={{ borderTop: `1px solid ${UI_COLORS.metalDark}` }}>
-        <h4
-          className="text-sm font-semibold mb-2 uppercase tracking-widest"
-          style={styles.textFaded}
+      {/* Speed Control */}
+      <div className="mb-4 pb-4" style={{ borderBottom: `1px solid ${UI_COLORS.metalDark}` }}>
+        <div
+          className="text-sm font-medium tracking-widest mb-2"
+          style={{ color: UI_COLORS.textMuted }}
         >
           SPEED
-        </h4>
-        <div className="flex gap-2">
+        </div>
+        <div className="flex gap-1">
           {speeds.map((speed) => (
             <button
               key={speed}
               onClick={() => onSpeedChange(speed)}
-              className="flex-1 px-3 py-1.5 rounded font-semibold text-sm transition-all uppercase"
+              className="flex-1 py-1 font-mono text-sm"
               style={{
-                backgroundColor:
-                  battleSpeed === speed ? UI_COLORS.accentPrimary : UI_COLORS.metalDark,
-                color: battleSpeed === speed ? UI_COLORS.black : UI_COLORS.textPrimary,
-                border:
-                  battleSpeed === speed
-                    ? `2px solid ${UI_COLORS.accentPrimary}`
-                    : '2px solid transparent',
+                backgroundColor: battleSpeed === speed ? UI_COLORS.accentPrimary : 'transparent',
+                color: battleSpeed === speed ? UI_COLORS.black : UI_COLORS.textMuted,
+                borderLeft: battleSpeed === speed ? 'none' : `1px solid ${UI_COLORS.metalDark}`,
               }}
             >
               {speed}X
@@ -204,20 +207,23 @@ export function ControlsPanel({
         </div>
       </div>
 
+      {/* Spacer */}
+      <div className="flex-1" />
+
       {/* Return to Assembly */}
       {onReturnToAssembly && (
-        <div className="pt-4" style={{ borderTop: `1px solid ${UI_COLORS.metalDark}` }}>
+        <div>
           {sessionGoldEarned > 0 && (
             <div
               className="text-sm mb-2 text-center uppercase tracking-wide"
-              style={styles.textFaded}
+              style={{ color: UI_COLORS.textMuted }}
             >
               EARNED: <span style={{ color: UI_COLORS.accentPrimary }}>+{sessionGoldEarned}V</span>
             </div>
           )}
           <button
             onClick={onReturnToAssembly}
-            className="w-full px-4 py-3 rounded font-bold uppercase tracking-widest hover:opacity-90"
+            className="w-full py-2 font-bold uppercase tracking-widest"
             style={{
               backgroundColor: UI_COLORS.accentSecondary,
               color: UI_COLORS.white,

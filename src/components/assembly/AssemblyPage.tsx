@@ -2,7 +2,7 @@
  * Assembly Page Component
  *
  * Main menu screen for purchasing unit upgrades.
- * AC6-inspired industrial mech aesthetic with 3-column layout.
+ * AC6-inspired industrial mech aesthetic with hangar background.
  */
 
 import { UI_COLORS } from '../../core/theme/colors';
@@ -10,6 +10,7 @@ import { BattleUpgradeStates } from '../../core/battle/upgrades/types';
 import { UnitSelector } from './UnitSelector';
 import { UnitStatsPanel } from './UnitStatsPanel';
 import { UpgradeListPanel } from './UpgradeListPanel';
+import hangarBg from '../../assets/hangar.png';
 
 interface AssemblyPageProps {
   /** Current gold amount */
@@ -28,6 +29,12 @@ interface AssemblyPageProps {
   onLaunchBattle: () => void;
 }
 
+// Semi-transparent panel style - AC6 inspired
+const panelStyle = {
+  backgroundColor: 'rgba(15, 18, 22, 0.92)',
+  backdropFilter: 'blur(4px)',
+};
+
 export function AssemblyPage({
   gold,
   upgradeStates,
@@ -42,95 +49,89 @@ export function AssemblyPage({
   };
 
   return (
-    <div className="flex flex-col h-full gap-4">
-      {/* Main content - 3 column layout */}
-      <div className="flex-1 flex gap-4 min-h-0">
-        {/* Left panel - Unit selector */}
-        <div
-          className="w-48 flex-shrink-0 rounded-lg p-4 overflow-hidden"
-          style={{
-            backgroundColor: UI_COLORS.panelLight,
-            border: `1px solid ${UI_COLORS.metalDark}`,
-          }}
-        >
-          <UnitSelector selectedUnitType={selectedUnitType} onSelectUnit={onSelectUnit} />
+    <div
+      className="flex flex-col h-full relative"
+      style={{
+        backgroundImage: `url(${hangarBg})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+      }}
+    >
+      {/* Dark overlay for better text readability */}
+      <div className="absolute inset-0" style={{ backgroundColor: 'rgba(0, 0, 0, 0.4)' }} />
+
+      {/* Content layer */}
+      <div className="relative z-10 flex flex-col h-full p-4 gap-4">
+        {/* Main content - 3 column layout */}
+        <div className="flex-1 flex gap-4 min-h-0">
+          {/* Left panel - Unit selector */}
+          <div className="w-52 flex-shrink-0 p-4 overflow-hidden" style={panelStyle}>
+            <UnitSelector selectedUnitType={selectedUnitType} onSelectUnit={onSelectUnit} />
+          </div>
+
+          {/* Center panel - Unit stats */}
+          <div className="flex-1 p-4 overflow-y-auto" style={panelStyle}>
+            <UnitStatsPanel selectedUnitType={selectedUnitType} />
+          </div>
+
+          {/* Right panel - Upgrades */}
+          <div className="w-80 flex-shrink-0 p-4 overflow-hidden" style={panelStyle}>
+            <UpgradeListPanel
+              selectedUnitType={selectedUnitType}
+              upgradeStates={upgradeStates}
+              gold={gold}
+              highestWave={highestWave}
+              onPurchase={handlePurchase}
+            />
+          </div>
         </div>
 
-        {/* Center panel - Unit stats */}
+        {/* Bottom bar */}
         <div
-          className="flex-1 rounded-lg p-4 overflow-y-auto"
-          style={{
-            backgroundColor: UI_COLORS.panelLight,
-            border: `1px solid ${UI_COLORS.metalDark}`,
-          }}
+          className="h-14 flex-shrink-0 px-6 flex items-center justify-between"
+          style={panelStyle}
         >
-          <UnitStatsPanel selectedUnitType={selectedUnitType} />
-        </div>
+          {/* VEST display */}
+          <div className="flex items-center gap-2">
+            <span
+              className="text-sm font-medium tracking-widest"
+              style={{ color: UI_COLORS.textSecondary }}
+            >
+              VEST
+            </span>
+            <span
+              className="text-xl font-bold font-mono"
+              style={{ color: UI_COLORS.accentPrimary }}
+            >
+              {gold.toLocaleString()}
+            </span>
+          </div>
 
-        {/* Right panel - Upgrades */}
-        <div
-          className="w-80 flex-shrink-0 rounded-lg p-4 overflow-hidden"
-          style={{
-            backgroundColor: UI_COLORS.panelLight,
-            border: `1px solid ${UI_COLORS.metalDark}`,
-          }}
-        >
-          <UpgradeListPanel
-            selectedUnitType={selectedUnitType}
-            upgradeStates={upgradeStates}
-            gold={gold}
-            highestWave={highestWave}
-            onPurchase={handlePurchase}
-          />
-        </div>
-      </div>
+          {/* Wave display */}
+          <div className="flex items-center gap-2">
+            <span
+              className="text-sm font-medium tracking-widest"
+              style={{ color: UI_COLORS.textSecondary }}
+            >
+              HIGHEST WAVE
+            </span>
+            <span className="text-lg font-bold font-mono" style={{ color: UI_COLORS.textPrimary }}>
+              {highestWave}
+            </span>
+          </div>
 
-      {/* Bottom bar - Gold display and Sortie button */}
-      <div
-        className="h-16 flex-shrink-0 rounded-lg px-6 flex items-center justify-between"
-        style={{
-          backgroundColor: UI_COLORS.panelLight,
-          border: `1px solid ${UI_COLORS.metalDark}`,
-        }}
-      >
-        {/* VEST display */}
-        <div className="flex items-center gap-3">
-          <span
-            className="text-sm font-bold tracking-widest"
-            style={{ color: UI_COLORS.textSecondary }}
+          {/* Sortie button */}
+          <button
+            className="px-8 py-2 text-lg font-bold tracking-widest transition-all hover:brightness-110"
+            style={{
+              backgroundColor: UI_COLORS.accentPrimary,
+              color: UI_COLORS.black,
+            }}
+            onClick={onLaunchBattle}
           >
-            VEST
-          </span>
-          <span className="text-xl font-bold font-mono" style={{ color: UI_COLORS.accentPrimary }}>
-            {gold.toLocaleString()}
-          </span>
+            SORTIE
+          </button>
         </div>
-
-        {/* Wave display */}
-        <div className="flex items-center gap-3">
-          <span
-            className="text-sm font-bold tracking-widest"
-            style={{ color: UI_COLORS.textSecondary }}
-          >
-            HIGHEST WAVE
-          </span>
-          <span className="text-lg font-bold font-mono" style={{ color: UI_COLORS.textPrimary }}>
-            {highestWave}
-          </span>
-        </div>
-
-        {/* Sortie button */}
-        <button
-          className="px-8 py-3 text-lg font-bold tracking-widest rounded transition-all hover:scale-105"
-          style={{
-            backgroundColor: UI_COLORS.accentPrimary,
-            color: UI_COLORS.black,
-            boxShadow: `0 0 20px ${UI_COLORS.accentPrimary}40`,
-          }}
-          onClick={onLaunchBattle}
-        >
-          SORTIE
-        </button>
       </div>
     </div>
   );

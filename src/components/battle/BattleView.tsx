@@ -3,6 +3,7 @@
  *
  * Main container for the battle system.
  * Orchestrates canvas, overlays, and control panel.
+ * AC6-inspired styling with battleground backdrop.
  */
 
 import { useEffect, useRef, useCallback, useState } from 'react';
@@ -13,12 +14,13 @@ import { WaxSealOverlay } from './WaxSealOverlay';
 import { UnitInfoPanel } from './UnitInfoPanel';
 import { ControlsPanel } from './ControlsPanel';
 import { getUniformSelectionUnit } from '../../core/battle/SelectionManager';
-import { UI_COLORS } from '../../core/theme/colors';
 import { BattleUpgradeStates } from '../../core/battle/upgrades/types';
+import battlegroundBg from '../../assets/battleground1.png';
 
-// Industrial theme styles
-const styles = {
-  panelBg: { backgroundColor: UI_COLORS.panelLight },
+// Semi-transparent panel style - AC6 inspired
+const panelStyle = {
+  backgroundColor: 'rgba(15, 18, 22, 0.92)',
+  backdropFilter: 'blur(4px)',
 };
 
 export interface BattleViewProps {
@@ -117,60 +119,73 @@ export function BattleView({ upgradeStates: _upgradeStates, onReturnToAssembly }
   }, [onReturnToAssembly, sessionGoldEarned, state.highestWave]);
 
   return (
-    <div className="flex gap-4 h-full">
-      {/* Left side - Arena */}
-      <div
-        ref={containerRef}
-        className="flex-[2] flex flex-col items-center justify-center gap-2 min-w-0 relative"
-      >
-        <BattleCanvas
-          state={state}
-          width={arenaSize.width}
-          height={arenaSize.height}
-          onUnitMove={moveUnit}
-          onUnitsMove={moveUnits}
-          selectedUnitIds={selectedUnitIds}
-          onSelectUnit={selectUnit}
-          onSelectUnits={selectUnits}
-          resetKey={zoomResetKey}
-        />
-        {/* Victory/Defeat Overlay */}
-        <WaxSealOverlay
-          outcome={state.outcome}
-          goldEarned={state.outcome === 'player_victory' ? getWaveGoldReward() : 0}
-          waveNumber={state.waveNumber}
-          autoBattle={autoBattle}
-          onDismiss={handleOutcomeDismiss}
-        />
-      </div>
+    <div
+      className="flex h-full relative"
+      style={{
+        backgroundImage: `url(${battlegroundBg})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+      }}
+    >
+      {/* Dark overlay */}
+      <div className="absolute inset-0" style={{ backgroundColor: 'rgba(0, 0, 0, 0.3)' }} />
 
-      {/* Right side - Info Panel */}
-      <div className="w-80 flex-shrink-0 rounded-lg p-5 overflow-y-auto" style={styles.panelBg}>
-        {selectedUnit ? (
-          <UnitInfoPanel
-            unit={selectedUnit}
-            squadCount={selectedUnitIds.length}
-            onDeselect={() => selectUnits([])}
+      {/* Content layer */}
+      <div className="relative z-10 flex gap-4 h-full w-full p-4">
+        {/* Left side - Arena */}
+        <div
+          ref={containerRef}
+          className="flex-[2] flex flex-col items-center justify-center gap-2 min-w-0 relative"
+        >
+          <BattleCanvas
+            state={state}
+            width={arenaSize.width}
+            height={arenaSize.height}
+            onUnitMove={moveUnit}
+            onUnitsMove={moveUnits}
+            selectedUnitIds={selectedUnitIds}
+            onSelectUnit={selectUnit}
+            onSelectUnits={selectUnits}
+            resetKey={zoomResetKey}
           />
-        ) : (
-          <ControlsPanel
-            isRunning={state.isRunning}
-            hasStarted={state.hasStarted}
-            battleSpeed={battleSpeed}
+          {/* Victory/Defeat Overlay */}
+          <WaxSealOverlay
+            outcome={state.outcome}
+            goldEarned={state.outcome === 'player_victory' ? getWaveGoldReward() : 0}
             waveNumber={state.waveNumber}
-            highestWave={state.highestWave}
-            gold={state.gold}
             autoBattle={autoBattle}
-            sessionGoldEarned={sessionGoldEarned}
-            onStart={handleStartBattle}
-            onStop={stop}
-            onReset={handleReset}
-            onSpeedChange={setBattleSpeed}
-            onWaveChange={handleWaveChange}
-            onAutoBattleToggle={toggleAutoBattle}
-            onReturnToAssembly={onReturnToAssembly ? handleReturnToAssembly : undefined}
+            onDismiss={handleOutcomeDismiss}
           />
-        )}
+        </div>
+
+        {/* Right side - Info Panel */}
+        <div className="w-72 flex-shrink-0 p-4 overflow-y-auto" style={panelStyle}>
+          {selectedUnit ? (
+            <UnitInfoPanel
+              unit={selectedUnit}
+              squadCount={selectedUnitIds.length}
+              onDeselect={() => selectUnits([])}
+            />
+          ) : (
+            <ControlsPanel
+              isRunning={state.isRunning}
+              hasStarted={state.hasStarted}
+              battleSpeed={battleSpeed}
+              waveNumber={state.waveNumber}
+              highestWave={state.highestWave}
+              gold={state.gold}
+              autoBattle={autoBattle}
+              sessionGoldEarned={sessionGoldEarned}
+              onStart={handleStartBattle}
+              onStop={stop}
+              onReset={handleReset}
+              onSpeedChange={setBattleSpeed}
+              onWaveChange={handleWaveChange}
+              onAutoBattleToggle={toggleAutoBattle}
+              onReturnToAssembly={onReturnToAssembly ? handleReturnToAssembly : undefined}
+            />
+          )}
+        </div>
       </div>
     </div>
   );
