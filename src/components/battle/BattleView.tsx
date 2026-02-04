@@ -24,13 +24,19 @@ const panelStyle = {
 };
 
 export interface BattleViewProps {
+  /** Current VEST from assembly */
+  vest?: number;
   /** Upgrade states from assembly (for applying modifiers) */
   upgradeStates?: BattleUpgradeStates;
-  /** Callback when returning to assembly with gold earned and new highest wave */
-  onReturnToAssembly?: (goldEarned: number, highestWave: number) => void;
+  /** Callback when returning to assembly with VEST earned and new highest wave */
+  onReturnToAssembly?: (vestEarned: number, highestWave: number) => void;
 }
 
-export function BattleView({ upgradeStates: _upgradeStates, onReturnToAssembly }: BattleViewProps) {
+export function BattleView({
+  vest = 0,
+  upgradeStates: _upgradeStates,
+  onReturnToAssembly,
+}: BattleViewProps) {
   const {
     state,
     selectedUnitIds,
@@ -59,8 +65,8 @@ export function BattleView({ upgradeStates: _upgradeStates, onReturnToAssembly }
   // Reset key for triggering zoom reset
   const [zoomResetKey, setZoomResetKey] = useState(0);
 
-  // Track gold earned during this battle session
-  const [sessionGoldEarned, setSessionGoldEarned] = useState(0);
+  // Track VEST earned during this battle session
+  const [sessionVestEarned, setSessionVestEarned] = useState(0);
 
   // Auto-spawn units once arena size is stable and settings are loaded
   useEffect(() => {
@@ -97,10 +103,10 @@ export function BattleView({ upgradeStates: _upgradeStates, onReturnToAssembly }
 
   // Handle outcome dismiss - delegates to hook for outcome processing and auto-battle flow
   const handleOutcomeDismiss = useCallback(() => {
-    // Track gold earned before continuing
+    // Track VEST earned before continuing
     if (state.outcome === 'player_victory') {
-      const goldReward = getWaveGoldReward();
-      setSessionGoldEarned((prev) => prev + goldReward);
+      const vestReward = getWaveGoldReward();
+      setSessionVestEarned((prev) => prev + vestReward);
     }
 
     handleOutcomeAndContinue(() => {
@@ -114,9 +120,9 @@ export function BattleView({ upgradeStates: _upgradeStates, onReturnToAssembly }
   // Handle return to assembly
   const handleReturnToAssembly = useCallback(() => {
     if (onReturnToAssembly) {
-      onReturnToAssembly(sessionGoldEarned, state.highestWave);
+      onReturnToAssembly(sessionVestEarned, state.highestWave);
     }
-  }, [onReturnToAssembly, sessionGoldEarned, state.highestWave]);
+  }, [onReturnToAssembly, sessionVestEarned, state.highestWave]);
 
   return (
     <div
@@ -151,7 +157,7 @@ export function BattleView({ upgradeStates: _upgradeStates, onReturnToAssembly }
           {/* Victory/Defeat Overlay */}
           <WaxSealOverlay
             outcome={state.outcome}
-            goldEarned={state.outcome === 'player_victory' ? getWaveGoldReward() : 0}
+            vestEarned={state.outcome === 'player_victory' ? getWaveGoldReward() : 0}
             waveNumber={state.waveNumber}
             autoBattle={autoBattle}
             onDismiss={handleOutcomeDismiss}
@@ -173,9 +179,9 @@ export function BattleView({ upgradeStates: _upgradeStates, onReturnToAssembly }
               battleSpeed={battleSpeed}
               waveNumber={state.waveNumber}
               highestWave={state.highestWave}
-              gold={state.gold}
+              vest={vest}
               autoBattle={autoBattle}
-              sessionGoldEarned={sessionGoldEarned}
+              sessionVestEarned={sessionVestEarned}
               onStart={handleStartBattle}
               onStop={stop}
               onReset={handleReset}

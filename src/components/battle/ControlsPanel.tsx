@@ -17,9 +17,9 @@ interface ControlsPanelProps {
   battleSpeed: BattleSpeed;
   waveNumber: number;
   highestWave: number;
-  gold: number;
+  vest: number;
   autoBattle: boolean;
-  sessionGoldEarned?: number;
+  sessionVestEarned?: number;
   onStart: () => void;
   onStop: () => void;
   onReset: () => void;
@@ -35,9 +35,9 @@ export function ControlsPanel({
   battleSpeed,
   waveNumber,
   highestWave,
-  gold,
+  vest,
   autoBattle,
-  sessionGoldEarned = 0,
+  sessionVestEarned = 0,
   onStart,
   onStop,
   onReset,
@@ -47,7 +47,9 @@ export function ControlsPanel({
   onReturnToAssembly,
 }: ControlsPanelProps) {
   const speeds: BattleSpeed[] = [0.5, 1, 2];
-  const formattedGold = formatNumber(new Decimal(gold));
+  // Show current vest + session earnings for real-time update
+  const totalVest = vest + sessionVestEarned;
+  const formattedVest = formatNumber(new Decimal(totalVest));
 
   return (
     <div className="flex flex-col h-full">
@@ -72,7 +74,7 @@ export function ControlsPanel({
             VEST
           </span>
           <span className="font-mono font-bold" style={{ color: UI_COLORS.accentPrimary }}>
-            {formattedGold}
+            {formattedVest}
           </span>
         </div>
         <div className="flex justify-between items-center">
@@ -213,12 +215,12 @@ export function ControlsPanel({
       {/* Return to Assembly */}
       {onReturnToAssembly && (
         <div>
-          {sessionGoldEarned > 0 && (
+          {sessionVestEarned > 0 && (
             <div
               className="text-sm mb-2 text-center uppercase tracking-wide"
               style={{ color: UI_COLORS.textMuted }}
             >
-              EARNED: <span style={{ color: UI_COLORS.accentPrimary }}>+{sessionGoldEarned}V</span>
+              EARNED: <span style={{ color: UI_COLORS.accentPrimary }}>+{sessionVestEarned}V</span>
             </div>
           )}
           <button

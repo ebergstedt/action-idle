@@ -23,7 +23,7 @@ import { useAutoBattleCountdown } from '../../hooks/useAutoBattleCountdown';
 
 interface WaxSealOverlayProps {
   outcome: BattleOutcome;
-  goldEarned?: number;
+  vestEarned?: number;
   waveNumber?: number;
   autoBattle?: boolean;
   onDismiss?: () => void;
@@ -31,7 +31,7 @@ interface WaxSealOverlayProps {
 
 export function WaxSealOverlay({
   outcome,
-  goldEarned,
+  vestEarned,
   waveNumber,
   autoBattle,
   onDismiss,
@@ -124,7 +124,7 @@ export function WaxSealOverlay({
         </p>
 
         {/* VEST earned (victory only) */}
-        {outcome === 'player_victory' && goldEarned !== undefined && goldEarned > 0 && (
+        {outcome === 'player_victory' && vestEarned !== undefined && vestEarned > 0 && (
           <div
             className="flex items-center gap-2 px-4 py-2 rounded"
             style={{
@@ -132,7 +132,7 @@ export function WaxSealOverlay({
             }}
           >
             <span className="text-xl font-bold" style={{ color: UI_COLORS.accentPrimary }}>
-              +{goldEarned.toLocaleString()} VEST
+              +{vestEarned.toLocaleString()} VEST
             </span>
           </div>
         )}

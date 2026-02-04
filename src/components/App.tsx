@@ -39,10 +39,10 @@ function App() {
   }, [assembly]);
 
   const handleReturnToAssembly = useCallback(
-    async (goldEarned: number, newHighestWave: number) => {
-      // Award gold from battle
-      if (goldEarned > 0) {
-        assembly.earnGold(goldEarned);
+    async (vestEarned: number, newHighestWave: number) => {
+      // Award VEST from battle
+      if (vestEarned > 0) {
+        assembly.earnGold(vestEarned);
       }
       // Update highest wave if needed
       if (newHighestWave > assembly.highestWave) {
@@ -81,6 +81,7 @@ function App() {
           />
         ) : (
           <BattleView
+            vest={assembly.gold}
             upgradeStates={assembly.upgradeStates}
             onReturnToAssembly={handleReturnToAssembly}
           />
