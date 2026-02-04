@@ -58,7 +58,7 @@ function App() {
     if (assembly.loaded && !assembly.selectedUnitType) {
       assembly.selectUnit('hound');
     }
-  }, [assembly.loaded, assembly.selectedUnitType, assembly.selectUnit]);
+  }, [assembly]);
 
   return (
     <div

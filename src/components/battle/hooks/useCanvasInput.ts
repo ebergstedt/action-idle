@@ -132,7 +132,7 @@ export function useCanvasInput<T extends ISelectable = ISelectable>({
       minY: height - zoneHeight + DRAG_BOUNDS_MARGIN,
       maxY: height - DRAG_BOUNDS_MARGIN,
     };
-  }, [width, height]);
+  }, [height]);
 
   /** Get mouse position relative to canvas, accounting for zoom/pan */
   const getMousePos = useCallback(

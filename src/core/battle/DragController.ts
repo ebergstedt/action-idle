@@ -508,9 +508,37 @@ export function validateSquadMoves(
         validatedMoves.push({ unitId: m.unitId, position: m.position });
       }
     } else {
-      // Move would cause overlap, revert to initial positions (drag start)
-      for (const m of squadUnitMoves) {
-        validatedMoves.push({ unitId: m.unitId, position: m.originalPos });
+      // Move would cause overlap - find the closest valid position instead
+      // Combine other squads and obstacles into one array for overlap checking
+      const allOccupied = obstacleBounds
+        ? [...otherBoundsArray, ...obstacleBounds]
+        : otherBoundsArray;
+
+      const closestGridPos = findNonOverlappingGridPosition(
+        footprint,
+        proposedCentroid,
+        allOccupied,
+        deploymentBounds,
+        cellSize
+      );
+
+      if (closestGridPos) {
+        // Found a valid position - calculate the new centroid and apply to all units
+        const newCentroid = getFootprintPixelCenter(closestGridPos, footprint, cellSize);
+        const deltaX = newCentroid.x - proposedCentroidX;
+        const deltaY = newCentroid.y - proposedCentroidY;
+
+        for (const m of squadUnitMoves) {
+          validatedMoves.push({
+            unitId: m.unitId,
+            position: new Vector2(m.position.x + deltaX, m.position.y + deltaY),
+          });
+        }
+      } else {
+        // No valid position found at all - revert to initial positions as fallback
+        for (const m of squadUnitMoves) {
+          validatedMoves.push({ unitId: m.unitId, position: m.originalPos });
+        }
       }
     }
   }
