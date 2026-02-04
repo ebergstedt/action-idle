@@ -5,11 +5,13 @@
  * Contains left navigation panel with section selection.
  */
 
-import { ReactNode } from 'react';
+import { ReactNode, useState } from 'react';
 import { UI_COLORS } from '../../core/theme/colors';
 import { Panel3D } from '../ui/Panel3D';
 import { Button3D } from '../ui/Button3D';
 import { PanelTransition } from '../ui/PanelTransition';
+import { HangarEffects } from './HangarEffects';
+import { EffectsSettingsModal, EffectsSettings, DEFAULT_EFFECTS } from './EffectsSettingsModal';
 import hangarBg from '../../assets/hangar.png';
 
 export type HangarSection = 'garage' | 'assembly' | 'arena' | 'virtuality';
@@ -50,6 +52,9 @@ export function HangarPage({
   highestWave,
   onSortie,
 }: HangarPageProps) {
+  const [showEffectsModal, setShowEffectsModal] = useState(false);
+  const [effectsSettings, setEffectsSettings] = useState<EffectsSettings>(DEFAULT_EFFECTS);
+
   return (
     <div
       className="flex flex-col h-full relative"
@@ -62,21 +67,41 @@ export function HangarPage({
       {/* Dark overlay for better text readability */}
       <div className="absolute inset-0" style={{ backgroundColor: 'rgba(0, 0, 0, 0.4)' }} />
 
-      {/* Slow pulsing glow overlay */}
-      <div
-        className="absolute inset-0 pointer-events-none"
+      {/* Visual effects */}
+      <HangarEffects settings={effectsSettings} />
+
+      {/* Settings cog button */}
+      <button
+        onClick={() => setShowEffectsModal(true)}
+        className="absolute top-4 right-4 z-20 w-10 h-10 flex items-center justify-center rounded transition-colors"
         style={{
-          background:
-            'radial-gradient(ellipse at center, rgba(245, 166, 35, 0.08) 0%, transparent 70%)',
-          animation: 'hangarGlow 10s ease-in-out infinite',
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          color: UI_COLORS.textSecondary,
         }}
-      />
-      <style>{`
-        @keyframes hangarGlow {
-          0%, 100% { opacity: 0.3; }
-          50% { opacity: 1; }
-        }
-      `}</style>
+        onMouseEnter={(e) => {
+          e.currentTarget.style.backgroundColor = 'rgba(245, 166, 35, 0.2)';
+          e.currentTarget.style.color = UI_COLORS.accentPrimary;
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+          e.currentTarget.style.color = UI_COLORS.textSecondary;
+        }}
+        title="Visual Effects Settings"
+      >
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <circle cx="12" cy="12" r="3" />
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+        </svg>
+      </button>
 
       {/* Content layer */}
       <div className="relative z-10 flex flex-col h-full p-4 gap-4">
@@ -173,6 +198,14 @@ export function HangarPage({
           </Button3D>
         </Panel3D>
       </div>
+
+      {/* Effects settings modal */}
+      <EffectsSettingsModal
+        isOpen={showEffectsModal}
+        onClose={() => setShowEffectsModal(false)}
+        settings={effectsSettings}
+        onSettingsChange={setEffectsSettings}
+      />
     </div>
   );
 }
