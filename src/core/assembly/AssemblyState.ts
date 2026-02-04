@@ -12,7 +12,7 @@ import { BattleUpgradeStates } from '../battle/upgrades/types';
  */
 export interface AssemblyState {
   /** Currency earned from battles */
-  gold: number;
+  vest: number;
 
   /** All upgrade purchase states */
   upgradeStates: BattleUpgradeStates;
@@ -29,7 +29,7 @@ export interface AssemblyState {
  * Excludes transient UI state like selectedUnitType.
  */
 export interface SerializedAssemblyState {
-  gold: number;
+  vest: number;
   upgradeStates: BattleUpgradeStates;
   highestWave: number;
   version: number;

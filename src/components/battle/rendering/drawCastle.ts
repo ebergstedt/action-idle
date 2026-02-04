@@ -1,17 +1,17 @@
 /**
  * Castle Drawing Functions
  *
- * Renders castles and their health bars.
+ * Renders castles (command posts) and their health bars.
+ * AC6-inspired industrial mech aesthetic.
  * Castles are 4x4 grid cells in size.
- * Extracted from BattleCanvas for better organization.
  */
 
 import type { CastleRenderData } from '../../../core/battle';
 import { ARENA_COLORS, UI_COLORS, CASTLE_COLORS } from '../../../core/theme/colors';
 
 /**
- * Draw castle structure.
- * Castle size is determined by its gridFootprint and the cellSize.
+ * Draw castle structure as an industrial command post.
+ * AC6-inspired angular, geometric design.
  */
 export function drawCastle(
   ctx: CanvasRenderingContext2D,
@@ -21,7 +21,6 @@ export function drawCastle(
   const { position, color, gridFootprint } = castle;
 
   // Calculate actual pixel size from grid footprint
-  // Use the smaller dimension for a square-ish castle
   const castleWidth = gridFootprint.cols * cellSize;
   const castleHeight = gridFootprint.rows * cellSize;
   const halfWidth = castleWidth / 2;
@@ -30,37 +29,52 @@ export function drawCastle(
   ctx.save();
   ctx.translate(position.x, position.y);
 
-  // Castle base - larger filled rectangle
+  // Main structure - fills full 4x4 grid footprint
   ctx.fillStyle = color;
-  ctx.strokeStyle = UI_COLORS.black;
-  ctx.lineWidth = 3;
+  ctx.strokeStyle = UI_COLORS.metalDark;
+  ctx.lineWidth = 2;
 
-  // Draw castle as a fortified structure (pentagon shape for tower look)
+  // Draw base platform (full rectangle matching grid footprint)
+  ctx.fillRect(-halfWidth, -halfHeight, castleWidth, castleHeight);
+  ctx.strokeRect(-halfWidth, -halfHeight, castleWidth, castleHeight);
+
+  // Inner panel - darker recessed area
+  const inset = Math.min(castleWidth, castleHeight) * 0.15;
+  ctx.fillStyle = CASTLE_COLORS.door;
+  ctx.fillRect(
+    -halfWidth + inset,
+    -halfHeight + inset,
+    castleWidth - inset * 2,
+    castleHeight - inset * 2
+  );
+
+  // Central core circle
+  const coreSize = Math.min(castleWidth, castleHeight) * 0.25;
+  ctx.fillStyle = color;
   ctx.beginPath();
-  // Bottom left
-  ctx.moveTo(-halfWidth, halfHeight);
-  // Bottom right
-  ctx.lineTo(halfWidth, halfHeight);
-  // Right wall
-  ctx.lineTo(halfWidth, -halfHeight * 0.3);
-  // Right battlement
-  ctx.lineTo(halfWidth * 0.6, -halfHeight);
-  // Top
-  ctx.lineTo(0, -halfHeight * 0.6);
-  // Left battlement
-  ctx.lineTo(-halfWidth * 0.6, -halfHeight);
-  // Left wall
-  ctx.lineTo(-halfWidth, -halfHeight * 0.3);
-  ctx.closePath();
+  ctx.arc(0, 0, coreSize, 0, Math.PI * 2);
   ctx.fill();
+  ctx.strokeStyle = CASTLE_COLORS.accent;
+  ctx.lineWidth = 3;
   ctx.stroke();
 
-  // Castle door/gate
-  ctx.fillStyle = CASTLE_COLORS.door;
-  const doorWidth = castleWidth * 0.25;
-  const doorHeight = castleHeight * 0.4;
-  ctx.fillRect(-doorWidth / 2, halfHeight - doorHeight, doorWidth, doorHeight);
-  ctx.strokeRect(-doorWidth / 2, halfHeight - doorHeight, doorWidth, doorHeight);
+  // Yellow accent border around the whole structure
+  ctx.strokeStyle = CASTLE_COLORS.accent;
+  ctx.lineWidth = 2;
+  ctx.strokeRect(-halfWidth + 2, -halfHeight + 2, castleWidth - 4, castleHeight - 4);
+
+  // Corner details - small yellow squares
+  const cornerSize = Math.min(castleWidth, castleHeight) * 0.12;
+  ctx.fillStyle = CASTLE_COLORS.accent;
+
+  // Top-left corner
+  ctx.fillRect(-halfWidth, -halfHeight, cornerSize, cornerSize);
+  // Top-right corner
+  ctx.fillRect(halfWidth - cornerSize, -halfHeight, cornerSize, cornerSize);
+  // Bottom-left corner
+  ctx.fillRect(-halfWidth, halfHeight - cornerSize, cornerSize, cornerSize);
+  // Bottom-right corner
+  ctx.fillRect(halfWidth - cornerSize, halfHeight - cornerSize, cornerSize, cornerSize);
 
   ctx.restore();
 }
@@ -83,19 +97,19 @@ export function drawCastleHealthBar(
   ctx.save();
   ctx.translate(position.x, position.y);
 
-  const barWidth = castleWidth * 1.5;
-  const barHeight = 8;
-  const barY = -halfHeight - 20;
+  const barWidth = castleWidth * 1.2;
+  const barHeight = 6;
+  const barY = -halfHeight - 16;
 
   // Background
-  ctx.fillStyle = ARENA_COLORS.healthBarBg;
+  ctx.fillStyle = UI_COLORS.metalDark;
   ctx.fillRect(-barWidth / 2 - 1, barY - 1, barWidth + 2, barHeight + 2);
 
-  // Fill
+  // Fill - uniform yellow with damage indicators
   const healthPercent = health / maxHealth;
   ctx.fillStyle =
     healthPercent > 0.5
-      ? ARENA_COLORS.healthHigh
+      ? CASTLE_COLORS.accent // Yellow - healthy
       : healthPercent > 0.25
         ? ARENA_COLORS.healthMedium
         : ARENA_COLORS.healthLow;

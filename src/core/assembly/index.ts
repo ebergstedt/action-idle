@@ -11,8 +11,8 @@ export { ASSEMBLY_STATE_VERSION } from './AssemblyState';
 export {
   createInitialState,
   canAfford,
-  addGold,
-  subtractGold,
+  addVest,
+  subtractVest,
   updateHighestWave,
   selectUnitType,
   purchaseUpgrade,

@@ -16,8 +16,8 @@ interface UpgradeListPanelProps {
   selectedUnitType: string | null;
   /** Current upgrade states */
   upgradeStates: BattleUpgradeStates;
-  /** Current gold amount */
-  gold: number;
+  /** Current vest amount */
+  vest: number;
   /** Highest wave reached (for prerequisites) */
   highestWave: number;
   /** Called when an upgrade is purchased */
@@ -27,7 +27,7 @@ interface UpgradeListPanelProps {
 export function UpgradeListPanel({
   selectedUnitType,
   upgradeStates,
-  gold,
+  vest,
   highestWave,
   onPurchase,
 }: UpgradeListPanelProps) {
@@ -51,7 +51,7 @@ export function UpgradeListPanel({
 
   // Build prerequisite context
   const assemblyState: AssemblyState = {
-    gold,
+    vest,
     upgradeStates,
     selectedUnitType,
     highestWave,
@@ -89,7 +89,7 @@ export function UpgradeListPanel({
                   upgrade.id,
                   level,
                   context,
-                  gold
+                  vest
                 );
                 return (
                   <UpgradeCard
@@ -121,7 +121,7 @@ export function UpgradeListPanel({
                   upgrade.id,
                   level,
                   context,
-                  gold
+                  vest
                 );
                 return (
                   <UpgradeCard
@@ -153,7 +153,7 @@ export function UpgradeListPanel({
                   upgrade.id,
                   level,
                   context,
-                  gold
+                  vest
                 );
                 return (
                   <UpgradeCard

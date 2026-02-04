@@ -42,7 +42,7 @@ function App() {
     async (vestEarned: number, newHighestWave: number) => {
       // Award VEST from battle
       if (vestEarned > 0) {
-        assembly.earnGold(vestEarned);
+        assembly.earnVest(vestEarned);
       }
       // Update highest wave if needed
       if (newHighestWave > assembly.highestWave) {
@@ -71,7 +71,7 @@ function App() {
       <main className="flex-1 p-4 overflow-hidden">
         {currentPage === 'assembly' ? (
           <AssemblyPage
-            gold={assembly.gold}
+            vest={assembly.vest}
             upgradeStates={assembly.upgradeStates}
             selectedUnitType={assembly.selectedUnitType}
             highestWave={assembly.highestWave}
@@ -81,7 +81,7 @@ function App() {
           />
         ) : (
           <BattleView
-            vest={assembly.gold}
+            vest={assembly.vest}
             upgradeStates={assembly.upgradeStates}
             onReturnToAssembly={handleReturnToAssembly}
           />

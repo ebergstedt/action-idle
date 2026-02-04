@@ -13,8 +13,8 @@ import { UpgradeListPanel } from './UpgradeListPanel';
 import hangarBg from '../../assets/hangar.png';
 
 interface AssemblyPageProps {
-  /** Current gold amount */
-  gold: number;
+  /** Current VEST amount */
+  vest: number;
   /** Current upgrade states */
   upgradeStates: BattleUpgradeStates;
   /** Currently selected unit type */
@@ -36,7 +36,7 @@ const panelStyle = {
 };
 
 export function AssemblyPage({
-  gold,
+  vest,
   upgradeStates,
   selectedUnitType,
   highestWave,
@@ -79,7 +79,7 @@ export function AssemblyPage({
             <UpgradeListPanel
               selectedUnitType={selectedUnitType}
               upgradeStates={upgradeStates}
-              gold={gold}
+              vest={vest}
               highestWave={highestWave}
               onPurchase={handlePurchase}
             />
@@ -103,7 +103,7 @@ export function AssemblyPage({
               className="text-xl font-bold font-mono"
               style={{ color: UI_COLORS.accentPrimary }}
             >
-              {gold.toLocaleString()}
+              {vest.toLocaleString()}
             </span>
           </div>
 

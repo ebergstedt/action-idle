@@ -2,7 +2,7 @@
  * Assembly Hook
  *
  * Manages assembly state with persistence.
- * Handles loading/saving upgrade states and gold.
+ * Handles loading/saving upgrade states and VEST.
  *
  * SRP: Only responsible for assembly state and persistence.
  */
@@ -16,7 +16,7 @@ import {
   createInitialState,
   purchaseUpgrade,
   selectUnitType,
-  addGold,
+  addVest,
   updateHighestWave,
   serializeState,
   deserializeState,
@@ -45,16 +45,16 @@ export interface UseAssemblyReturn {
   selectedUnitType: string | null;
   /** Current upgrade states (convenience accessor) */
   upgradeStates: BattleUpgradeStates;
-  /** Current gold amount */
-  gold: number;
+  /** Current VEST amount */
+  vest: number;
   /** Highest wave reached */
   highestWave: number;
   /** Select a unit type for viewing upgrades */
   selectUnit: (unitType: string | null) => void;
   /** Purchase an upgrade (returns true if successful) */
   purchase: (upgradeId: string) => boolean;
-  /** Add gold from battle rewards */
-  earnGold: (amount: number) => void;
+  /** Add VEST from battle rewards */
+  earnVest: (amount: number) => void;
   /** Update highest wave reached */
   setHighestWave: (wave: number) => void;
   /** Force save (typically called before navigation) */
@@ -154,9 +154,9 @@ export function useAssembly(options: UseAssemblyOptions): UseAssemblyReturn {
     [upgradeRegistry]
   );
 
-  // Earn gold from battle
-  const earnGold = useCallback((amount: number) => {
-    setState((prev) => addGold(prev, amount));
+  // Earn VEST from battle
+  const earnVest = useCallback((amount: number) => {
+    setState((prev) => addVest(prev, amount));
   }, []);
 
   // Update highest wave
@@ -169,11 +169,11 @@ export function useAssembly(options: UseAssemblyOptions): UseAssemblyReturn {
     loaded,
     selectedUnitType: state.selectedUnitType,
     upgradeStates: state.upgradeStates,
-    gold: state.gold,
+    vest: state.vest,
     highestWave: state.highestWave,
     selectUnit,
     purchase,
-    earnGold,
+    earnVest,
     setHighestWave,
     save,
   };

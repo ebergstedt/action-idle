@@ -264,6 +264,7 @@ export const CASTLE_COLORS = {
   player: '#3A4452', // Dark steel
   enemy: '#3A4452', // Dark steel
   door: '#2A323E', // Darker metal gate
+  accent: '#FFD700', // Yellow - uniform accent for both sides
 } as const;
 
 // =============================================================================

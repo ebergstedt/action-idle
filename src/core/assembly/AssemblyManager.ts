@@ -14,7 +14,7 @@ import { AssemblyState, SerializedAssemblyState, ASSEMBLY_STATE_VERSION } from '
  */
 export function createInitialState(registry: BattleUpgradeRegistry): AssemblyState {
   return {
-    gold: 0,
+    vest: 0,
     upgradeStates: registry.createInitialStates(),
     selectedUnitType: null,
     highestWave: 1,
@@ -25,31 +25,31 @@ export function createInitialState(registry: BattleUpgradeRegistry): AssemblySta
  * Checks if the player can afford a given cost.
  */
 export function canAfford(state: AssemblyState, cost: number): boolean {
-  return state.gold >= cost;
+  return state.vest >= cost;
 }
 
 /**
- * Adds gold to the state.
+ * Adds vest to the state.
  * Returns a new state object (pure function).
  */
-export function addGold(state: AssemblyState, amount: number): AssemblyState {
+export function addVest(state: AssemblyState, amount: number): AssemblyState {
   if (amount <= 0) return state;
   return {
     ...state,
-    gold: state.gold + amount,
+    vest: state.vest + amount,
   };
 }
 
 /**
- * Subtracts gold from the state.
+ * Subtracts vest from the state.
  * Returns a new state object (pure function).
- * Does not allow negative gold.
+ * Does not allow negative vest.
  */
-export function subtractGold(state: AssemblyState, amount: number): AssemblyState {
+export function subtractVest(state: AssemblyState, amount: number): AssemblyState {
   if (amount <= 0) return state;
   return {
     ...state,
-    gold: Math.max(0, state.gold - amount),
+    vest: Math.max(0, state.vest - amount),
   };
 }
 
@@ -79,7 +79,7 @@ export function selectUnitType(state: AssemblyState, unitType: string | null): A
 
 /**
  * Purchases an upgrade if affordable.
- * Returns a new state object with updated gold and upgrade level.
+ * Returns a new state object with updated vest and upgrade level.
  * Returns the same state if the purchase cannot be made.
  */
 export function purchaseUpgrade(
@@ -93,18 +93,18 @@ export function purchaseUpgrade(
   const context = buildPrerequisiteContext(state);
 
   // Calculate cost and check if purchasable
-  const costResult = registry.calculateCost(upgradeId, currentLevel, context, state.gold);
+  const costResult = registry.calculateCost(upgradeId, currentLevel, context, state.vest);
 
   if (!costResult.canPurchase) {
     return state;
   }
 
-  // Apply the upgrade and deduct gold
+  // Apply the upgrade and deduct vest
   const newUpgradeStates = registry.applyUpgrade(state.upgradeStates, upgradeId, costResult.cost);
 
   return {
     ...state,
-    gold: state.gold - costResult.cost,
+    vest: state.vest - costResult.cost,
     upgradeStates: newUpgradeStates,
   };
 }
@@ -131,7 +131,7 @@ export function buildPrerequisiteContext(state: AssemblyState): UpgradePrerequis
  */
 export function serializeState(state: AssemblyState): SerializedAssemblyState {
   return {
-    gold: state.gold,
+    vest: state.vest,
     upgradeStates: state.upgradeStates,
     highestWave: state.highestWave,
     version: ASSEMBLY_STATE_VERSION,
@@ -158,7 +158,7 @@ export function deserializeState(
   }
 
   return {
-    gold: data.gold ?? 0,
+    vest: data.vest ?? 0,
     upgradeStates: mergedUpgradeStates,
     selectedUnitType: null,
     highestWave: data.highestWave ?? 1,
@@ -174,7 +174,7 @@ export function isValidSerializedState(data: unknown): data is SerializedAssembl
   const obj = data as Record<string, unknown>;
 
   return (
-    typeof obj.gold === 'number' &&
+    typeof obj.vest === 'number' &&
     typeof obj.upgradeStates === 'object' &&
     obj.upgradeStates !== null &&
     typeof obj.highestWave === 'number' &&

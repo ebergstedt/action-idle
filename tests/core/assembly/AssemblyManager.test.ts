@@ -9,8 +9,8 @@ import { BattleUpgradeRegistry } from '../../../src/core/battle/upgrades/BattleU
 import {
   createInitialState,
   canAfford,
-  addGold,
-  subtractGold,
+  addVest,
+  subtractVest,
   updateHighestWave,
   selectUnitType,
   purchaseUpgrade,
@@ -53,9 +53,9 @@ describe('AssemblyManager', () => {
   });
 
   describe('createInitialState', () => {
-    it('should create state with zero gold', () => {
+    it('should create state with zero vest', () => {
       const state = createInitialState(registry);
-      expect(state.gold).toBe(0);
+      expect(state.vest).toBe(0);
     });
 
     it('should create state with all upgrades at level 0', () => {
@@ -76,61 +76,61 @@ describe('AssemblyManager', () => {
   });
 
   describe('canAfford', () => {
-    it('should return true when gold >= cost', () => {
+    it('should return true when vest >= cost', () => {
       const state = createInitialState(registry);
-      state.gold = 100;
+      state.vest = 100;
       expect(canAfford(state, 100)).toBe(true);
       expect(canAfford(state, 50)).toBe(true);
     });
 
-    it('should return false when gold < cost', () => {
+    it('should return false when vest < cost', () => {
       const state = createInitialState(registry);
-      state.gold = 50;
+      state.vest = 50;
       expect(canAfford(state, 100)).toBe(false);
     });
   });
 
-  describe('addGold', () => {
-    it('should add gold to state', () => {
+  describe('addVest', () => {
+    it('should add vest to state', () => {
       const state = createInitialState(registry);
-      const newState = addGold(state, 100);
-      expect(newState.gold).toBe(100);
+      const newState = addVest(state, 100);
+      expect(newState.vest).toBe(100);
     });
 
     it('should not modify original state', () => {
       const state = createInitialState(registry);
-      addGold(state, 100);
-      expect(state.gold).toBe(0);
+      addVest(state, 100);
+      expect(state.vest).toBe(0);
     });
 
     it('should return same state for zero or negative amount', () => {
       const state = createInitialState(registry);
-      state.gold = 50;
-      expect(addGold(state, 0)).toBe(state);
-      expect(addGold(state, -10)).toBe(state);
+      state.vest = 50;
+      expect(addVest(state, 0)).toBe(state);
+      expect(addVest(state, -10)).toBe(state);
     });
   });
 
-  describe('subtractGold', () => {
-    it('should subtract gold from state', () => {
+  describe('subtractVest', () => {
+    it('should subtract vest from state', () => {
       const state = createInitialState(registry);
-      state.gold = 100;
-      const newState = subtractGold(state, 30);
-      expect(newState.gold).toBe(70);
+      state.vest = 100;
+      const newState = subtractVest(state, 30);
+      expect(newState.vest).toBe(70);
     });
 
     it('should not go below zero', () => {
       const state = createInitialState(registry);
-      state.gold = 50;
-      const newState = subtractGold(state, 100);
-      expect(newState.gold).toBe(0);
+      state.vest = 50;
+      const newState = subtractVest(state, 100);
+      expect(newState.vest).toBe(0);
     });
 
     it('should return same state for zero or negative amount', () => {
       const state = createInitialState(registry);
-      state.gold = 50;
-      expect(subtractGold(state, 0)).toBe(state);
-      expect(subtractGold(state, -10)).toBe(state);
+      state.vest = 50;
+      expect(subtractVest(state, 0)).toBe(state);
+      expect(subtractVest(state, -10)).toBe(state);
     });
   });
 
@@ -173,22 +173,22 @@ describe('AssemblyManager', () => {
   describe('purchaseUpgrade', () => {
     it('should purchase upgrade when affordable', () => {
       const state = createInitialState(registry);
-      state.gold = 200;
+      state.vest = 200;
       const newState = purchaseUpgrade(state, registry, 'test_upgrade_1');
       expect(newState.upgradeStates['test_upgrade_1'].level).toBe(1);
-      expect(newState.gold).toBe(100); // 200 - 100 baseCost
+      expect(newState.vest).toBe(100); // 200 - 100 baseCost
     });
 
-    it('should not purchase when insufficient gold', () => {
+    it('should not purchase when insufficient vest', () => {
       const state = createInitialState(registry);
-      state.gold = 50;
+      state.vest = 50;
       const newState = purchaseUpgrade(state, registry, 'test_upgrade_1');
       expect(newState).toBe(state);
     });
 
     it('should not purchase when prerequisite not met', () => {
       const state = createInitialState(registry);
-      state.gold = 500;
+      state.vest = 500;
       // test_upgrade_2 requires test_upgrade_1 at level 2
       const newState = purchaseUpgrade(state, registry, 'test_upgrade_2');
       expect(newState).toBe(state);
@@ -196,7 +196,7 @@ describe('AssemblyManager', () => {
 
     it('should purchase after prerequisite is met', () => {
       let state = createInitialState(registry);
-      state.gold = 1000;
+      state.vest = 1000;
 
       // Purchase test_upgrade_1 twice to reach level 2
       state = purchaseUpgrade(state, registry, 'test_upgrade_1');
@@ -212,13 +212,13 @@ describe('AssemblyManager', () => {
   describe('serialization', () => {
     it('should serialize state correctly', () => {
       const state = createInitialState(registry);
-      state.gold = 500;
+      state.vest = 500;
       state.highestWave = 10;
       state.selectedUnitType = 'hound'; // Should not be serialized
 
       const serialized = serializeState(state);
 
-      expect(serialized.gold).toBe(500);
+      expect(serialized.vest).toBe(500);
       expect(serialized.highestWave).toBe(10);
       expect(serialized.version).toBe(1);
       expect((serialized as Record<string, unknown>).selectedUnitType).toBeUndefined();
@@ -226,7 +226,7 @@ describe('AssemblyManager', () => {
 
     it('should deserialize state correctly', () => {
       const serialized = {
-        gold: 500,
+        vest: 500,
         upgradeStates: {
           test_upgrade_1: { upgradeId: 'test_upgrade_1', level: 3, totalSpent: 250 },
         },
@@ -236,7 +236,7 @@ describe('AssemblyManager', () => {
 
       const state = deserializeState(serialized, registry);
 
-      expect(state.gold).toBe(500);
+      expect(state.vest).toBe(500);
       expect(state.highestWave).toBe(10);
       expect(state.selectedUnitType).toBeNull(); // Default
       expect(state.upgradeStates['test_upgrade_1'].level).toBe(3);
@@ -247,7 +247,7 @@ describe('AssemblyManager', () => {
     it('should validate serialized state correctly', () => {
       expect(
         isValidSerializedState({
-          gold: 100,
+          vest: 100,
           upgradeStates: {},
           highestWave: 5,
           version: 1,
@@ -256,7 +256,7 @@ describe('AssemblyManager', () => {
 
       expect(isValidSerializedState(null)).toBe(false);
       expect(isValidSerializedState({})).toBe(false);
-      expect(isValidSerializedState({ gold: 'not a number' })).toBe(false);
+      expect(isValidSerializedState({ vest: 'not a number' })).toBe(false);
     });
   });
 });
