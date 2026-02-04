@@ -9,7 +9,6 @@
 export type {
   IEntityFactory,
   IUnitEntityFactory,
-  ICastleEntityFactory,
   IProjectileEntityFactory,
 } from './IEntityFactory';
 
@@ -17,7 +16,6 @@ export type {
 export {
   DefaultEntityFactory,
   DefaultUnitFactory,
-  DefaultCastleFactory,
   DefaultProjectileFactory,
   defaultEntityFactory,
 } from './DefaultEntityFactory';

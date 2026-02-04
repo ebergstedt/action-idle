@@ -320,16 +320,19 @@ export function useBattle(options: UseBattleOptions = {}): UseBattleReturn {
     }
 
     // Resolve any overlapping squads after spawning (best-effort algorithm)
+    // Exclude castles (stationary units) - they have fixed positions and shouldn't be moved
     const currentState = engine.getState();
-    const unitsForResolution = currentState.units.map((u) => ({
-      id: u.id,
-      type: u.type,
-      position: u.position,
-      size: u.size,
-      team: u.team,
-      squadId: u.squadId,
-      gridFootprint: u.gridFootprint,
-    }));
+    const unitsForResolution = currentState.units
+      .filter((u) => u.type !== 'castle')
+      .map((u) => ({
+        id: u.id,
+        type: u.type,
+        position: u.position,
+        size: u.size,
+        team: u.team,
+        squadId: u.squadId,
+        gridFootprint: u.gridFootprint,
+      }));
 
     // Resolve player squad overlaps
     const playerMoves = resolveSquadOverlaps(unitsForResolution, 'player', cellSize);

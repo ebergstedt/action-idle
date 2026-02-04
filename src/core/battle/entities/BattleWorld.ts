@@ -35,7 +35,6 @@ import { IEntityWorld } from './BaseEntity';
 import { IBattleWorld } from './IBattleWorld';
 import { UnitEntity } from './UnitEntity';
 import { ProjectileEntity, createProjectile } from './ProjectileEntity';
-import { CastleEntity } from './CastleEntity';
 import { ShockwaveEntity, createShockwave } from './ShockwaveEntity';
 import { DamageNumberEntity, DamageNumberData } from './DamageNumberEntity';
 import { WorldEventEmitter } from './EventEmitter';
@@ -48,7 +47,6 @@ import { DAMAGE_NUMBER_DURATION } from '../BattleConfig';
 export class BattleWorld implements IEntityWorld, IBattleWorld, IWorldEventEmitter {
   private units: UnitEntity[] = [];
   private projectiles: ProjectileEntity[] = [];
-  private castles: CastleEntity[] = [];
   private shockwaves: ShockwaveEntity[] = [];
   private damageNumbers: DamageNumberEntity[] = [];
   private nextProjectileId = 1;
@@ -67,7 +65,9 @@ export class BattleWorld implements IEntityWorld, IBattleWorld, IWorldEventEmitt
   /**
    * Add a unit to the world.
    * Emits 'entity_added' world event.
-   * Subscribes to 'killed' event to clear linked modifiers from other units.
+   * Subscribes to 'killed' event for death handling:
+   * - Mobile units: Clear linked modifiers from other units
+   * - Stationary units (castles): Spawn shockwave on death, track castle counts
    */
   addUnit(unit: UnitEntity): void {
     unit.setWorld(this);
@@ -75,10 +75,22 @@ export class BattleWorld implements IEntityWorld, IBattleWorld, IWorldEventEmitt
     this.units.push(unit);
     this.worldEvents.emitWorld({ type: 'entity_added', entity: unit });
 
-    // Subscribe to unit death to clear linked modifiers (melee engagement debuffs)
+    // Track initial castle count for stationary units (castles)
+    if (unit.isStationary) {
+      const currentCount = this.initialCastleCounts.get(unit.team) ?? 0;
+      this.initialCastleCounts.set(unit.team, currentCount + 1);
+    }
+
+    // Subscribe to unit death
     // Store listener reference for proper cleanup (prevents memory leaks)
     const killedListener: EventListener<KilledEvent> = (event: KilledEvent) => {
+      // Clear linked modifiers (melee engagement debuffs)
       this.clearModifiersLinkedToUnit(event.entity.id);
+
+      // Stationary units (castles) spawn shockwave on death
+      if (unit.isStationary) {
+        this.spawnShockwave(event.entity.position.clone(), unit.team);
+      }
     };
     this.entityListeners.set(unit.id, killedListener);
     unit.on('killed', killedListener);
@@ -93,30 +105,6 @@ export class BattleWorld implements IEntityWorld, IBattleWorld, IWorldEventEmitt
     projectile.init();
     this.projectiles.push(projectile);
     this.worldEvents.emitWorld({ type: 'entity_added', entity: projectile });
-  }
-
-  /**
-   * Add a castle to the world.
-   * Emits 'entity_added' world event.
-   * Subscribes to 'killed' event to spawn shockwave on death.
-   */
-  addCastle(castle: CastleEntity): void {
-    castle.setWorld(this);
-    castle.init();
-    this.castles.push(castle);
-    this.worldEvents.emitWorld({ type: 'entity_added', entity: castle });
-
-    // Track initial castle count per team
-    const currentCount = this.initialCastleCounts.get(castle.team) ?? 0;
-    this.initialCastleCounts.set(castle.team, currentCount + 1);
-
-    // Subscribe to castle death to spawn shockwave
-    // Store listener reference for proper cleanup (prevents memory leaks)
-    const killedListener: EventListener<KilledEvent> = (event: KilledEvent) => {
-      this.spawnShockwave(event.entity.position.clone(), castle.team);
-    };
-    this.entityListeners.set(castle.id, killedListener);
-    castle.on('killed', killedListener);
   }
 
   /**
@@ -193,7 +181,7 @@ export class BattleWorld implements IEntityWorld, IBattleWorld, IWorldEventEmitt
    * Unsubscribe from an entity's events and clean up listener reference.
    * Prevents memory leaks from retained event listeners.
    */
-  private cleanupEntityListener(entity: UnitEntity | CastleEntity): void {
+  private cleanupEntityListener(entity: UnitEntity): void {
     const listener = this.entityListeners.get(entity.id);
     if (listener) {
       entity.off('killed', listener);
@@ -221,6 +209,7 @@ export class BattleWorld implements IEntityWorld, IBattleWorld, IWorldEventEmitt
    * Emits 'entity_removed' for each entity.
    */
   clear(): void {
+    // Clear all units (including stationary/castles)
     for (const unit of this.units) {
       this.cleanupEntityListener(unit);
       this.worldEvents.emitWorld({ type: 'entity_removed', entity: unit });
@@ -231,12 +220,6 @@ export class BattleWorld implements IEntityWorld, IBattleWorld, IWorldEventEmitt
       this.worldEvents.emitWorld({ type: 'entity_removed', entity: proj });
       proj.destroy();
       proj.setWorld(null);
-    }
-    for (const castle of this.castles) {
-      this.cleanupEntityListener(castle);
-      this.worldEvents.emitWorld({ type: 'entity_removed', entity: castle });
-      castle.destroy();
-      castle.setWorld(null);
     }
     for (const shockwave of this.shockwaves) {
       this.worldEvents.emitWorld({ type: 'entity_removed', entity: shockwave });
@@ -249,7 +232,6 @@ export class BattleWorld implements IEntityWorld, IBattleWorld, IWorldEventEmitt
     }
     this.units = [];
     this.projectiles = [];
-    this.castles = [];
     this.shockwaves = [];
     this.damageNumbers = [];
     this.nextProjectileId = 1;
@@ -268,6 +250,7 @@ export class BattleWorld implements IEntityWorld, IBattleWorld, IWorldEventEmitt
    */
   update(delta: number): void {
     // Phase 1: Update all units (targeting, combat, movement)
+    // Note: stationary units (castles) are included but their update() is mostly no-op
     for (const unit of this.units) {
       unit.update(delta);
     }
@@ -280,22 +263,17 @@ export class BattleWorld implements IEntityWorld, IBattleWorld, IWorldEventEmitt
       proj.update(delta);
     }
 
-    // Phase 4: Update castles (just checks for death)
-    for (const castle of this.castles) {
-      castle.update(delta);
-    }
-
-    // Phase 5: Update shockwaves (expansion and debuff application)
+    // Phase 4: Update shockwaves (expansion and debuff application)
     for (const shockwave of this.shockwaves) {
       shockwave.update(delta);
     }
 
-    // Phase 6: Update damage numbers (float and fade)
+    // Phase 5: Update damage numbers (float and fade)
     for (const damageNumber of this.damageNumbers) {
       damageNumber.update(delta);
     }
 
-    // Phase 7: Remove destroyed entities
+    // Phase 6: Remove destroyed entities
     this.removeDestroyedEntities();
   }
 
@@ -332,7 +310,7 @@ export class BattleWorld implements IEntityWorld, IBattleWorld, IWorldEventEmitt
   }
 
   private removeDestroyedEntities(): void {
-    // Remove destroyed units
+    // Remove destroyed units (including stationary/castles)
     this.units = this.units.filter((unit) => {
       if (unit.isDestroyed()) {
         // Clean up our listener before destroying entity
@@ -353,19 +331,6 @@ export class BattleWorld implements IEntityWorld, IBattleWorld, IWorldEventEmitt
         proj.destroy();
         this.worldEvents.emitWorld({ type: 'entity_removed', entity: proj });
         proj.setWorld(null);
-        return false;
-      }
-      return true;
-    });
-
-    // Remove destroyed castles
-    this.castles = this.castles.filter((castle) => {
-      if (castle.isDestroyed()) {
-        // Clean up our listener before destroying entity
-        this.cleanupEntityListener(castle);
-        castle.destroy();
-        this.worldEvents.emitWorld({ type: 'entity_removed', entity: castle });
-        castle.setWorld(null);
         return false;
       }
       return true;
@@ -396,7 +361,8 @@ export class BattleWorld implements IEntityWorld, IBattleWorld, IWorldEventEmitt
   // === IEntityWorld Implementation ===
 
   getEntities(): readonly IEntity[] {
-    return [...this.units, ...this.projectiles, ...this.castles, ...this.shockwaves];
+    // Note: castles are now part of units array (stationary units)
+    return [...this.units, ...this.projectiles, ...this.shockwaves];
   }
 
   query<T extends IEntity>(predicate: (entity: IEntity) => entity is T): T[] {
@@ -433,18 +399,40 @@ export class BattleWorld implements IEntityWorld, IBattleWorld, IWorldEventEmitt
     );
   }
 
-  // === Castle Queries ===
+  // === Castle Queries (Stationary Units) ===
 
-  getCastles(): readonly CastleEntity[] {
-    return this.castles;
+  /**
+   * Get all stationary units (castles).
+   * Returns units with moveSpeed === 0.
+   * @deprecated Use getStationaryUnits() for clarity
+   */
+  getCastles(): readonly UnitEntity[] {
+    return this.units.filter((u) => u.isStationary);
   }
 
-  getCastlesByTeam(team: UnitTeam): CastleEntity[] {
-    return this.castles.filter((c) => c.team === team && !c.isDestroyed());
+  /**
+   * Get all stationary units (castles).
+   * Clearer name than getCastles().
+   */
+  getStationaryUnits(): readonly UnitEntity[] {
+    return this.units.filter((u) => u.isStationary);
   }
 
-  getEnemyCastlesOf(unit: UnitEntity): CastleEntity[] {
-    return this.castles.filter((c) => c.team !== unit.team && !c.isDestroyed() && c.health > 0);
+  /**
+   * Get all mobile (non-stationary) units.
+   */
+  getMobileUnits(): readonly UnitEntity[] {
+    return this.units.filter((u) => !u.isStationary);
+  }
+
+  getCastlesByTeam(team: UnitTeam): UnitEntity[] {
+    return this.units.filter((u) => u.isStationary && u.team === team && !u.isDestroyed());
+  }
+
+  getEnemyCastlesOf(unit: UnitEntity): UnitEntity[] {
+    return this.units.filter(
+      (u) => u.isStationary && u.team !== unit.team && !u.isDestroyed() && u.health > 0
+    );
   }
 
   /**
@@ -455,16 +443,20 @@ export class BattleWorld implements IEntityWorld, IBattleWorld, IWorldEventEmitt
     return this.initialCastleCounts.get(team) ?? 0;
   }
 
-  // === Damageable Queries (Units + Castles) ===
+  // === Damageable Queries ===
 
+  /**
+   * Get all damageable entities (all units, including stationary).
+   */
   getDamageables(): readonly IDamageable[] {
-    return [...this.units, ...this.castles].filter((d) => !d.isDestroyed() && d.health > 0);
+    return this.units.filter((u) => !u.isDestroyed() && u.health > 0);
   }
 
+  /**
+   * Get enemy damageable entities for a given entity.
+   */
   getEnemyDamageablesOf(entity: IDamageable): IDamageable[] {
-    return [...this.units, ...this.castles].filter(
-      (d) => d.team !== entity.team && !d.isDestroyed() && d.health > 0
-    );
+    return this.units.filter((u) => u.team !== entity.team && !u.isDestroyed() && u.health > 0);
   }
 
   isPathBlocked(from: Vector2, to: Vector2, excludeUnit: UnitEntity): boolean {
@@ -545,12 +537,32 @@ export class BattleWorld implements IEntityWorld, IBattleWorld, IWorldEventEmitt
     return this.damageNumbers;
   }
 
+  /**
+   * Get all player units (including stationary/castles).
+   */
   getPlayerUnits(): UnitEntity[] {
     return this.getUnitsByTeam('player');
   }
 
+  /**
+   * Get all enemy units (including stationary/castles).
+   */
   getEnemyUnits(): UnitEntity[] {
     return this.getUnitsByTeam('enemy');
+  }
+
+  /**
+   * Get mobile player units (excluding castles).
+   */
+  getMobilePlayerUnits(): UnitEntity[] {
+    return this.units.filter((u) => u.team === 'player' && !u.isStationary && !u.isDestroyed());
+  }
+
+  /**
+   * Get mobile enemy units (excluding castles).
+   */
+  getMobileEnemyUnits(): UnitEntity[] {
+    return this.units.filter((u) => u.team === 'enemy' && !u.isStationary && !u.isDestroyed());
   }
 
   /**
@@ -567,13 +579,18 @@ export class BattleWorld implements IEntityWorld, IBattleWorld, IWorldEventEmitt
    * Check if battle is over.
    * Win condition: A side loses when ALL their units are destroyed (castles don't prevent loss).
    */
+  /**
+   * Check if battle is over.
+   * Win condition: A side loses when ALL their mobile units are destroyed.
+   * Stationary units (castles) don't count for victory - they're objectives, not win conditions.
+   */
   isBattleOver(): { over: boolean; winner: UnitTeam | null } {
-    const playerUnitsAlive = this.getPlayerUnits().length > 0;
-    const enemyUnitsAlive = this.getEnemyUnits().length > 0;
+    const playerMobileUnitsAlive = this.getMobilePlayerUnits().length > 0;
+    const enemyMobileUnitsAlive = this.getMobileEnemyUnits().length > 0;
 
-    // A side loses when they have no units remaining (castles don't matter)
-    const playerLost = !playerUnitsAlive;
-    const enemyLost = !enemyUnitsAlive;
+    // A side loses when they have no mobile units remaining (castles don't matter)
+    const playerLost = !playerMobileUnitsAlive;
+    const enemyLost = !enemyMobileUnitsAlive;
 
     if (playerLost && enemyLost) {
       return { over: true, winner: null }; // Draw

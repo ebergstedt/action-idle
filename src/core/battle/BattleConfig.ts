@@ -34,44 +34,7 @@ export const BASE_ALLY_AVOIDANCE_FORCE = 40;
 export const BASE_SEPARATION_FORCE = 60;
 
 // =============================================================================
-// ARENA CONFIGURATION
-// =============================================================================
-
-/**
- * Minimum arena width in pixels.
- */
-export const MIN_ARENA_WIDTH = 600;
-
-/**
- * Maximum arena width in pixels.
- * Keeps the arena at a reasonable size similar to Mechabellum.
- */
-export const MAX_ARENA_WIDTH = 800;
-
-/**
- * Minimum arena height in pixels.
- */
-export const MIN_ARENA_HEIGHT = 400;
-
-/**
- * Arena height as a fraction of width (aspect ratio).
- * 0.861 = 62/72 for square grid cells (Mechabellum-style).
- */
-export const ARENA_ASPECT_RATIO = 0.861;
-
-/**
- * Default margin from arena edges for entity bounds.
- */
-export const DEFAULT_ARENA_MARGIN = 10;
-
-/**
- * Percentage of arena height used for each deployment zone.
- * 0.484 = 30/62 rows per deployment zone (Mechabellum-style).
- */
-export const ZONE_HEIGHT_PERCENT = 0.484;
-
-// =============================================================================
-// GRID CONFIGURATION
+// GRID CONFIGURATION (must be defined before ARENA_ASPECT_RATIO)
 // =============================================================================
 
 /**
@@ -98,6 +61,43 @@ export const GRID_NO_MANS_LAND_ROWS = 2;
  * Rows for each deployment zone (Mechabellum: 30).
  */
 export const GRID_DEPLOYMENT_ROWS = 30;
+
+// =============================================================================
+// ARENA CONFIGURATION
+// =============================================================================
+
+/**
+ * Minimum arena width in pixels.
+ */
+export const MIN_ARENA_WIDTH = 600;
+
+/**
+ * Maximum arena width in pixels.
+ * Keeps the arena at a reasonable size similar to Mechabellum.
+ */
+export const MAX_ARENA_WIDTH = 800;
+
+/**
+ * Minimum arena height in pixels.
+ */
+export const MIN_ARENA_HEIGHT = 400;
+
+/**
+ * Arena height as a fraction of width (aspect ratio).
+ * Calculated from grid dimensions to ensure perfect cell alignment.
+ */
+export const ARENA_ASPECT_RATIO = GRID_TOTAL_ROWS / GRID_TOTAL_COLS; // 62/72 = 0.8611...
+
+/**
+ * Default margin from arena edges for entity bounds.
+ */
+export const DEFAULT_ARENA_MARGIN = 10;
+
+/**
+ * Percentage of arena height used for each deployment zone.
+ * 0.484 = 30/62 rows per deployment zone (Mechabellum-style).
+ */
+export const ZONE_HEIGHT_PERCENT = 0.484;
 
 /**
  * Columns available for deployment (72 - 6 - 6 = 60).

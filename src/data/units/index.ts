@@ -12,9 +12,11 @@ import crawlerData from './crawler.json';
 import arclightData from './arclight.json';
 import marksmanData from './marksman.json';
 import voidEyeData from './void_eye.json';
+import castleData from './castle.json';
 
 /**
  * All unit definitions loaded from JSON.
+ * Includes both mobile units and stationary units (castles).
  */
 export const unitDefinitions: UnitDefinition[] = [
   houndData as UnitDefinition,
@@ -23,6 +25,7 @@ export const unitDefinitions: UnitDefinition[] = [
   arclightData as UnitDefinition,
   marksmanData as UnitDefinition,
   voidEyeData as UnitDefinition,
+  castleData as UnitDefinition,
 ];
 
 /**

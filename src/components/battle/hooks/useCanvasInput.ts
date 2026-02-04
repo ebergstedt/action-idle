@@ -367,15 +367,24 @@ export function useCanvasInput<T extends ISelectable = ISelectable>({
         }
 
         // Start drag for player units - drag entire squad
-        if (clickedUnit.team === 'player') {
+        // Castles (stationary units) cannot be repositioned
+        if (clickedUnit.team === 'player' && clickedUnit.type !== 'castle') {
           // Filter to only player units (game logic delegated to core)
-          const unitsToMove = isAlreadySelected
-            ? filterSelectionByTeam(selectedUnitIds, units, 'player')
-            : squadSelection.selectedIds;
+          // Also exclude castles from drag
+          const unitsToMove = (
+            isAlreadySelected
+              ? filterSelectionByTeam(selectedUnitIds, units, 'player')
+              : squadSelection.selectedIds
+          ).filter((id) => {
+            const u = units.find((unit) => unit.id === id);
+            return u && u.type !== 'castle';
+          });
 
-          const session = startDrag(clickedUnit.id, pos, unitsToMove, units);
-          dragSessionRef.current = session;
-          setIsDragging(true);
+          if (unitsToMove.length > 0) {
+            const session = startDrag(clickedUnit.id, pos, unitsToMove, units);
+            dragSessionRef.current = session;
+            setIsDragging(true);
+          }
         }
       } else {
         // Clicked empty space - start box selection

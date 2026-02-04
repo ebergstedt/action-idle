@@ -193,6 +193,7 @@ import { createSeededRandom, shuffle } from '../utils/Random';
 import { UnitDefinition, FormationRole } from './units/types';
 import { IUnitRegistry } from './units/IUnitRegistry';
 import type { GridFootprint, GridBounds } from './grid/GridTypes';
+import { calculateCellSize } from './grid/GridManager';
 import { getScaledUnitSize } from './types';
 import {
   FORMATION_SPAWN_MARGIN,
@@ -218,14 +219,13 @@ import {
   // Castle obstacle constants
   CASTLE_GRID_COLS,
   CASTLE_GRID_ROWS,
-  BASE_CASTLE_HORIZONTAL_MARGIN,
-  BASE_OBSTACLE_PADDING,
-  ZONE_HEIGHT_PERCENT,
-  ZONE_MIDWAY_DIVISOR,
   // Grid constants for deployment zone
   GRID_FLANK_COLS,
   GRID_DEPLOYMENT_COLS,
   GRID_TOTAL_ROWS,
+  GRID_TOTAL_COLS,
+  GRID_DEPLOYMENT_ROWS,
+  GRID_NO_MANS_LAND_ROWS,
 } from './BattleConfig';
 
 // =============================================================================
@@ -603,8 +603,8 @@ function findNonOverlappingPosition(
  * Generate obstacle bounds for all 4 castles (2 per team).
  *
  * Castle positions match BattleEngine.spawnCastles():
- * - Player castles: bottom zone, left and right flanks
- * - Enemy castles: top zone, left and right flanks
+ * - Player castles: bottom zone, left and right (equal distance from edges)
+ * - Enemy castles: top zone, left and right (equal distance from edges)
  *
  * Each castle bound includes padding to keep units at a safe distance.
  * Castles are 4x4 grid cells in size.
@@ -614,52 +614,59 @@ function findNonOverlappingPosition(
  */
 function generateCastleObstacles(bounds: ArenaBounds): SquadBounds[] {
   const { width, height } = bounds;
-  const zoneHeight = height * ZONE_HEIGHT_PERCENT;
-  const cellSize = height / GRID_TOTAL_ROWS;
+  const cellSize = calculateCellSize(width, height);
 
-  // Castle positions (same calculation as BattleEngine.spawnCastles)
-  const castleMargin = scaleValue(BASE_CASTLE_HORIZONTAL_MARGIN, height);
-  const leftX = castleMargin;
-  const rightX = width - castleMargin;
+  // Castle grid dimensions (4x4 footprint)
+  const castleSize = CASTLE_GRID_COLS; // 4
 
-  // Castle Y positions (centered in each zone)
-  const playerY = height - zoneHeight / ZONE_MIDWAY_DIVISOR;
-  const enemyY = zoneHeight / ZONE_MIDWAY_DIVISOR;
+  // Horizontal positions: place castles at equal distance from arena edges
+  // Use actual arena width for symmetric positioning
+  const edgeOffset = (GRID_FLANK_COLS + castleSize / 2) * cellSize;
+  const leftX = edgeOffset;
+  const rightX = width - edgeOffset;
 
-  // Castle size from grid footprint (4x4 cells) plus padding
+  // Vertical positions: center castles in deployment zones
+  const enemyRow = Math.floor((GRID_DEPLOYMENT_ROWS - castleSize) / 2); // row 13
+  const playerRow =
+    GRID_DEPLOYMENT_ROWS +
+    GRID_NO_MANS_LAND_ROWS +
+    Math.floor((GRID_DEPLOYMENT_ROWS - castleSize) / 2); // row 45
+
+  // Convert grid positions to pixel centers
+  const enemyY = (enemyRow + castleSize / 2) * cellSize;
+  const playerY = (playerRow + castleSize / 2) * cellSize;
+
+  // Castle size from grid footprint (4x4 cells) - no padding, just like regular units
   const castleWidth = CASTLE_GRID_COLS * cellSize;
   const castleHeight = CASTLE_GRID_ROWS * cellSize;
-  const padding = scaleValue(BASE_OBSTACLE_PADDING, height);
-  const obstacleWidth = castleWidth + padding * 2;
-  const obstacleHeight = castleHeight + padding * 2;
 
   // Generate bounds for all 4 castles
   const obstacles: SquadBounds[] = [
     // Player castles (bottom zone)
     {
-      x: leftX - obstacleWidth / 2,
-      y: playerY - obstacleHeight / 2,
-      width: obstacleWidth,
-      height: obstacleHeight,
+      x: leftX - castleWidth / 2,
+      y: playerY - castleHeight / 2,
+      width: castleWidth,
+      height: castleHeight,
     },
     {
-      x: rightX - obstacleWidth / 2,
-      y: playerY - obstacleHeight / 2,
-      width: obstacleWidth,
-      height: obstacleHeight,
+      x: rightX - castleWidth / 2,
+      y: playerY - castleHeight / 2,
+      width: castleWidth,
+      height: castleHeight,
     },
     // Enemy castles (top zone)
     {
-      x: leftX - obstacleWidth / 2,
-      y: enemyY - obstacleHeight / 2,
-      width: obstacleWidth,
-      height: obstacleHeight,
+      x: leftX - castleWidth / 2,
+      y: enemyY - castleHeight / 2,
+      width: castleWidth,
+      height: castleHeight,
     },
     {
-      x: rightX - obstacleWidth / 2,
-      y: enemyY - obstacleHeight / 2,
-      width: obstacleWidth,
-      height: obstacleHeight,
+      x: rightX - castleWidth / 2,
+      y: enemyY - castleHeight / 2,
+      width: castleWidth,
+      height: castleHeight,
     },
   ];
 
@@ -673,61 +680,51 @@ function generateCastleObstacles(bounds: ArenaBounds): SquadBounds[] {
  * - Formation spawning (via generateCastleObstacles which converts to SquadBounds)
  * - Drag validation in React layer (directly as GridBounds)
  *
- * @param arenaWidth - Arena width in pixels
+ * @param arenaWidth - Arena width in pixels (unused, kept for API compatibility)
  * @param arenaHeight - Arena height in pixels
  * @param cellSize - Grid cell size in pixels
  * @returns Array of GridBounds representing castle obstacle areas (in grid cells)
  */
 export function generateCastleObstacleGridBounds(
-  arenaWidth: number,
-  arenaHeight: number,
+  _arenaWidth: number,
+  _arenaHeight: number,
   cellSize: number
 ): GridBounds[] {
   if (cellSize <= 0) return [];
 
-  const zoneHeight = arenaHeight * ZONE_HEIGHT_PERCENT;
+  // Castle grid dimensions (4x4 footprint)
+  const castleSize = CASTLE_GRID_COLS; // 4
 
-  // Castle positions (same calculation as BattleEngine.spawnCastles)
-  const castleMargin = scaleValue(BASE_CASTLE_HORIZONTAL_MARGIN, arenaHeight);
-  const leftX = castleMargin;
-  const rightX = arenaWidth - castleMargin;
+  // Horizontal positions: place castles at equal distance from map edges
+  const leftCol = GRID_FLANK_COLS; // col 6
+  const rightCol = GRID_TOTAL_COLS - GRID_FLANK_COLS - castleSize; // col 62
 
-  // Castle Y positions (centered in each zone)
-  const playerY = arenaHeight - zoneHeight / ZONE_MIDWAY_DIVISOR;
-  const enemyY = zoneHeight / ZONE_MIDWAY_DIVISOR;
+  // Vertical positions: center castles in deployment zones
+  const enemyRow = Math.floor((GRID_DEPLOYMENT_ROWS - castleSize) / 2); // row 13
+  const playerRow =
+    GRID_DEPLOYMENT_ROWS +
+    GRID_NO_MANS_LAND_ROWS +
+    Math.floor((GRID_DEPLOYMENT_ROWS - castleSize) / 2); // row 45
 
-  // Castle size from grid footprint (4x4 cells) plus padding
-  const castleWidthPx = CASTLE_GRID_COLS * cellSize;
-  const castleHeightPx = CASTLE_GRID_ROWS * cellSize;
-  const padding = scaleValue(BASE_OBSTACLE_PADDING, arenaHeight);
-
-  // Calculate grid dimensions including padding
-  const castleGridCols = CASTLE_GRID_COLS + Math.ceil((padding * 2) / cellSize);
-  const castleGridRows = CASTLE_GRID_ROWS + Math.ceil((padding * 2) / cellSize);
-
-  // Helper to convert pixel center to grid bounds
-  const pixelToGridBounds = (centerX: number, centerY: number): GridBounds => {
-    const obstacleWidthPx = castleWidthPx + padding * 2;
-    const obstacleHeightPx = castleHeightPx + padding * 2;
-    const topLeftX = centerX - obstacleWidthPx / 2;
-    const topLeftY = centerY - obstacleHeightPx / 2;
+  // Helper to create grid bounds from castle grid position - no padding, just like regular units
+  const createGridBounds = (col: number, row: number): GridBounds => {
     return {
-      col: Math.floor(topLeftX / cellSize),
-      row: Math.floor(topLeftY / cellSize),
-      cols: castleGridCols,
-      rows: castleGridRows,
+      col: col,
+      row: row,
+      cols: CASTLE_GRID_COLS,
+      rows: CASTLE_GRID_ROWS,
     };
   };
 
   const obstacles: GridBounds[] = [];
 
   // Player castles (bottom zone)
-  obstacles.push(pixelToGridBounds(leftX, playerY));
-  obstacles.push(pixelToGridBounds(rightX, playerY));
+  obstacles.push(createGridBounds(leftCol, playerRow));
+  obstacles.push(createGridBounds(rightCol, playerRow));
 
   // Enemy castles (top zone)
-  obstacles.push(pixelToGridBounds(leftX, enemyY));
-  obstacles.push(pixelToGridBounds(rightX, enemyY));
+  obstacles.push(createGridBounds(leftCol, enemyRow));
+  obstacles.push(createGridBounds(rightCol, enemyRow));
 
   return obstacles;
 }
@@ -1325,13 +1322,17 @@ export function getDefaultEnemyComposition(): UnitType[] {
 
 /**
  * Gets all unit definitions available for a given wave number.
- * Filters by wavePermit property.
+ * Filters by wavePermit property and excludes stationary units (castles).
  */
 export function getAvailableUnitsForWave(
   waveNumber: number,
   registry: IUnitRegistry
 ): UnitDefinition[] {
-  return registry.getAll().filter((def) => def.wavePermit <= waveNumber);
+  return registry.getAll().filter((def) => {
+    // Exclude stationary units (castles) - they're spawned separately
+    if (def.baseStats.moveSpeed === 0) return false;
+    return def.wavePermit <= waveNumber;
+  });
 }
 
 /**

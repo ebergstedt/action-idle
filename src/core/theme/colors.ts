@@ -200,7 +200,14 @@ export function getTeamName(team: Team): string {
 // UNIT TYPE COLORS - Mech Class Variations
 // =============================================================================
 
-export type UnitType = 'hound' | 'fang' | 'crawler' | 'arclight' | 'marksman' | 'void_eye';
+export type UnitType =
+  | 'hound'
+  | 'fang'
+  | 'crawler'
+  | 'arclight'
+  | 'marksman'
+  | 'void_eye'
+  | 'castle';
 
 export interface UnitTypeColors {
   player: string;
@@ -244,6 +251,11 @@ export const UNIT_TYPE_COLORS: Record<UnitType, UnitTypeColors> = {
   void_eye: {
     player: '#00E8D0', // Bright cyan
     enemy: '#FF8844', // Amber-orange
+  },
+  // Castle - stationary structure, uniform steel color
+  castle: {
+    player: '#3A4452', // Dark steel
+    enemy: '#3A4452', // Dark steel
   },
 } as const;
 

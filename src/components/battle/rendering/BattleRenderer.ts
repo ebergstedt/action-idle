@@ -110,33 +110,37 @@ export function renderBattle(context: RenderContext): void {
     drawProjectile(ctx, proj, height);
   }
 
+  // Filter out castle-type units (they're rendered separately via state.castles)
+  const mobileUnits = state.units.filter((u) => u.type !== 'castle');
+
   // 7. Aiming lasers (drawn before units so they appear underneath)
-  for (const unit of state.units) {
+  for (const unit of mobileUnits) {
     if (unit.aimingAt) {
       drawAimingLaser(ctx, unit);
     }
   }
 
   // 8. Unit shadows (drawn first so they're behind all units)
-  for (const unit of state.units) {
+  for (const unit of mobileUnits) {
     drawUnitShadow(ctx, unit);
   }
 
   // 8. Unit bodies
-  for (const unit of state.units) {
+  for (const unit of mobileUnits) {
     const isSelected = selectedUnitIds.includes(unit.id);
     const isBeingDragged = isDragging && draggedUnitIds.includes(unit.id);
     drawUnitBody(ctx, unit, isSelected, isBeingDragged);
   }
 
   // 8.5. Squad selection outlines (after unit bodies, before dust)
+  // Use all units (including castles) for selection visuals
   drawSquadSelections(ctx, state.units, selectedUnitIds, isDragging, cellSize);
 
   // 9. Dust particles disabled (removed for AC6 aesthetic)
   // drawDustParticles(ctx, dustParticles);
 
   // 10. Health bars for units (only show if damaged, skip dying units)
-  for (const unit of state.units) {
+  for (const unit of mobileUnits) {
     if (unit.deathFadeTimer < 0 && unit.health < unit.stats.maxHealth) {
       const ghostHealth = ghostHealthMap.get(unit.id) ?? unit.health;
       drawHealthBar(ctx, unit, ghostHealth);
@@ -144,7 +148,7 @@ export function renderBattle(context: RenderContext): void {
   }
 
   // 11. Debuff indicators (above health bars, skip dying units)
-  for (const unit of state.units) {
+  for (const unit of mobileUnits) {
     if (unit.deathFadeTimer < 0) {
       drawDebuffIndicator(ctx, unit);
     }

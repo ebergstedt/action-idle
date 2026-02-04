@@ -9,30 +9,16 @@
 
 import { Vector2 } from '../../physics/Vector2';
 import { UnitEntity, UnitData } from '../entities/UnitEntity';
-import { CastleEntity, CastleData } from '../entities/CastleEntity';
 import { ProjectileEntity, ProjectileData } from '../entities/ProjectileEntity';
-import {
-  IEntityFactory,
-  IUnitEntityFactory,
-  ICastleEntityFactory,
-  IProjectileEntityFactory,
-} from './IEntityFactory';
+import { IEntityFactory, IUnitEntityFactory, IProjectileEntityFactory } from './IEntityFactory';
 
 /**
  * Default unit factory - creates standard UnitEntity instances.
+ * Note: Castles are now created as stationary units using this factory.
  */
 export class DefaultUnitFactory implements IUnitEntityFactory {
   createUnit(id: string, position: Vector2, data: UnitData): UnitEntity {
     return new UnitEntity(id, position, data);
-  }
-}
-
-/**
- * Default castle factory - creates standard CastleEntity instances.
- */
-export class DefaultCastleFactory implements ICastleEntityFactory {
-  createCastle(id: string, position: Vector2, data: CastleData): CastleEntity {
-    return new CastleEntity(id, position, data);
   }
 }
 
@@ -50,15 +36,10 @@ export class DefaultProjectileFactory implements IProjectileEntityFactory {
  */
 export class DefaultEntityFactory implements IEntityFactory {
   private unitFactory = new DefaultUnitFactory();
-  private castleFactory = new DefaultCastleFactory();
   private projectileFactory = new DefaultProjectileFactory();
 
   createUnit(id: string, position: Vector2, data: UnitData): UnitEntity {
     return this.unitFactory.createUnit(id, position, data);
-  }
-
-  createCastle(id: string, position: Vector2, data: CastleData): CastleEntity {
-    return this.castleFactory.createCastle(id, position, data);
   }
 
   createProjectile(id: string, position: Vector2, data: ProjectileData): ProjectileEntity {

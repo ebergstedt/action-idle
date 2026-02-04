@@ -12,7 +12,6 @@ import { EntityBounds } from '../BoundsEnforcer';
 import { IDamageable } from '../IEntity';
 import { UnitTeam } from '../units/types';
 import { IEntityWorld } from './BaseEntity';
-import { CastleEntity } from './CastleEntity';
 import { UnitEntity } from './UnitEntity';
 
 /**
@@ -20,7 +19,7 @@ import { UnitEntity } from './UnitEntity';
  * Extends IEntityWorld with battle-specific queries.
  */
 export interface IBattleWorld extends IEntityWorld {
-  // Damageable queries (units + castles combined)
+  // Damageable queries (all units including stationary)
   getDamageables(): readonly IDamageable[];
   getEnemyDamageablesOf(entity: IDamageable): IDamageable[];
 
@@ -31,10 +30,10 @@ export interface IBattleWorld extends IEntityWorld {
   getEnemiesOf(unit: UnitEntity): UnitEntity[];
   getAlliesOf(unit: UnitEntity): UnitEntity[];
 
-  // Castle queries
-  getCastles(): readonly CastleEntity[];
-  getCastlesByTeam(team: UnitTeam): CastleEntity[];
-  getEnemyCastlesOf(unit: UnitEntity): CastleEntity[];
+  // Castle queries (stationary units)
+  getCastles(): readonly UnitEntity[];
+  getCastlesByTeam(team: UnitTeam): UnitEntity[];
+  getEnemyCastlesOf(unit: UnitEntity): UnitEntity[];
   getInitialCastleCount(team: UnitTeam): number;
 
   // Combat helpers

@@ -19,7 +19,6 @@ export type { EntityKind } from '../IEntity';
 // Entity implementations
 export { UnitEntity, type UnitData } from './UnitEntity';
 export { ProjectileEntity, type ProjectileData, createProjectile } from './ProjectileEntity';
-export { CastleEntity, type CastleData } from './CastleEntity';
 export { ShockwaveEntity, type ShockwaveData, createShockwave } from './ShockwaveEntity';
 export {
   DamageNumberEntity,

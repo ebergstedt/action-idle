@@ -9,11 +9,12 @@
 
 import { Vector2 } from '../../physics/Vector2';
 import { UnitEntity, UnitData } from '../entities/UnitEntity';
-import { CastleEntity, CastleData } from '../entities/CastleEntity';
 import { ProjectileEntity, ProjectileData } from '../entities/ProjectileEntity';
 
 /**
  * Factory interface for creating unit entities.
+ * Note: Castles are now created as stationary units (moveSpeed: 0),
+ * so they use IUnitEntityFactory instead of a separate factory.
  */
 export interface IUnitEntityFactory {
   /**
@@ -23,19 +24,6 @@ export interface IUnitEntityFactory {
    * @param data - Unit data
    */
   createUnit(id: string, position: Vector2, data: UnitData): UnitEntity;
-}
-
-/**
- * Factory interface for creating castle entities.
- */
-export interface ICastleEntityFactory {
-  /**
-   * Create a new castle entity.
-   * @param id - Unique identifier
-   * @param position - Initial position
-   * @param data - Castle data
-   */
-  createCastle(id: string, position: Vector2, data: CastleData): CastleEntity;
 }
 
 /**
@@ -54,5 +42,4 @@ export interface IProjectileEntityFactory {
 /**
  * Combined factory interface for all entity types.
  */
-export interface IEntityFactory
-  extends IUnitEntityFactory, ICastleEntityFactory, IProjectileEntityFactory {}
+export interface IEntityFactory extends IUnitEntityFactory, IProjectileEntityFactory {}

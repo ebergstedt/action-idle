@@ -51,6 +51,7 @@ import { EntityKind, IDamageable, IMeleeTarget } from '../IEntity';
 import { applyShuffle } from '../shuffle';
 import { AttackMode, UnitRenderData, UnitStats, UnitTeam, UnitType, UnitShape } from '../types';
 import type { GridFootprint } from '../grid/GridTypes';
+import type { IObstacle } from '../obstacles/Obstacle';
 import { BaseEntity } from './BaseEntity';
 import { IBattleWorld } from './IBattleWorld';
 
@@ -99,8 +100,9 @@ export interface UnitData {
 
 /**
  * Unit entity with full behavior.
+ * Stationary units (moveSpeed === 0) also implement IObstacle.
  */
-export class UnitEntity extends BaseEntity {
+export class UnitEntity extends BaseEntity implements IObstacle {
   public readonly kind: EntityKind = 'unit';
   public data: UnitData;
 
@@ -140,6 +142,33 @@ export class UnitEntity extends BaseEntity {
   get gridFootprint(): GridFootprint {
     return this.data.gridFootprint;
   }
+
+  // === Stationary Unit Support (for castles) ===
+
+  /**
+   * Whether this unit is stationary (moveSpeed === 0).
+   * Stationary units don't move and act as obstacles.
+   */
+  get isStationary(): boolean {
+    return this.stats.moveSpeed === 0;
+  }
+
+  /**
+   * IObstacle: Whether this unit blocks movement of other units.
+   * Only stationary units block movement.
+   */
+  get blocksMovement(): boolean {
+    return this.isStationary;
+  }
+
+  /**
+   * IObstacle: Whether this unit blocks deployment of other units.
+   * Only stationary units block deployment.
+   */
+  get blocksDeployment(): boolean {
+    return this.isStationary;
+  }
+
   get target(): IDamageable | null {
     return this.data.target;
   }
@@ -585,6 +614,9 @@ export class UnitEntity extends BaseEntity {
   // === Private behavior methods ===
 
   private updateTargeting(): void {
+    // Stationary units (like castles) don't target enemies
+    if (this.isStationary) return;
+
     const world = this.getBattleWorld();
     if (!world) return;
 
@@ -776,6 +808,9 @@ export class UnitEntity extends BaseEntity {
   }
 
   private updateCombat(delta: number): void {
+    // Stationary units (like castles) don't attack
+    if (this.isStationary) return;
+
     // Update cooldown
     if (this.attackCooldown > 0) {
       this.attackCooldown -= delta;
@@ -799,6 +834,9 @@ export class UnitEntity extends BaseEntity {
   }
 
   private updateMovement(delta: number): void {
+    // Stationary units (like castles) don't move
+    if (this.isStationary) return;
+
     const world = this.getBattleWorld();
     if (!world) return;
 

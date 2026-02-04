@@ -237,10 +237,11 @@ describe('BattleEngine castle spawning', () => {
     const castles = engine.getWorld().getCastles();
     const ids = castles.map((c) => c.id);
 
-    expect(ids).toContain('castle_1');
-    expect(ids).toContain('castle_2');
-    expect(ids).toContain('castle_3');
-    expect(ids).toContain('castle_4');
+    // Castles are now units, so they get unit_N IDs
+    expect(ids).toContain('unit_1');
+    expect(ids).toContain('unit_2');
+    expect(ids).toContain('unit_3');
+    expect(ids).toContain('unit_4');
   });
 
   it('should not spawn castles without arena bounds', () => {

@@ -8,13 +8,9 @@
  */
 
 import { Vector2 } from '../physics/Vector2';
-import { getCastleColor, getUnitColor } from '../theme/colors';
+import { getUnitColor } from '../theme/colors';
 import {
-  BASE_CASTLE_HORIZONTAL_MARGIN,
   BATTLE_TIME_THRESHOLD,
-  CASTLE_MAX_HEALTH,
-  CASTLE_GRID_COLS,
-  CASTLE_GRID_ROWS,
   DEFAULT_ARENA_MARGIN,
   DRAG_OVERLAP_ITERATIONS,
   GRID_TOTAL_COLS,
@@ -34,9 +30,6 @@ import {
   SQUAD_MAX_COLUMNS,
   UNIT_SPACING,
   ZONE_CLAMP_MARGIN,
-  ZONE_HEIGHT_PERCENT,
-  ZONE_MIDWAY_DIVISOR,
-  scaleValue,
   MIN_WAVE,
   MAX_WAVE,
   calculateWaveGold,
@@ -45,7 +38,7 @@ import type { GridConfig } from './grid/GridTypes';
 import { calculateCellSize } from './grid/GridManager';
 import { EntityBounds } from './BoundsEnforcer';
 import { DEFAULT_WALK_ANIMATION } from './animations';
-import { BattleWorld, UnitEntity, UnitData, CastleEntity, CastleData } from './entities';
+import { BattleWorld, UnitEntity, UnitData } from './entities';
 import { DamagedEvent, EntityAddedEvent, EventListener } from './IEntity';
 import {
   BattleState,
@@ -56,12 +49,7 @@ import {
 } from './types';
 import { UnitDefinition, UnitTeam } from './units/types';
 import { UnitRegistry } from './units';
-import {
-  IUnitEntityFactory,
-  ICastleEntityFactory,
-  DefaultUnitFactory,
-  DefaultCastleFactory,
-} from './factories';
+import { IUnitEntityFactory, DefaultUnitFactory } from './factories';
 
 /**
  * Configuration options for BattleEngine.
@@ -69,8 +57,6 @@ import {
 export interface BattleEngineConfig {
   /** Custom unit factory (optional, uses default if not provided) */
   unitFactory?: IUnitEntityFactory;
-  /** Custom castle factory (optional, uses default if not provided) */
-  castleFactory?: ICastleEntityFactory;
   /** Custom battle world (optional, for testing) */
   world?: BattleWorld;
 }
@@ -83,9 +69,7 @@ export class BattleEngine {
   private world: BattleWorld;
   private registry: UnitRegistry;
   private unitFactory: IUnitEntityFactory;
-  private castleFactory: ICastleEntityFactory;
   private nextUnitId = 1;
-  private nextCastleId = 1;
   private nextSquadId = 1;
   private isRunning = false;
   private hasStarted = false;
@@ -122,7 +106,6 @@ export class BattleEngine {
     this.registry = registry;
     this.world = config?.world ?? new BattleWorld();
     this.unitFactory = config?.unitFactory ?? new DefaultUnitFactory();
-    this.castleFactory = config?.castleFactory ?? new DefaultCastleFactory();
 
     // Bind event listeners for idle speed-up system
     this.onDamagedListener = this.handleDamaged.bind(this);
@@ -181,10 +164,26 @@ export class BattleEngine {
    * Converts internal entities to render data types for React rendering.
    */
   getState(): BattleState {
+    // Get all units (including stationary/castles) for selection
+    const allUnits = this.world.getUnits();
+
+    // Map stationary units (castles) to CastleRenderData format for rendering
+    const castles = this.world.getCastles().map((u) => ({
+      id: u.id,
+      team: u.team,
+      position: u.position,
+      health: u.health,
+      maxHealth: u.stats.maxHealth,
+      gridFootprint: u.gridFootprint,
+      size: u.size, // Deprecated but kept for backwards compatibility
+      color: u.color,
+    }));
+
     return {
-      units: this.world.getUnits().map((u) => u.toRenderData()),
+      // Include ALL units (mobile + stationary) for selection support
+      units: allUnits.map((u) => u.toRenderData()),
       projectiles: this.world.getProjectiles().map((p) => p.toRenderData()),
-      castles: this.world.getCastles().map((c) => c.toRenderData()),
+      castles,
       shockwaves: this.world.getShockwaves().map((s) => s.toRenderData()),
       damageNumbers: this.world.getDamageNumbers().map((d) => d.toRenderData()),
       isRunning: this.isRunning,
@@ -231,7 +230,6 @@ export class BattleEngine {
     this.world.clear();
     this.hasStarted = false;
     this.nextUnitId = 1;
-    this.nextCastleId = 1;
     this.nextSquadId = 1;
     this.battleOutcome = 'pending';
 
@@ -529,55 +527,59 @@ export class BattleEngine {
   }
 
   /**
-   * Spawn a castle for a team.
-   * Castles use a 4x4 grid footprint for consistent collision and rendering.
+   * Spawn a castle (stationary unit) for a team.
+   * Castles are now regular units with moveSpeed: 0.
    * @param team - Which team the castle belongs to
    * @param position - Spawn position
-   * @param _arenaHeight - Arena height (unused, kept for API compatibility)
-   * @returns The spawned castle entity
+   * @param arenaHeight - Arena height for size scaling
+   * @returns The spawned castle unit render data
    */
   spawnCastle(
     team: UnitTeam,
     position: Vector2,
-    _arenaHeight: number = REFERENCE_ARENA_HEIGHT
-  ): CastleEntity {
-    const id = `castle_${this.nextCastleId++}`;
-    const data: CastleData = {
-      team,
-      maxHealth: CASTLE_MAX_HEALTH,
-      health: CASTLE_MAX_HEALTH,
-      gridFootprint: { cols: CASTLE_GRID_COLS, rows: CASTLE_GRID_ROWS },
-      color: getCastleColor(team),
-    };
-
-    const entity = this.castleFactory.createCastle(id, position.clone(), data);
-    this.world.addCastle(entity);
-
-    return entity;
+    arenaHeight: number = REFERENCE_ARENA_HEIGHT
+  ): UnitRenderData {
+    // Spawn castle as a regular unit using the 'castle' definition
+    return this.spawnUnit('castle', team, position, arenaHeight);
   }
 
   /**
    * Spawn castles for both teams at their deployment zones.
-   * Places 2 castles per team (left and right flanks), vertically centered in each zone.
+   * Places 2 castles per team (left and right flanks), using grid-based positioning.
    */
   spawnCastles(): void {
     if (!this.arenaBounds) return;
 
     const { width, height } = this.arenaBounds;
-    const zoneHeight = height * ZONE_HEIGHT_PERCENT;
+    const cellSize = calculateCellSize(width, height);
 
-    // Castle X positions (horizontal flanks) - scaled for arena size
-    const castleMargin = scaleValue(BASE_CASTLE_HORIZONTAL_MARGIN, height);
-    const leftX = castleMargin;
-    const rightX = width - castleMargin;
+    // Castle grid dimensions (4x4 footprint)
+    const castleSize = 4;
 
-    // Player castles (bottom zone) - vertically centered in zone
-    const playerY = height - zoneHeight / ZONE_MIDWAY_DIVISOR;
+    // Horizontal positions: place castles at equal distance from arena edges
+    // Use actual arena width for symmetric positioning (grid may not fill full width)
+    const edgeOffset = (GRID_FLANK_COLS + castleSize / 2) * cellSize;
+    const leftX = edgeOffset;
+    const rightX = width - edgeOffset;
+
+    // Vertical positions: center castles in deployment zones
+    // Enemy deployment: rows 0-29 (30 rows), center 4-tall castle → top-left at row 13
+    const enemyRow = Math.floor((GRID_DEPLOYMENT_ROWS - castleSize) / 2);
+    // Player deployment: rows 32-61 (30 rows), center 4-tall castle → top-left at row 45
+    const playerRow =
+      GRID_DEPLOYMENT_ROWS +
+      GRID_NO_MANS_LAND_ROWS +
+      Math.floor((GRID_DEPLOYMENT_ROWS - castleSize) / 2);
+
+    // Convert grid positions to pixel centers
+    const enemyY = (enemyRow + castleSize / 2) * cellSize;
+    const playerY = (playerRow + castleSize / 2) * cellSize;
+
+    // Spawn player castles (bottom zone)
     this.spawnCastle('player', new Vector2(leftX, playerY), height);
     this.spawnCastle('player', new Vector2(rightX, playerY), height);
 
-    // Enemy castles (top zone) - vertically centered in zone
-    const enemyY = zoneHeight / ZONE_MIDWAY_DIVISOR;
+    // Spawn enemy castles (top zone)
     this.spawnCastle('enemy', new Vector2(leftX, enemyY), height);
     this.spawnCastle('enemy', new Vector2(rightX, enemyY), height);
   }
@@ -587,6 +589,7 @@ export class BattleEngine {
    * Call after spawning all units.
    * Only resolves overlaps between different squads - units within the same squad
    * are positioned via the grid system and shouldn't push each other.
+   * Castles (stationary units) are never moved - other units move around them.
    */
   resolveOverlaps(
     iterations: number = DRAG_OVERLAP_ITERATIONS,
@@ -622,8 +625,24 @@ export class BattleEngine {
                   ).normalize();
             const pushAmount = overlap * OVERLAP_PUSH_FACTOR + OVERLAP_BASE_PUSH;
 
-            unitA.position = unitA.position.add(pushDir.multiply(pushAmount));
-            unitB.position = unitB.position.subtract(pushDir.multiply(pushAmount));
+            // Castles (stationary units) never move - only push the other unit
+            const aIsStationary = unitA.isStationary;
+            const bIsStationary = unitB.isStationary;
+
+            if (aIsStationary && bIsStationary) {
+              // Both stationary - do nothing (shouldn't happen if spawned correctly)
+              continue;
+            } else if (aIsStationary) {
+              // Only push B away (double the amount since A won't move)
+              unitB.position = unitB.position.subtract(pushDir.multiply(pushAmount * 2));
+            } else if (bIsStationary) {
+              // Only push A away (double the amount since B won't move)
+              unitA.position = unitA.position.add(pushDir.multiply(pushAmount * 2));
+            } else {
+              // Neither stationary - push both equally
+              unitA.position = unitA.position.add(pushDir.multiply(pushAmount));
+              unitB.position = unitB.position.subtract(pushDir.multiply(pushAmount));
+            }
           }
         }
       }

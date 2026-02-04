@@ -1,0 +1,17 @@
+{
+  "id": "death_shockwave",
+  "name": "Death Shockwave",
+  "description": "On death, releases an EMP shockwave that debuffs nearby enemies.",
+  "trigger": {
+    "type": "on_death"
+  },
+  "cooldown": 0,
+  "chance": 1,
+  "effects": [
+    {
+      "type": "spawn_shockwave",
+      "targetTeam": "enemy",
+      "comment": "Shockwave applies debuff to enemies, buff to allies. Handled by ShockwaveEntity."
+    }
+  ]
+}
