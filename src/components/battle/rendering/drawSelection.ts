@@ -98,44 +98,17 @@ export function drawSquadSelections(
     const gridCol = Math.floor(centroidX / cellSize - halfCols + 0.5);
     const gridRow = Math.floor(centroidY / cellSize - halfRows + 0.5);
 
-    // Convert to pixel coordinates using footprint dimensions
-    let minX = gridCol * cellSize;
-    let minY = gridRow * cellSize;
-    let maxX = (gridCol + footprint.cols) * cellSize;
-    let maxY = (gridRow + footprint.rows) * cellSize;
+    // Convert to pixel coordinates using footprint dimensions (exact grid alignment)
+    const minX = gridCol * cellSize;
+    const minY = gridRow * cellSize;
+    const width = footprint.cols * cellSize;
+    const height = footprint.rows * cellSize;
 
-    // Add small padding around the selection
-    const padding = 2;
-    minX -= padding;
-    minY -= padding;
-    maxX += padding;
-    maxY += padding;
-
-    // Draw selection rectangle
+    // Draw selection rectangle - sharp corners, exact grid size
     ctx.strokeStyle = ARENA_COLORS.selectionRing;
-    ctx.lineWidth = isDragging ? 1 : 1.5;
+    ctx.lineWidth = isDragging ? 1 : 2;
     ctx.globalAlpha = isDragging ? 0.7 : 1;
-
-    // Draw rounded rectangle
-    const radius = 4;
-    ctx.beginPath();
-    ctx.moveTo(minX + radius, minY);
-    ctx.lineTo(maxX - radius, minY);
-    ctx.quadraticCurveTo(maxX, minY, maxX, minY + radius);
-    ctx.lineTo(maxX, maxY - radius);
-    ctx.quadraticCurveTo(maxX, maxY, maxX - radius, maxY);
-    ctx.lineTo(minX + radius, maxY);
-    ctx.quadraticCurveTo(minX, maxY, minX, maxY - radius);
-    ctx.lineTo(minX, minY + radius);
-    ctx.quadraticCurveTo(minX, minY, minX + radius, minY);
-    ctx.closePath();
-    ctx.stroke();
-
-    // Add glow effect
-    ctx.shadowColor = ARENA_COLORS.selectionRing;
-    ctx.shadowBlur = 10;
-    ctx.stroke();
-    ctx.shadowBlur = 0;
+    ctx.strokeRect(minX, minY, width, height);
   }
 
   ctx.restore();
