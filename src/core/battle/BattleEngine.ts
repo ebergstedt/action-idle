@@ -50,7 +50,7 @@ import {
   UnitRenderData,
 } from './types';
 import { UnitDefinition, UnitTeam } from './units/types';
-import { UnitRegistry } from './units';
+import { IUnitRegistry } from './units';
 import { IUnitEntityFactory, DefaultUnitFactory } from './factories';
 
 /**
@@ -69,7 +69,7 @@ export interface BattleEngineConfig {
  */
 export class BattleEngine {
   private world: BattleWorld;
-  private registry: UnitRegistry;
+  private registry: IUnitRegistry;
   private unitFactory: IUnitEntityFactory;
   private nextUnitId = 1;
   private nextSquadId = 1;
@@ -104,7 +104,7 @@ export class BattleEngine {
    * @param registry - Unit registry for spawning units
    * @param config - Optional configuration with factories and world (for DI/testing)
    */
-  constructor(registry: UnitRegistry, config?: BattleEngineConfig) {
+  constructor(registry: IUnitRegistry, config?: BattleEngineConfig) {
     this.registry = registry;
     this.world = config?.world ?? new BattleWorld();
     this.unitFactory = config?.unitFactory ?? new DefaultUnitFactory();
@@ -157,7 +157,7 @@ export class BattleEngine {
   /**
    * Get the unit registry.
    */
-  getRegistry(): UnitRegistry {
+  getRegistry(): IUnitRegistry {
     return this.registry;
   }
 

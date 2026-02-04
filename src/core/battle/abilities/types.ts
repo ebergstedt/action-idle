@@ -63,6 +63,7 @@ export type EffectType =
   | 'apply_modifier' // Apply a stat modifier
   | 'remove_modifier' // Remove modifiers by source
   | 'spawn_unit' // Spawn additional units
+  | 'spawn_shockwave' // Spawn a shockwave effect
   | 'knockback' // Push targets away
   | 'pull'; // Pull targets closer
 
@@ -150,6 +151,16 @@ export interface PullEffect extends AbilityEffectBase {
 }
 
 /**
+ * Spawn shockwave effect.
+ * Creates a visual shockwave that applies modifiers to units in range.
+ */
+export interface SpawnShockwaveEffect extends AbilityEffectBase {
+  type: 'spawn_shockwave';
+  /** Which team to target with the shockwave effects */
+  targetTeam: 'ally' | 'enemy' | 'both';
+}
+
+/**
  * Union of all effect types.
  */
 export type AbilityEffect =
@@ -158,6 +169,7 @@ export type AbilityEffect =
   | ApplyModifierEffect
   | RemoveModifierEffect
   | SpawnUnitEffect
+  | SpawnShockwaveEffect
   | KnockbackEffect
   | PullEffect;
 

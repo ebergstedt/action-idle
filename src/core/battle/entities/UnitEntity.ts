@@ -528,6 +528,28 @@ export class UnitEntity extends BaseEntity implements IObstacle {
   }
 
   /**
+   * Apply movement to unit, emit 'moved' event, and advance walk animation.
+   * Single point of emission for the 'moved' event per CLAUDE.md guidelines.
+   *
+   * @param movement - The movement delta to apply
+   */
+  private applyMovement(movement: Vector2, delta: number): void {
+    const previousPosition = this.position.clone();
+    this.position = this.position.add(movement);
+
+    // Advance walk animation time while moving
+    this.advanceWalkAnimation(delta);
+
+    // Single point of 'moved' event emission
+    this.emit({
+      type: 'moved',
+      entity: this,
+      delta: movement,
+      previousPosition,
+    });
+  }
+
+  /**
    * Apply a knockback offset to this unit (from melee hit).
    */
   applyKnockback(direction: Vector2, distance: number): void {
@@ -1002,18 +1024,7 @@ export class UnitEntity extends BaseEntity implements IObstacle {
     }
 
     const movement = moveDirection.multiply(delta);
-    const previousPosition = this.position.clone();
-    this.position = this.position.add(movement);
-
-    // Advance walk animation time while moving
-    this.advanceWalkAnimation(delta);
-
-    this.emit({
-      type: 'moved',
-      entity: this,
-      delta: movement,
-      previousPosition,
-    });
+    this.applyMovement(movement, delta);
   }
 
   private enforceBounds(): void {
@@ -1125,7 +1136,6 @@ export class UnitEntity extends BaseEntity implements IObstacle {
     const world = this.getBattleWorld();
     if (!world) return;
 
-    const previousPosition = this.position.clone();
     const toTarget = targetPos.subtract(this.position);
     const distToTarget = toTarget.magnitude();
     if (distToTarget < MIN_MOVE_DISTANCE) return;
@@ -1175,18 +1185,7 @@ export class UnitEntity extends BaseEntity implements IObstacle {
     }
 
     const movement = moveDirection.multiply(delta);
-    this.position = this.position.add(movement);
-
-    // Advance walk animation time while moving
-    this.advanceWalkAnimation(delta);
-
-    // Emit moved event with typed payload
-    this.emit({
-      type: 'moved',
-      entity: this,
-      delta: movement,
-      previousPosition,
-    });
+    this.applyMovement(movement, delta);
   }
 
   private isDirectionClear(direction: Vector2, allies: UnitEntity[]): boolean {

@@ -16,7 +16,7 @@ const KEYBOARD_PAN_SPEED = 600;
 const EDGE_PAN_SPEED = 450;
 
 /** Edge zone size in pixels (how close to edge to trigger panning) */
-const EDGE_ZONE_SIZE = 100;
+const EDGE_ZONE_SIZE = 60;
 
 interface UseCanvasPanningProps {
   /** Callback to update zoom state */

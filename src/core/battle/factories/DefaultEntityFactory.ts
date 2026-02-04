@@ -46,9 +46,3 @@ export class DefaultEntityFactory implements IEntityFactory {
     return this.projectileFactory.createProjectile(id, position, data);
   }
 }
-
-/**
- * Singleton instance of the default entity factory.
- * Use this when you don't need custom factory behavior.
- */
-export const defaultEntityFactory = new DefaultEntityFactory();

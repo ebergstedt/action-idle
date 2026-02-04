@@ -17,5 +17,4 @@ export {
   DefaultEntityFactory,
   DefaultUnitFactory,
   DefaultProjectileFactory,
-  defaultEntityFactory,
 } from './DefaultEntityFactory';

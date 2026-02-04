@@ -14,7 +14,7 @@ import { ActiveModifier } from '../modifiers/types';
 import { getScaledUnitSize } from '../types';
 import { computeAllStats, cloneBaseStats } from './StatCalculator';
 import { CreateUnitOptions, UnitDefinition, UnitInstance, UnitTeam } from './types';
-import { UnitRegistry } from './UnitRegistry';
+import { IUnitRegistry } from './IUnitRegistry';
 
 /**
  * Counter for generating unique unit IDs.
@@ -53,7 +53,7 @@ function getUnitColor(team: UnitTeam, colorKey: string): string {
  * Factory for creating unit instances.
  */
 export class UnitFactory {
-  constructor(private registry: UnitRegistry) {}
+  constructor(private registry: IUnitRegistry) {}
 
   /**
    * Creates a UnitInstance from a definition ID.
@@ -185,6 +185,6 @@ export class UnitFactory {
 /**
  * Creates a UnitFactory with the provided registry.
  */
-export function createUnitFactory(registry: UnitRegistry): UnitFactory {
+export function createUnitFactory(registry: IUnitRegistry): UnitFactory {
   return new UnitFactory(registry);
 }
