@@ -182,7 +182,7 @@ describe('DragController', () => {
       expect(result[0].position.y).toBe(450);
     });
 
-    it('finds closest valid position when move would overlap', () => {
+    it('stays at current position for stability when move would overlap', () => {
       // Both squads within deployment zone
       const units: ISelectable[] = [
         createUnit('u1', 'squad1', new Vector2(100, 400)),
@@ -205,18 +205,12 @@ describe('DragController', () => {
 
       const result = validateSquadMoves(moves, units, cellSize, draggedSquadIds, initialPositions);
 
-      // Move should find the closest non-overlapping position, NOT revert to initial
-      // The result should be closer to target (200) than the initial (100)
-      expect(result[0].position.x).toBeGreaterThan(100);
-      // The result should not overlap with squad2 (which is at 200-210)
-      // With a 2-col footprint and cellSize 10, squad1 should be placed adjacent to squad2
-      expect(result[0].position.x).toBeLessThan(200);
-      // Both units should maintain relative positions (10 pixels apart)
-      expect(result[1].position.x - result[0].position.x).toBe(10);
-      // Y position might change due to spiral search, but should stay close to target
-      expect(result[0].position.y).toBeGreaterThanOrEqual(320); // within deployment zone
-      expect(result[0].position.y).toBeLessThanOrEqual(610);
-      expect(result[1].position.y).toBe(result[0].position.y); // same Y for both units
+      // Stability: when proposed position is invalid but current is valid,
+      // squad stays at current position instead of jumping to a new "closest" spot
+      expect(result[0].position.x).toBe(100);
+      expect(result[0].position.y).toBe(400);
+      expect(result[1].position.x).toBe(110);
+      expect(result[1].position.y).toBe(400);
     });
 
     it('skips validation when cellSize is 0', () => {

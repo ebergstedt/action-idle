@@ -508,36 +508,71 @@ export function validateSquadMoves(
         validatedMoves.push({ unitId: m.unitId, position: m.position });
       }
     } else {
-      // Move would cause overlap - find the closest valid position instead
+      // Move would cause overlap - try to find a stable valid position
       // Combine other squads and obstacles into one array for overlap checking
       const allOccupied = obstacleBounds
         ? [...otherBoundsArray, ...obstacleBounds]
         : otherBoundsArray;
 
-      const closestGridPos = findNonOverlappingGridPosition(
+      // First, check if the squad's CURRENT position is still valid
+      // This provides stability - squad stays put rather than jumping around
+      const squadUnitsInArray = units.filter((u) => u.squadId === squadId);
+      let currentCentroidX = 0;
+      let currentCentroidY = 0;
+      for (const u of squadUnitsInArray) {
+        currentCentroidX += u.position.x;
+        currentCentroidY += u.position.y;
+      }
+      currentCentroidX /= squadUnitsInArray.length;
+      currentCentroidY /= squadUnitsInArray.length;
+      const currentCentroid = new Vector2(currentCentroidX, currentCentroidY);
+
+      const currentIsValid = isSquadMoveValid(
+        currentCentroid,
         footprint,
-        proposedCentroid,
-        allOccupied,
+        cellSize,
+        otherBoundsArray,
         deploymentBounds,
-        cellSize
+        obstacleBounds
       );
 
-      if (closestGridPos) {
-        // Found a valid position - calculate the new centroid and apply to all units
-        const newCentroid = getFootprintPixelCenter(closestGridPos, footprint, cellSize);
-        const deltaX = newCentroid.x - proposedCentroidX;
-        const deltaY = newCentroid.y - proposedCentroidY;
-
+      if (currentIsValid) {
+        // Current position is still valid - stay put for stability
         for (const m of squadUnitMoves) {
-          validatedMoves.push({
-            unitId: m.unitId,
-            position: new Vector2(m.position.x + deltaX, m.position.y + deltaY),
-          });
+          const unit = units.find((u) => u.id === m.unitId);
+          if (unit) {
+            validatedMoves.push({ unitId: m.unitId, position: unit.position.clone() });
+          } else {
+            validatedMoves.push({ unitId: m.unitId, position: m.originalPos });
+          }
         }
       } else {
-        // No valid position found at all - revert to initial positions as fallback
-        for (const m of squadUnitMoves) {
-          validatedMoves.push({ unitId: m.unitId, position: m.originalPos });
+        // Current position is also invalid - find the closest valid position
+        const closestGridPos = findNonOverlappingGridPosition(
+          footprint,
+          proposedCentroid,
+          allOccupied,
+          deploymentBounds,
+          cellSize
+        );
+
+        if (closestGridPos) {
+          // Found a valid position - calculate the new centroid and apply to all units
+          const newCentroid = getFootprintPixelCenter(closestGridPos, footprint, cellSize);
+          const deltaX = newCentroid.x - proposedCentroidX;
+          const deltaY = newCentroid.y - proposedCentroidY;
+
+          for (const m of squadUnitMoves) {
+            validatedMoves.push({
+              unitId: m.unitId,
+              position: new Vector2(m.position.x + deltaX, m.position.y + deltaY),
+            });
+          }
+        } else {
+          // No valid position found at all - revert to initial positions as fallback
+          for (const m of squadUnitMoves) {
+            validatedMoves.push({ unitId: m.unitId, position: m.originalPos });
+          }
         }
       }
     }

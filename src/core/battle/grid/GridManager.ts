@@ -290,10 +290,10 @@ export function findNonOverlappingGridPosition(
 
 /**
  * Generate grid positions sorted by distance from a target.
- * Uses a spiral pattern expanding outward.
+ * Checks every valid grid cell position to find the closest one.
  *
  * @param target - Target grid position (top-left of footprint)
- * @param footprint - Size of the footprint (for stepping)
+ * @param footprint - Size of the footprint (used for bounds checking)
  * @param bounds - Bounds to generate positions within
  * @returns Array of grid positions sorted by distance
  */
@@ -304,13 +304,10 @@ export function generateSortedGridPositions(
 ): GridPosition[] {
   const positions: Array<{ pos: GridPosition; distSq: number }> = [];
 
-  // Step by footprint size to avoid checking positions that would overlap anyway
-  const stepCol = Math.max(1, footprint.cols);
-  const stepRow = Math.max(1, footprint.rows);
-
-  // Generate all valid positions within bounds
-  for (let col = bounds.col; col <= bounds.col + bounds.cols - footprint.cols; col += stepCol) {
-    for (let row = bounds.row; row <= bounds.row + bounds.rows - footprint.rows; row += stepRow) {
+  // Check every grid cell position (step by 1) to find the truly closest valid position
+  // Previously stepped by footprint size which caused squads to be placed further than necessary
+  for (let col = bounds.col; col <= bounds.col + bounds.cols - footprint.cols; col++) {
+    for (let row = bounds.row; row <= bounds.row + bounds.rows - footprint.rows; row++) {
       const distSq = (col - target.col) ** 2 + (row - target.row) ** 2;
       positions.push({ pos: { col, row }, distSq });
     }
