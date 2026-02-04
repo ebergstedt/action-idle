@@ -1,5 +1,9 @@
 import { Vector2 } from '../physics/Vector2';
-import { DEFAULT_SHUFFLE_CONFIG, ShuffleConfig } from './BattleConfig';
+import {
+  DEFAULT_SHUFFLE_CONFIG,
+  ShuffleConfig,
+  SHUFFLE_RANDOM_DIRECTION_MULTIPLIER,
+} from './BattleConfig';
 
 // Re-export for backward compatibility
 export { DEFAULT_SHUFFLE_CONFIG } from './BattleConfig';
@@ -21,8 +25,8 @@ const randomInRange = (min: number, max: number): number => min + Math.random() 
 
 // Generate a new shuffle direction biased toward horizontal movement
 export const generateShuffleDirection = (horizontalBias: number): Vector2 => {
-  const x = (Math.random() - 0.5) * 2 * horizontalBias;
-  const y = (Math.random() - 0.5) * 2;
+  const x = (Math.random() - 0.5) * SHUFFLE_RANDOM_DIRECTION_MULTIPLIER * horizontalBias;
+  const y = (Math.random() - 0.5) * SHUFFLE_RANDOM_DIRECTION_MULTIPLIER;
   return new Vector2(x, y).normalize();
 };
 

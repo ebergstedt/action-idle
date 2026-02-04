@@ -13,6 +13,7 @@
 import { Vector2 } from '../physics/Vector2';
 
 import { UnitTeam } from './units/types';
+import type { TemporaryModifier } from './modifiers/TemporaryModifier';
 
 /**
  * Discriminant for entity types.
@@ -75,7 +76,7 @@ export interface IMeleeTarget extends IDamageable {
    * @param modifier - The modifier to apply
    * @param delay - Delay in seconds before applying
    */
-  queueModifier(modifier: unknown, delay: number): void;
+  queueModifier(modifier: TemporaryModifier, delay: number): void;
 }
 
 /**

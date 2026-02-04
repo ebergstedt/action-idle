@@ -7,6 +7,9 @@ export * from './shuffle';
 export { BattleEngine } from './BattleEngine';
 export * from './BoundsEnforcer';
 
+// Deployment system (wave spawning and overlap resolution)
+export * from './deployment';
+
 // Settings persistence (Godot-portable)
 export * from './BattleSettings';
 

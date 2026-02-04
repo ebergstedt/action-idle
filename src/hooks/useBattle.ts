@@ -9,27 +9,23 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
-  AUTO_BATTLE_START_DELAY_MS,
   BattleEngine,
   BattleState,
   BattleStats,
   BattleStatistics,
   BattleOutcomeResult,
-  calculateDeterministicAlliedPositions,
-  calculateDeterministicEnemyPositions,
-  getDefaultAlliedComposition,
-  getEnemyCompositionForWave,
   UnitRegistry,
-  ZONE_HEIGHT_PERCENT,
+  spawnWaveUnits,
+  resolveAllOverlaps,
+  resolvePlayerOverlaps,
 } from '../core/battle';
 import type { IPersistenceAdapter } from '../core/persistence/IPersistenceAdapter';
 import { LocalStorageAdapter } from '../adapters/LocalStorageAdapter';
 import { Vector2 } from '../core/physics/Vector2';
-import { calculateCellSize, snapFootprintToGrid } from '../core/battle/grid/GridManager';
-import { resolveSquadOverlaps } from '../core/battle/DragController';
 import { unitDefinitions } from '../data/units';
 import { useBattleSettings, BattleSpeed } from './useBattleSettings';
 import { useBattleLoop } from './useBattleLoop';
+import { useAutoBattleTimer } from './useAutoBattleTimer';
 
 /** Default persistence adapter - created lazily to avoid instantiation at module load */
 let defaultAdapter: IPersistenceAdapter | null = null;
@@ -126,7 +122,6 @@ export function useBattle(options: UseBattleOptions = {}): UseBattleReturn {
   // Core engine refs
   const engineRef = useRef<BattleEngine | null>(null);
   const statsRef = useRef<BattleStats | null>(null);
-  const autoBattleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const arenaDimensionsRef = useRef<{ width: number; height: number }>({ width: 0, height: 0 });
 
   // Battle state
@@ -158,6 +153,17 @@ export function useBattle(options: UseBattleOptions = {}): UseBattleReturn {
     getLoadedSettings,
   } = useBattleSettings(persistenceAdapter);
 
+  // Auto-start callback for auto-battle timer
+  const handleAutoStart = useCallback(() => {
+    if (engineRef.current) {
+      engineRef.current.start();
+      setState({ ...engineRef.current.getState() });
+    }
+  }, []);
+
+  // Auto-battle timer hook
+  const { scheduleAutoStart, cancelAutoStart } = useAutoBattleTimer(autoBattle, handleAutoStart);
+
   // Initialize engine
   useEffect(() => {
     const registry = createUnitRegistry();
@@ -168,13 +174,9 @@ export function useBattle(options: UseBattleOptions = {}): UseBattleReturn {
       statsRef.current?.detach();
       statsRef.current = null;
       engineRef.current = null;
-      // Clean up auto-battle timer
-      if (autoBattleTimerRef.current) {
-        clearTimeout(autoBattleTimerRef.current);
-        autoBattleTimerRef.current = null;
-      }
+      cancelAutoStart();
     };
-  }, []);
+  }, [cancelAutoStart]);
 
   // Apply loaded settings to engine once both are ready
   useEffect(() => {
@@ -261,90 +263,23 @@ export function useBattle(options: UseBattleOptions = {}): UseBattleReturn {
     }
   }, []);
 
-  // Wave spawning
+  // Wave spawning - delegates to DeploymentService
   const spawnWave = useCallback((arenaWidth: number, arenaHeight: number) => {
     if (!engineRef.current) return;
 
     const engine = engineRef.current;
-    const bounds = {
-      width: arenaWidth,
-      height: arenaHeight,
-      zoneHeightPercent: ZONE_HEIGHT_PERCENT,
-    };
-
-    // Set arena bounds for boundary enforcement during gameplay
-    engine.setArenaBounds(arenaWidth, arenaHeight);
+    const waveNumber = engine.getState().waveNumber;
 
     // Attach stats tracker to world before spawning
     if (statsRef.current) {
       statsRef.current.attach(engine.getWorld());
     }
 
-    // Spawn castles for both teams
-    engine.spawnCastles();
+    // Spawn all units for the wave
+    spawnWaveUnits(engine, { waveNumber, arenaWidth, arenaHeight });
 
-    const waveNumber = engine.getState().waveNumber;
-    const registry = engine.getRegistry();
-    const cellSize = calculateCellSize(arenaWidth, arenaHeight);
-
-    // Spawn allied army using deterministic formation with collision detection
-    const alliedComposition = getDefaultAlliedComposition();
-    const alliedPositions = calculateDeterministicAlliedPositions(
-      alliedComposition,
-      registry,
-      bounds,
-      waveNumber
-    );
-    for (const spawn of alliedPositions) {
-      // Snap position to grid based on unit's footprint
-      const def = registry.tryGet(spawn.type);
-      const footprint = def?.gridFootprint || { cols: 2, rows: 2 };
-      const snappedPos = snapFootprintToGrid(spawn.position, footprint, cellSize);
-      engine.spawnSquad(spawn.type, 'player', snappedPos, arenaHeight);
-    }
-
-    // Spawn enemy army using deterministic formation (varies by wave)
-    const enemyComposition = getEnemyCompositionForWave(waveNumber, registry);
-    const enemyPositions = calculateDeterministicEnemyPositions(
-      enemyComposition,
-      registry,
-      bounds,
-      waveNumber
-    );
-    for (const spawn of enemyPositions) {
-      // Snap position to grid based on unit's footprint
-      const def = registry.tryGet(spawn.type);
-      const footprint = def?.gridFootprint || { cols: 2, rows: 2 };
-      const snappedPos = snapFootprintToGrid(spawn.position, footprint, cellSize);
-      engine.spawnSquad(spawn.type, 'enemy', snappedPos, arenaHeight);
-    }
-
-    // Resolve any overlapping squads after spawning (best-effort algorithm)
-    // Exclude castles (stationary units) - they have fixed positions and shouldn't be moved
-    const currentState = engine.getState();
-    const unitsForResolution = currentState.units
-      .filter((u) => u.type !== 'castle')
-      .map((u) => ({
-        id: u.id,
-        type: u.type,
-        position: u.position,
-        size: u.size,
-        team: u.team,
-        squadId: u.squadId,
-        gridFootprint: u.gridFootprint,
-      }));
-
-    // Resolve player squad overlaps
-    const playerMoves = resolveSquadOverlaps(unitsForResolution, 'player', cellSize);
-    for (const move of playerMoves) {
-      engine.moveUnit(move.unitId, move.position);
-    }
-
-    // Resolve enemy squad overlaps
-    const enemyMoves = resolveSquadOverlaps(unitsForResolution, 'enemy', cellSize);
-    for (const move of enemyMoves) {
-      engine.moveUnit(move.unitId, move.position);
-    }
+    // Resolve any overlapping squads after spawning
+    resolveAllOverlaps(engine, arenaWidth, arenaHeight);
 
     // Store arena dimensions for later use in moveUnits
     arenaDimensionsRef.current = { width: arenaWidth, height: arenaHeight };
@@ -375,22 +310,7 @@ export function useBattle(options: UseBattleOptions = {}): UseBattleReturn {
       const currentState = engine.getState();
       const { width: arenaW, height: arenaH } = arenaDimensionsRef.current;
       if (!currentState.hasStarted && arenaW > 0 && arenaH > 0) {
-        const cellSize = calculateCellSize(arenaW, arenaH);
-        const unitsForResolution = currentState.units.map((u) => ({
-          id: u.id,
-          type: u.type,
-          position: u.position,
-          size: u.size,
-          team: u.team,
-          squadId: u.squadId,
-          gridFootprint: u.gridFootprint,
-        }));
-
-        // Resolve player squad overlaps
-        const resolutionMoves = resolveSquadOverlaps(unitsForResolution, 'player', cellSize);
-        for (const move of resolutionMoves) {
-          engine.moveUnit(move.unitId, move.position);
-        }
+        resolvePlayerOverlaps(engine, arenaW, arenaH);
       }
 
       setState({ ...engine.getState() });
@@ -441,12 +361,6 @@ export function useBattle(options: UseBattleOptions = {}): UseBattleReturn {
   // Auto-battle flow: outcome → reset → auto-start
   const handleOutcomeAndContinue = useCallback(
     (onReset?: OnBattleResetCallback) => {
-      // Clear any existing timer
-      if (autoBattleTimerRef.current) {
-        clearTimeout(autoBattleTimerRef.current);
-        autoBattleTimerRef.current = null;
-      }
-
       // Process outcome (awards gold, transitions wave)
       if (engineRef.current) {
         engineRef.current.handleBattleOutcome();
@@ -466,21 +380,10 @@ export function useBattle(options: UseBattleOptions = {}): UseBattleReturn {
         }
       }
 
-      // Invoke reset callback (e.g., to re-spawn units)
-      onReset?.();
-
-      // Auto-start next battle if enabled
-      if (autoBattle) {
-        autoBattleTimerRef.current = setTimeout(() => {
-          if (engineRef.current) {
-            engineRef.current.start();
-            setState({ ...engineRef.current.getState() });
-          }
-          autoBattleTimerRef.current = null;
-        }, AUTO_BATTLE_START_DELAY_MS);
-      }
+      // Schedule auto-start (calls onReset immediately, then auto-starts if enabled)
+      scheduleAutoStart(onReset);
     },
-    [autoBattle]
+    [scheduleAutoStart]
   );
 
   return {

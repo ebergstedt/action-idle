@@ -16,7 +16,6 @@ import {
   GRID_DEPLOYMENT_COLS,
   GRID_TOTAL_ROWS,
 } from '../../../core/battle/BattleConfig';
-import { generateCastleObstacleGridBounds } from '../../../core/battle/FormationManager';
 import { Vector2 } from '../../../core/physics/Vector2';
 import {
   startDrag,
@@ -25,9 +24,8 @@ import {
   isMultiDrag,
   DragSession,
   DragBounds,
-  snapSquadToGrid,
-  validateSquadMoves,
 } from '../../../core/battle/DragController';
+import { applyGridSnapToMoves } from '../../../core/battle/grid/GridSnapService';
 import { findSquadAtPosition } from '../../../core/battle/InputAdapter';
 import {
   selectAllOfType,
@@ -161,114 +159,20 @@ export function useCanvasInput<T extends ISelectable = ISelectable>({
   // ─────────────────────────────────────────────────────────────────────────────
 
   /** Apply grid snapping to moves, keeping squads together and preventing overlaps */
-  const applyGridSnapToMoves = useCallback(
+  const applyGridSnapToMovesCallback = useCallback(
     (
       moves: Array<{ unitId: string; position: Vector2 }>,
       initialPositions?: Map<string, Vector2>
     ): Array<{ unitId: string; position: Vector2 }> => {
-      if (cellSize <= 0) return moves;
-
-      // Collect dragged squad IDs for overlap validation
-      const draggedSquadIds = new Set<string>();
-
-      // Group moves by squadId
-      const squadMoves = new Map<
-        string,
-        Array<{ unitId: string; position: Vector2; unit: (typeof units)[0] }>
-      >();
-
-      for (const move of moves) {
-        const unit = units.find((u) => u.id === move.unitId);
-        if (!unit) continue;
-
-        const squadId = unit.squadId;
-        draggedSquadIds.add(squadId);
-
-        if (!squadMoves.has(squadId)) {
-          squadMoves.set(squadId, []);
-        }
-        squadMoves.get(squadId)!.push({ ...move, unit });
-      }
-
-      const snappedMoves: Array<{ unitId: string; position: Vector2 }> = [];
-
-      // Process each squad as a unit
-      for (const [, squadUnits] of squadMoves) {
-        if (squadUnits.length === 0) continue;
-
-        // Get the footprint from any unit in the squad (they all have the same)
-        const footprint = squadUnits[0].unit.gridFootprint;
-        if (!footprint) {
-          // No footprint, just return original positions
-          for (const su of squadUnits) {
-            snappedMoves.push({ unitId: su.unitId, position: su.position });
-          }
-          continue;
-        }
-
-        /**
-         * Squad-based centroid grid snapping algorithm:
-         *
-         * When moving a squad, we want the entire squad to snap to the grid as a unit,
-         * while maintaining the relative positions of individual units within the squad.
-         *
-         * Algorithm:
-         * 1. Calculate the centroid (geometric center) of all units in the squad
-         * 2. Snap the centroid to the nearest valid grid position for the squad's footprint
-         * 3. Calculate the delta (offset) between original and snapped centroid
-         * 4. Apply the same delta to ALL units in the squad
-         *
-         * This ensures:
-         * - The squad maintains its internal formation (relative unit positions unchanged)
-         * - The squad aligns properly to grid cells based on its footprint size
-         * - All units move together by the same offset amount
-         *
-         * Example: A 3x2 squad of fangs with centroid at (150, 200)
-         * - Centroid snaps to (144, 192) (nearest grid-aligned position)
-         * - Delta = (-6, -8)
-         * - Each unit's position shifts by (-6, -8), preserving formation
-         */
-        let centroidX = 0;
-        let centroidY = 0;
-        for (const su of squadUnits) {
-          centroidX += su.position.x;
-          centroidY += su.position.y;
-        }
-        centroidX /= squadUnits.length;
-        centroidY /= squadUnits.length;
-        const centroid = new Vector2(centroidX, centroidY);
-
-        // Snap the centroid to the grid based on squad footprint
-        const snappedCentroid = snapSquadToGrid(centroid, footprint, cellSize);
-
-        // Calculate the delta from original centroid to snapped centroid
-        const deltaX = snappedCentroid.x - centroidX;
-        const deltaY = snappedCentroid.y - centroidY;
-
-        // Apply the same delta to all units in the squad
-        for (const su of squadUnits) {
-          snappedMoves.push({
-            unitId: su.unitId,
-            position: new Vector2(su.position.x + deltaX, su.position.y + deltaY),
-          });
-        }
-      }
-
-      // Generate castle obstacle bounds to prevent units from being placed inside castles
-      const castleObstacleBounds = generateCastleObstacleGridBounds(width, height, cellSize);
-
-      // Validate moves to prevent squad overlaps during deployment
-      // Pass initial positions so invalid moves revert to drag start, not current frame
-      const validatedMoves = validateSquadMoves(
-        snappedMoves,
+      // Delegate to core GridSnapService
+      return applyGridSnapToMoves({
+        moves,
         units,
         cellSize,
-        draggedSquadIds,
+        arenaWidth: width,
+        arenaHeight: height,
         initialPositions,
-        castleObstacleBounds
-      );
-
-      return validatedMoves;
+      });
     },
     [cellSize, units, width, height]
   );
@@ -292,14 +196,14 @@ export function useCanvasInput<T extends ISelectable = ISelectable>({
         const result = calculateDragPositions(session, pos, bounds, units);
         // Apply grid snapping - snaps entire squads together
         // Pass initial positions so invalid moves revert to drag start
-        const snappedMoves = applyGridSnapToMoves(result.moves, session.initialPositions);
+        const snappedMoves = applyGridSnapToMovesCallback(result.moves, session.initialPositions);
         onUnitsMove(snappedMoves);
       } else if (onUnitMove) {
         const newPos = calculateSingleDragPosition(session, pos, bounds);
         if (newPos) {
           // For single unit, use squad snapping too (in case it's a 1-unit squad)
           // Pass initial positions so invalid moves revert to drag start
-          const snappedMoves = applyGridSnapToMoves(
+          const snappedMoves = applyGridSnapToMovesCallback(
             [{ unitId: session.anchorUnitId, position: newPos }],
             session.initialPositions
           );
@@ -316,7 +220,7 @@ export function useCanvasInput<T extends ISelectable = ISelectable>({
       units,
       onUnitMove,
       onUnitsMove,
-      applyGridSnapToMoves,
+      applyGridSnapToMovesCallback,
     ]
   );
 
@@ -376,8 +280,8 @@ export function useCanvasInput<T extends ISelectable = ISelectable>({
               ? filterSelectionByTeam(selectedUnitIds, units, 'player')
               : squadSelection.selectedIds
           ).filter((id) => {
-            const u = units.find((unit) => unit.id === id);
-            return u && u.type !== 'castle';
+            const foundUnit = units.find((unit) => unit.id === id);
+            return foundUnit && foundUnit.type !== 'castle';
           });
 
           if (unitsToMove.length > 0) {

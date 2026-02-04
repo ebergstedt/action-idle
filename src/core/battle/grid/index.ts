@@ -33,3 +33,12 @@ export {
   getFootprintPixelCenter,
   getFootprintGridPosition,
 } from './GridManager';
+
+// Grid snapping service
+export type { UnitMove, GridSnapInput, SquadSnapResult } from './GridSnapService';
+export {
+  calculateCentroid,
+  snapSquadCentroidToGrid,
+  applySnapDeltaToSquad,
+  applyGridSnapToMoves,
+} from './GridSnapService';

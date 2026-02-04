@@ -6,10 +6,10 @@
  */
 
 import { UI_COLORS } from '../../core/theme/colors';
-import { BattleUpgradeStates, BattleUpgradeDefinition } from '../../core/battle/upgrades/types';
+import { BattleUpgradeStates } from '../../core/battle/upgrades/types';
 import { battleUpgradeRegistry } from '../../data/battle';
 import { buildPrerequisiteContext, AssemblyState } from '../../core/assembly';
-import { UpgradeCard } from './UpgradeCard';
+import { UpgradeSection } from './UpgradeSection';
 
 interface UpgradeListPanelProps {
   /** Currently selected unit type (null for global view) */
@@ -32,21 +32,7 @@ export function UpgradeListPanel({
   onPurchase,
 }: UpgradeListPanelProps) {
   // Get upgrades for the selected unit type
-  let upgrades: BattleUpgradeDefinition[];
-  let sectionTitle: string;
-
-  if (selectedUnitType) {
-    // Get unit-specific upgrades
-    const unitUpgrades = battleUpgradeRegistry.getByTarget(selectedUnitType);
-    upgrades = unitUpgrades;
-    sectionTitle = 'UNIT UPGRADES';
-  } else {
-    // Show global upgrades when no unit selected
-    upgrades = battleUpgradeRegistry.getByScope('global');
-    sectionTitle = 'GLOBAL UPGRADES';
-  }
-
-  // Also get global upgrades to show in a separate section
+  const unitUpgrades = selectedUnitType ? battleUpgradeRegistry.getByTarget(selectedUnitType) : [];
   const globalUpgrades = battleUpgradeRegistry.getByScope('global');
 
   // Build prerequisite context
@@ -73,104 +59,45 @@ export function UpgradeListPanel({
 
       {/* Scrollable content */}
       <div className="flex-1 overflow-y-auto space-y-4 pr-1">
-        {/* Unit-specific upgrades */}
-        {selectedUnitType && upgrades.length > 0 && (
-          <div>
-            <div
-              className="text-sm font-medium tracking-wide mb-2"
-              style={{ color: UI_COLORS.accentSecondary }}
-            >
-              {sectionTitle}
-            </div>
-            <div className="space-y-2">
-              {upgrades.map((upgrade) => {
-                const level = battleUpgradeRegistry.getLevel(upgradeStates, upgrade.id);
-                const costResult = battleUpgradeRegistry.calculateCost(
-                  upgrade.id,
-                  level,
-                  context,
-                  vest
-                );
-                return (
-                  <UpgradeCard
-                    key={upgrade.id}
-                    upgrade={upgrade}
-                    level={level}
-                    costResult={costResult}
-                    onPurchase={() => onPurchase(upgrade.id)}
-                  />
-                );
-              })}
-            </div>
-          </div>
+        {/* Unit-specific upgrades (only when unit is selected) */}
+        {selectedUnitType && (
+          <UpgradeSection
+            title="UNIT UPGRADES"
+            titleColor={UI_COLORS.accentSecondary}
+            upgrades={unitUpgrades}
+            upgradeStates={upgradeStates}
+            context={context}
+            vest={vest}
+            onPurchase={onPurchase}
+          />
         )}
 
         {/* Global upgrades section */}
-        {selectedUnitType && globalUpgrades.length > 0 && (
-          <div>
-            <div
-              className="text-sm font-medium tracking-wide mb-2 mt-4"
-              style={{ color: UI_COLORS.accentTertiary }}
-            >
-              GLOBAL UPGRADES
-            </div>
-            <div className="space-y-2">
-              {globalUpgrades.map((upgrade) => {
-                const level = battleUpgradeRegistry.getLevel(upgradeStates, upgrade.id);
-                const costResult = battleUpgradeRegistry.calculateCost(
-                  upgrade.id,
-                  level,
-                  context,
-                  vest
-                );
-                return (
-                  <UpgradeCard
-                    key={upgrade.id}
-                    upgrade={upgrade}
-                    level={level}
-                    costResult={costResult}
-                    onPurchase={() => onPurchase(upgrade.id)}
-                  />
-                );
-              })}
-            </div>
-          </div>
-        )}
-
-        {/* Show global upgrades when no unit selected */}
-        {!selectedUnitType && globalUpgrades.length > 0 && (
-          <div>
-            <div
-              className="text-sm font-medium tracking-wide mb-2"
-              style={{ color: UI_COLORS.accentTertiary }}
-            >
-              {sectionTitle}
-            </div>
-            <div className="space-y-2">
-              {globalUpgrades.map((upgrade) => {
-                const level = battleUpgradeRegistry.getLevel(upgradeStates, upgrade.id);
-                const costResult = battleUpgradeRegistry.calculateCost(
-                  upgrade.id,
-                  level,
-                  context,
-                  vest
-                );
-                return (
-                  <UpgradeCard
-                    key={upgrade.id}
-                    upgrade={upgrade}
-                    level={level}
-                    costResult={costResult}
-                    onPurchase={() => onPurchase(upgrade.id)}
-                  />
-                );
-              })}
-            </div>
-          </div>
+        {selectedUnitType ? (
+          <UpgradeSection
+            title="GLOBAL UPGRADES"
+            titleColor={UI_COLORS.accentTertiary}
+            upgrades={globalUpgrades}
+            upgradeStates={upgradeStates}
+            context={context}
+            vest={vest}
+            onPurchase={onPurchase}
+            className="mt-4"
+          />
+        ) : (
+          <UpgradeSection
+            title="GLOBAL UPGRADES"
+            titleColor={UI_COLORS.accentTertiary}
+            upgrades={globalUpgrades}
+            upgradeStates={upgradeStates}
+            context={context}
+            vest={vest}
+            onPurchase={onPurchase}
+          />
         )}
 
         {/* Empty state */}
-        {upgrades.length === 0 && !selectedUnitType && (
+        {unitUpgrades.length === 0 && globalUpgrades.length === 0 && !selectedUnitType && (
           <div className="text-sm uppercase tracking-wide" style={{ color: UI_COLORS.textMuted }}>
             Select a unit to view upgrades
           </div>

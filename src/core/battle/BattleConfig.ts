@@ -223,6 +223,12 @@ export const DEFAULT_SHUFFLE_CONFIG: ShuffleConfig = {
   moveProbability: 0.6,
 };
 
+/**
+ * Multiplier for random direction generation in shuffle.
+ * Used to scale (Math.random() - 0.5) to range [-1, 1].
+ */
+export const SHUFFLE_RANDOM_DIRECTION_MULTIPLIER = 2;
+
 // =============================================================================
 // UNIT AI & TARGETING
 // =============================================================================

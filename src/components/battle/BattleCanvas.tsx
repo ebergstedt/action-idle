@@ -9,8 +9,8 @@
 
 import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import type { BattleState } from '../../core/battle';
-import { MIN_ZOOM, MAX_ZOOM, ZOOM_SPEED, DEFAULT_ZOOM } from '../../core/battle/BattleConfig';
-import { Vector2 } from '../../core/physics/Vector2';
+import { MIN_ZOOM, MAX_ZOOM, ZOOM_SPEED } from '../../core/battle/BattleConfig';
+import { Vector2, calculateZoom, createDefaultZoomState } from '../../core/physics';
 import { calculateCellSize } from '../../core/battle/grid/GridManager';
 
 import { useCanvasInput, ZoomState } from './hooks/useCanvasInput';
@@ -48,15 +48,11 @@ export function BattleCanvas({
   const hasSelection = selectedUnitIds.length > 0;
 
   // Zoom state: level, pan offset (for zooming toward mouse position)
-  const [zoomState, setZoomState] = useState<ZoomState>({
-    zoom: DEFAULT_ZOOM,
-    panX: 0,
-    panY: 0,
-  });
+  const [zoomState, setZoomState] = useState<ZoomState>(createDefaultZoomState);
 
   // Reset zoom when resetKey changes
   useEffect(() => {
-    setZoomState({ zoom: DEFAULT_ZOOM, panX: 0, panY: 0 });
+    setZoomState(createDefaultZoomState());
   }, [resetKey]);
 
   // Calculate cell size for grid snapping (only active during deployment)
@@ -65,7 +61,7 @@ export function BattleCanvas({
     return calculateCellSize(width, height);
   }, [width, height, state.hasStarted]);
 
-  // Handle mouse wheel for zoom
+  // Handle mouse wheel for zoom - delegates to core Zoom utilities
   const handleWheel = useCallback(
     (e: React.WheelEvent<HTMLCanvasElement>) => {
       e.preventDefault();
@@ -74,34 +70,17 @@ export function BattleCanvas({
       if (!canvas) return;
 
       const rect = canvas.getBoundingClientRect();
-      const mouseX = e.clientX - rect.left;
-      const mouseY = e.clientY - rect.top;
+      const mouseScreenPos = new Vector2(e.clientX - rect.left, e.clientY - rect.top);
 
-      setZoomState((prev) => {
-        // Calculate new zoom level
-        const zoomDelta = -e.deltaY * ZOOM_SPEED;
-        const newZoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, prev.zoom + zoomDelta * prev.zoom));
-
-        // Calculate the world position under the mouse before zoom
-        const worldX = (mouseX - prev.panX) / prev.zoom;
-        const worldY = (mouseY - prev.panY) / prev.zoom;
-
-        // Calculate new pan to keep mouse position fixed
-        const newPanX = mouseX - worldX * newZoom;
-        const newPanY = mouseY - worldY * newZoom;
-
-        // Clamp pan to keep view within bounds when zoomed
-        const maxPanX = 0;
-        const minPanX = width - width * newZoom;
-        const maxPanY = 0;
-        const minPanY = height - height * newZoom;
-
-        return {
-          zoom: newZoom,
-          panX: Math.max(minPanX, Math.min(maxPanX, newPanX)),
-          panY: Math.max(minPanY, Math.min(maxPanY, newPanY)),
-        };
-      });
+      setZoomState((prev) =>
+        calculateZoom(
+          prev,
+          mouseScreenPos,
+          e.deltaY,
+          { minZoom: MIN_ZOOM, maxZoom: MAX_ZOOM, zoomSpeed: ZOOM_SPEED },
+          { width, height }
+        )
+      );
     },
     [width, height]
   );
