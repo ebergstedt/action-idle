@@ -7,6 +7,7 @@
 
 import { UI_COLORS } from '../../core/theme/colors';
 import { BattleUpgradeDefinition, UpgradeCostResult } from '../../core/battle/upgrades/types';
+import { Button3D } from '../ui/Button3D';
 
 interface UpgradeCardProps {
   /** Upgrade definition */
@@ -26,36 +27,26 @@ export function UpgradeCard({ upgrade, level, costResult, onPurchase }: UpgradeC
 
   // Determine button state and text
   let buttonText: string;
-  let buttonStyle: React.CSSProperties;
+  let buttonColor: string;
+  let buttonTextColor: string;
+  const isDisabled = !canAfford || isMaxed || isLocked;
 
   if (isMaxed) {
     buttonText = 'MAX';
-    buttonStyle = {
-      backgroundColor: UI_COLORS.metalDark,
-      color: UI_COLORS.textMuted,
-      cursor: 'default',
-    };
+    buttonColor = UI_COLORS.metalDark;
+    buttonTextColor = UI_COLORS.textMuted;
   } else if (isLocked) {
     buttonText = 'LOCKED';
-    buttonStyle = {
-      backgroundColor: UI_COLORS.metalDark,
-      color: UI_COLORS.textMuted,
-      cursor: 'default',
-    };
+    buttonColor = UI_COLORS.metalDark;
+    buttonTextColor = UI_COLORS.textMuted;
   } else if (!canAfford) {
     buttonText = `${costResult.cost}V`;
-    buttonStyle = {
-      backgroundColor: UI_COLORS.metalDark,
-      color: UI_COLORS.warningRed,
-      cursor: 'not-allowed',
-    };
+    buttonColor = UI_COLORS.metalDark;
+    buttonTextColor = UI_COLORS.warningRed;
   } else {
     buttonText = `${costResult.cost}V`;
-    buttonStyle = {
-      backgroundColor: UI_COLORS.accentPrimary,
-      color: UI_COLORS.black,
-      cursor: 'pointer',
-    };
+    buttonColor = UI_COLORS.accentPrimary;
+    buttonTextColor = UI_COLORS.black;
   }
 
   // Prerequisite tooltip
@@ -95,14 +86,15 @@ export function UpgradeCard({ upgrade, level, costResult, onPurchase }: UpgradeC
             )}
           </div>
         </div>
-        <button
-          className="px-2 py-0.5 text-sm font-bold transition-opacity uppercase tracking-wide"
-          style={buttonStyle}
-          onClick={canAfford && !isMaxed && !isLocked ? onPurchase : undefined}
-          disabled={!canAfford || isMaxed || isLocked}
+        <Button3D
+          size="xs"
+          color={buttonColor}
+          textColor={buttonTextColor}
+          onClick={isDisabled ? undefined : onPurchase}
+          disabled={isDisabled}
         >
           {buttonText}
-        </button>
+        </Button3D>
       </div>
 
       {/* Prerequisite warning */}

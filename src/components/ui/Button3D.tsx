@@ -8,7 +8,7 @@
 import { useState, ReactNode, CSSProperties } from 'react';
 import { UI_COLORS } from '../../core/theme/colors';
 
-type ButtonSize = 'sm' | 'md' | 'lg';
+export type ButtonSize = 'xs' | 'sm' | 'md' | 'lg';
 
 interface Button3DProps {
   /** Button content */
@@ -25,10 +25,13 @@ interface Button3DProps {
   className?: string;
   /** Disabled state */
   disabled?: boolean;
+  /** Make button fill available width */
+  fullWidth?: boolean;
 }
 
 /** Size configurations for padding, font, and shadow depth */
 const SIZE_CONFIG: Record<ButtonSize, { padding: string; fontSize: string; depth: number }> = {
+  xs: { padding: '4px 10px', fontSize: '12px', depth: 1 },
   sm: { padding: '6px 16px', fontSize: '14px', depth: 2 },
   md: { padding: '8px 24px', fontSize: '16px', depth: 3 },
   lg: { padding: '10px 32px', fontSize: '18px', depth: 4 },

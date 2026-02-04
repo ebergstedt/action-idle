@@ -104,34 +104,30 @@ export function ControlsPanel({
         className="flex items-center gap-2 mb-4 pb-4"
         style={{ borderBottom: `1px solid ${UI_COLORS.metalDark}` }}
       >
-        <button
+        <Button3D
+          size="xs"
+          color={UI_COLORS.metalDark}
+          textColor={UI_COLORS.textPrimary}
           onClick={() => onWaveChange(waveNumber - 1)}
           disabled={waveNumber <= 1 || hasStarted}
-          className="px-3 py-1 font-bold disabled:opacity-30"
-          style={{
-            backgroundColor: UI_COLORS.metalDark,
-            color: UI_COLORS.textPrimary,
-          }}
         >
-          -
-        </button>
+          −
+        </Button3D>
         <div
           className="flex-1 text-center text-sm uppercase tracking-wide"
           style={{ color: UI_COLORS.textMuted }}
         >
           SELECT WAVE
         </div>
-        <button
+        <Button3D
+          size="xs"
+          color={UI_COLORS.metalDark}
+          textColor={UI_COLORS.textPrimary}
           onClick={() => onWaveChange(waveNumber + 1)}
           disabled={hasStarted}
-          className="px-3 py-1 font-bold disabled:opacity-30"
-          style={{
-            backgroundColor: UI_COLORS.metalDark,
-            color: UI_COLORS.textPrimary,
-          }}
         >
           +
-        </button>
+        </Button3D>
       </div>
 
       {/* Battle Controls */}
@@ -178,18 +174,16 @@ export function ControlsPanel({
         </div>
         <div className="flex gap-1">
           {speeds.map((speed) => (
-            <button
+            <Button3D
               key={speed}
+              size="xs"
+              color={battleSpeed === speed ? UI_COLORS.accentPrimary : UI_COLORS.metalDark}
+              textColor={battleSpeed === speed ? UI_COLORS.black : UI_COLORS.textMuted}
               onClick={() => onSpeedChange(speed)}
-              className="flex-1 py-1 font-mono text-sm"
-              style={{
-                backgroundColor: battleSpeed === speed ? UI_COLORS.accentPrimary : 'transparent',
-                color: battleSpeed === speed ? UI_COLORS.black : UI_COLORS.textMuted,
-                borderLeft: battleSpeed === speed ? 'none' : `1px solid ${UI_COLORS.metalDark}`,
-              }}
+              className="flex-1"
             >
               {speed}X
-            </button>
+            </Button3D>
           ))}
         </div>
       </div>
