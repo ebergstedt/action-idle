@@ -31,12 +31,20 @@ export function drawCastle(
 
   // Main structure - fills full 4x4 grid footprint
   ctx.fillStyle = color;
-  ctx.strokeStyle = UI_COLORS.metalDark;
-  ctx.lineWidth = 2;
 
   // Draw base platform (full rectangle matching grid footprint)
   ctx.fillRect(-halfWidth, -halfHeight, castleWidth, castleHeight);
-  ctx.strokeRect(-halfWidth, -halfHeight, castleWidth, castleHeight);
+
+  // Draw border inside the footprint (inset by half lineWidth to stay within grid)
+  ctx.strokeStyle = UI_COLORS.metalDark;
+  ctx.lineWidth = 2;
+  const borderInset = 1; // Half of lineWidth to keep stroke inside
+  ctx.strokeRect(
+    -halfWidth + borderInset,
+    -halfHeight + borderInset,
+    castleWidth - borderInset * 2,
+    castleHeight - borderInset * 2
+  );
 
   // Inner panel - darker recessed area
   const inset = Math.min(castleWidth, castleHeight) * 0.15;
