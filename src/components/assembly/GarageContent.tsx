@@ -8,6 +8,7 @@
 import { UnitSelector } from './UnitSelector';
 import { UnitStatsPanel } from './UnitStatsPanel';
 import { Panel3D } from '../ui/Panel3D';
+import { PanelTransition } from '../ui/PanelTransition';
 
 interface GarageContentProps {
   /** Currently selected unit type */
@@ -26,7 +27,9 @@ export function GarageContent({ selectedUnitType, onSelectUnit }: GarageContentP
 
       {/* Right panel - Unit stats (narrower) */}
       <Panel3D className="w-80 flex-shrink-0">
-        <UnitStatsPanel selectedUnitType={selectedUnitType} />
+        <PanelTransition transitionKey={selectedUnitType || 'none'}>
+          <UnitStatsPanel selectedUnitType={selectedUnitType} />
+        </PanelTransition>
       </Panel3D>
     </div>
   );

@@ -5,7 +5,7 @@
  * Clean console aesthetic with minimal styling.
  */
 
-import { ReactNode, CSSProperties } from 'react';
+import { ReactNode, CSSProperties, useState, useEffect } from 'react';
 import { UI_COLORS } from '../../core/theme/colors';
 
 interface Panel3DProps {
@@ -66,6 +66,14 @@ export function Panel3D({
   innerClassName = '',
   showMarkers = true,
 }: Panel3DProps) {
+  // AC6-style flicker on mount
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setMounted(true), 30);
+    return () => clearTimeout(timer);
+  }, []);
+
   // Flat transparent style
   const background = bgColor || `rgba(15, 18, 22, ${opacity})`;
 
@@ -92,7 +100,7 @@ export function Panel3D({
   };
 
   return (
-    <div className={className} style={wrapperStyle}>
+    <div className={className} style={{ ...wrapperStyle, opacity: mounted ? 1 : 0 }}>
       {/* Panel content */}
       <div className={innerClassName} style={panelStyle}>
         {/* Fine mesh overlay */}

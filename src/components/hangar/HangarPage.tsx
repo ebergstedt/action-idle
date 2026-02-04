@@ -9,6 +9,7 @@ import { ReactNode } from 'react';
 import { UI_COLORS } from '../../core/theme/colors';
 import { Panel3D } from '../ui/Panel3D';
 import { Button3D } from '../ui/Button3D';
+import { PanelTransition } from '../ui/PanelTransition';
 import hangarBg from '../../assets/hangar.png';
 
 export type HangarSection = 'garage' | 'assembly' | 'arena' | 'virtuality';
@@ -138,8 +139,10 @@ export function HangarPage({
             </div>
           </Panel3D>
 
-          {/* Main content area */}
-          <div className="flex-1 min-w-0">{children}</div>
+          {/* Main content area with transition */}
+          <div className="flex-1 min-w-0">
+            <PanelTransition transitionKey={currentSection}>{children}</PanelTransition>
+          </div>
         </div>
 
         {/* Bottom bar with Sortie */}
