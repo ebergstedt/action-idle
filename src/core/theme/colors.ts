@@ -1,17 +1,17 @@
 /**
  * Centralized Color Palette - Godot Portable
  *
- * Based on Medieval II: Total War faction colors.
- * All colors are defined as hex strings for easy portability to Godot.
+ * Inspired by Armored Core 6: Fires of Rubicon
+ * Industrial mech aesthetic with high-contrast accents.
  *
  * Godot Migration:
  * - Convert this file to GDScript or C#
  * - Replace hex strings with Color.html("#RRGGBB") or Color8(r, g, b)
- * - Example: Color.html("#C80000") or Color8(200, 0, 0)
+ * - Example: Color.html("#0A0E14") or Color8(10, 14, 20)
  */
 
 // =============================================================================
-// FACTION COLORS - Medieval II: Total War Palette
+// CORPORATION COLORS - AC6-Inspired Factions
 // =============================================================================
 
 export interface FactionColor {
@@ -20,158 +20,159 @@ export interface FactionColor {
 }
 
 export const FACTION_COLORS: Record<string, FactionColor> = {
-  // Western European Factions
-  england: { primary: '#C80000', secondary: '#FFFFFF' },
-  france: { primary: '#0000A0', secondary: '#FFFF00' },
-  hre: { primary: '#1E1E1E', secondary: '#FFFF00' },
-  spain: { primary: '#FFFF00', secondary: '#C80000' },
-  portugal: { primary: '#FFFFFF', secondary: '#0000C8' },
-  scotland: { primary: '#00004B', secondary: '#FFFFFF' },
-  denmark: { primary: '#820000', secondary: '#FFFFFF' },
+  // Major Corporations
+  arquebus: { primary: '#D4AF37', secondary: '#1A1A1A' }, // Gold/black - corporate elite
+  balam: { primary: '#8B0000', secondary: '#2A2A2A' }, // Deep red - military industrial
+  elcano: { primary: '#4A90A4', secondary: '#1E3A4A' }, // Steel blue - naval/logistics
+  rad: { primary: '#00CED1', secondary: '#0A2030' }, // Cyan - research/tech
 
-  // Mediterranean & Italian Factions
-  milan: { primary: '#006400', secondary: '#FFFFFF' },
-  venice: { primary: '#960000', secondary: '#0000A0' },
-  sicily: { primary: '#BEBEBE', secondary: '#000000' },
-  byzantium: { primary: '#4B0082', secondary: '#FFA500' },
+  // Mercenary Groups
+  redgun: { primary: '#FF4444', secondary: '#2A1A1A' }, // Bright red - aggressive
+  vesper: { primary: '#9370DB', secondary: '#1A1A2A' }, // Purple - elite mercenaries
 
-  // Eastern European & Middle Eastern Factions
-  russia: { primary: '#E1E1E1', secondary: '#C80000' },
-  poland: { primary: '#C80000', secondary: '#FFFFFF' },
-  hungary: { primary: '#FF6464', secondary: '#006400' },
-  moors: { primary: '#FFA500', secondary: '#FFFFFF' },
-  turks: { primary: '#90EE90', secondary: '#000000' },
-  egypt: { primary: '#FFFFE0', secondary: '#000000' },
+  // Independent Forces
+  rubicon: { primary: '#00FF88', secondary: '#0A1A14' }, // Coral green - liberation
+  dosers: { primary: '#FF8C00', secondary: '#2A1A0A' }, // Orange - scavengers
 
-  // Special & Non-Playable Factions
-  papalStates: { primary: '#FFFFFF', secondary: '#FFFF00' },
-  aztecs: { primary: '#008080', secondary: '#FFFF00' },
-  mongols: { primary: '#B49632', secondary: '#000000' },
-  timurids: { primary: '#000000', secondary: '#C80000' },
-  rebels: { primary: '#649664', secondary: '#000000' },
+  // Special
+  ayre: { primary: '#87CEEB', secondary: '#0A1420' }, // Light blue - ethereal
+  allmind: { primary: '#FFFFFF', secondary: '#1A1A1A' }, // White - AI/neutral
 } as const;
 
 // =============================================================================
-// UI COLORS - Medieval Parchment Theme
+// UI COLORS - Industrial Mech Theme
 // =============================================================================
 
 export const UI_COLORS = {
-  // Parchment backgrounds
-  parchmentBase: '#D8C9A6',
-  parchmentShadow: '#B8A681',
-  parchmentDark: '#A89871',
+  // Panel backgrounds (darkest to lightest)
+  panelDark: '#0A0E14', // Deepest black-blue
+  panelBase: '#12171E', // Standard panel
+  panelLight: '#1A2028', // Elevated panel
+  panelHighlight: '#242C38', // Hover/active state
 
-  // Ink and text
-  inkBrown: '#5C4033',
-  inkBlack: '#2C1810',
-  inkFaded: '#8B7355',
+  // Metallic surfaces
+  metalDark: '#2A323E', // Dark steel
+  metalBase: '#3A4452', // Standard metal
+  metalLight: '#4A5668', // Light metal
+  metalHighlight: '#5A6878', // Polished metal
+
+  // Text colors
+  textPrimary: '#E8ECF0', // Primary text - off-white
+  textSecondary: '#9AA4B0', // Secondary text - steel gray
+  textMuted: '#5A6470', // Muted/disabled
   black: '#000000',
   white: '#FFFFFF',
 
-  // Accents
-  goldPrimary: '#FFD700',
-  goldDark: '#B8860B',
-  goldLight: '#FFEC8B',
+  // Accent colors
+  accentPrimary: '#F5A623', // Warning amber - primary accent
+  accentSecondary: '#00A8E8', // Tech blue - secondary accent
+  accentTertiary: '#00FF88', // Coral green - success/friendly
 
-  // Status colors
-  successGreen: '#4CAF50',
-  warningYellow: '#FFC107',
-  dangerRed: '#F44336',
-  infoBlue: '#2196F3',
+  // Warning/Status colors
+  warningRed: '#FF4444', // Hostile/danger
+  warningOrange: '#FF8C00', // Caution
+  warningYellow: '#FFD700', // Alert
+  successGreen: '#00CC66', // Success/online
+  infoBlue: '#00A8E8', // Information
+  criticalRed: '#CC0000', // Critical/destroyed
 
-  // Neutral
-  neutralGray: '#808080',
+  // System colors
+  systemOnline: '#00FF88', // System online
+  systemOffline: '#5A6470', // System offline
+  systemWarning: '#FF8C00', // System warning
+  systemCritical: '#FF4444', // System critical
 } as const;
 
 // =============================================================================
-// ENVIRONMENTAL COLORS - Campaign Map
+// ENVIRONMENTAL COLORS - Industrial/Wasteland
 // =============================================================================
 
 export const ENV_COLORS = {
-  seaDeepNavy: '#1A2B44',
-  seaShallow: '#2E4A62',
-  forestGreen: '#2D4C1E',
-  desertOchre: '#C2A366',
-  mountainSlate: '#6F7275',
-  grassland: '#4A7023',
-  snow: '#F0F8FF',
+  // Rubicon landscape
+  wastelandGray: '#3A3A3A',
+  industrialRust: '#8B4513',
+  coralRed: '#FF6B6B',
+  toxicGreen: '#00FF88',
+  skyPolluted: '#4A4A5A',
+  metalDebris: '#6A7080',
+  ashGray: '#505050',
 } as const;
 
 // =============================================================================
-// GAME COLORS - Battle Arena
+// GAME COLORS - Combat Arena
 // =============================================================================
 
 export const ARENA_COLORS = {
-  // Background - parchment/paper like medieval maps
-  background: UI_COLORS.parchmentBase, // #D8C9A6 - warm paper yellow
-  gridLine: UI_COLORS.parchmentShadow, // #B8A681 - subtle darker lines
+  // Background - industrial combat arena floor
+  background: '#12171E', // Dark steel floor
+  gridLine: '#1E252E', // Subtle grid lines
+  gridLineAccent: '#2A3542', // Major grid lines
 
-  // Zones - using faction colors with better visibility
-  // Enemy (England red) - danger tones at top
-  enemyZoneFill: 'rgba(200, 0, 0, 0.20)', // England primary red
-  enemyZoneBorder: 'rgba(200, 0, 0, 0.6)',
+  // Combat zones
+  // Enemy zone - hostile red/orange tones
+  enemyZoneFill: 'rgba(255, 68, 68, 0.15)', // Warning red
+  enemyZoneBorder: 'rgba(255, 68, 68, 0.5)',
 
-  // Ally (Milan green) - friendly tones at bottom
-  allyZoneFill: 'rgba(0, 100, 0, 0.20)', // Milan primary green
-  allyZoneBorder: 'rgba(0, 100, 0, 0.6)',
+  // Ally zone - tech blue tones
+  allyZoneFill: 'rgba(0, 168, 232, 0.15)', // Tech blue
+  allyZoneBorder: 'rgba(0, 168, 232, 0.5)',
 
   // Selection and indicators
-  selectionRing: UI_COLORS.goldPrimary,
-  moveIndicator: 'rgba(92, 64, 51, 0.3)', // Ink brown tint for allied units
-  unitOutline: UI_COLORS.inkBlack, // #2C1810 - dark ink outline
-  boxSelectFill: 'rgba(0, 200, 255, 0.15)', // Cyan selection box fill
-  boxSelectBorder: 'rgba(0, 200, 255, 0.8)', // Cyan selection box border
+  selectionRing: '#F5A623', // Amber highlight
+  moveIndicator: 'rgba(0, 168, 232, 0.3)', // Blue movement ghost
+  unitOutline: '#1A1A1A', // Dark outline
+  boxSelectFill: 'rgba(0, 255, 136, 0.15)', // Coral green selection
+  boxSelectBorder: 'rgba(0, 255, 136, 0.8)',
 
-  // Health bar
-  healthBarBg: '#000000', // Black background for contrast
-  healthBarOutline: '#000000', // Black outline
-  healthHigh: '#22C55E', // Bright green (easy to see)
-  healthMedium: '#EAB308', // Bright yellow (warning)
-  healthLow: '#EF4444', // Bright red (danger)
-  healthGhost: '#8B0000', // Dark red ghost damage indicator
-  hitFlash: '#FFFFFF', // White flash when unit takes damage
-  damageNumber: '#FF4444', // Red for all damage
-  healingNumber: '#44FF44', // Green for healing (placeholder)
-  damageNumberOutline: '#000000', // Black outline for readability
-  unitShadow: '#4A4A4A', // Dark gray shadow under units
-  dustParticle: '#8B7355', // Brown dust color matching parchment theme
+  // Health bar - high contrast for visibility
+  healthBarBg: '#0A0E14', // Deep black
+  healthBarOutline: '#2A323E', // Metal edge
+  healthHigh: '#00CC66', // Bright green
+  healthMedium: '#FFD700', // Warning gold
+  healthLow: '#FF4444', // Critical red
+  healthGhost: '#660000', // Dark red ghost damage
+  hitFlash: '#FFFFFF', // White flash on hit
+  damageNumber: '#FF6B6B', // Coral red damage
+  healingNumber: '#00FF88', // Coral green healing
+  damageNumberOutline: '#000000', // Black outline
 
-  // Grid overlay zones
-  noMansLand: '#8B5A2B', // Brown for no man's land between deployment zones
-  flankZone: '#654321', // Darker brown for flank zones (sides)
+  // Unit visuals
+  unitShadow: '#0A0E14', // Deep shadow
+  dustParticle: '#4A5668', // Metal dust/sparks
+
+  // Arena zones
+  noMansLand: '#1A2028', // Contested zone
+  flankZone: '#151B22', // Flank zones
 } as const;
 
 // =============================================================================
-// TEAM COLORS - Greenies vs Redwings
+// TEAM COLORS - Combat Factions
 // =============================================================================
 
 export type Team = 'player' | 'enemy';
 
 /**
  * Team lore names for display purposes.
- * - Greenies: The player's faction (green theme)
- * - Redwings: The enemy faction (red theme)
+ * Player forces vs hostile combatants.
  */
 export const TEAM_NAMES: Record<Team, string> = {
-  player: 'Greenies',
-  enemy: 'Redwings',
+  player: 'Allied',
+  enemy: 'Hostile',
 } as const;
 
 /**
- * Base colors for each team. Unit types are variations of these.
- * Greenies (player): Green (Milan-inspired)
- * Redwings (enemy): Red (England-inspired)
+ * Base colors for each team.
+ * Player: Cool blue/teal (defensive, tactical)
+ * Enemy: Warning red/orange (aggressive, hostile)
  */
 export const TEAM_BASE_COLORS: Record<Team, string> = {
-  player: '#006400', // Greenies - Forest green
-  enemy: '#C80000', // Redwings - Deep red
+  player: '#00A8E8', // Tech blue
+  enemy: '#FF4444', // Warning red
 } as const;
 
 export const TEAM_COLORS: Record<Team, FactionColor> = {
-  // Greenies (player) - nature/growth theme
-  player: FACTION_COLORS.milan,
-  // Redwings (enemy) - danger/aggression theme
-  enemy: FACTION_COLORS.england,
+  player: { primary: '#00A8E8', secondary: '#0A2030' },
+  enemy: { primary: '#FF4444', secondary: '#2A1A1A' },
 } as const;
 
 /**
@@ -196,7 +197,7 @@ export function getTeamName(team: Team): string {
 }
 
 // =============================================================================
-// UNIT TYPE COLORS - Variations of Team Base Color
+// UNIT TYPE COLORS - Mech Class Variations
 // =============================================================================
 
 export type UnitType = 'hound' | 'fang' | 'crawler' | 'arclight' | 'marksman' | 'void_eye';
@@ -207,47 +208,42 @@ export interface UnitTypeColors {
 }
 
 /**
- * Unit colors are variations of team base colors.
- * This keeps team identity clear while distinguishing unit types.
- * Variations are CONSISTENT across teams:
+ * Unit colors are class-based variations of team colors.
+ * Each class has distinct visual identity while maintaining team recognition.
  *
- * - Hound: Base color (standard melee)
- * - Fang: Lighter shade (ranged = further back, lighter)
- * - Crawler: Darker shade (swarm = darker)
- *
- * Player (green): #004D00 (dark) -> #006400 (base) -> #228B22 (light)
- * Enemy (red):    #820000 (dark) -> #C80000 (base) -> #FF6464 (light)
+ * Player (blue spectrum): #0080B0 (dark) -> #00A8E8 (base) -> #40C8FF (light)
+ * Enemy (red spectrum):   #AA2222 (dark) -> #FF4444 (base) -> #FF8888 (light)
  */
 export const UNIT_TYPE_COLORS: Record<UnitType, UnitTypeColors> = {
-  // Hound - melee infantry, uses base team color
+  // Hound - assault class, base team color
   hound: {
-    player: '#00AA00', // Bright green
-    enemy: '#C80000', // Base red
+    player: '#00A8E8', // Tech blue
+    enemy: '#FF4444', // Warning red
   },
-  // Fang - ranged swarm, lighter shade
+  // Fang - light ranged, lighter shade
   fang: {
-    player: '#32CD32', // Lime green (lighter)
-    enemy: '#FF6464', // Coral red (lighter)
+    player: '#40C8FF', // Light blue
+    enemy: '#FF7777', // Light red
   },
-  // Crawler - melee swarm, darker shade
+  // Crawler - swarm class, darker shade
   crawler: {
-    player: '#008000', // Medium green (darker but still visible)
-    enemy: '#820000', // Maroon (darker)
+    player: '#0080B0', // Dark blue
+    enemy: '#CC3333', // Dark red
   },
-  // Arclight - artillery, blueish tint (heavy firepower)
+  // Arclight - artillery class, amber/orange tint
   arclight: {
-    player: '#2E8B57', // Sea green (blue-green tint)
-    enemy: '#B22222', // Firebrick (orange-red tint)
+    player: '#00B8A0', // Teal (heavy weapons)
+    enemy: '#FF6600', // Orange (explosive)
   },
-  // Marksman - sniper, purple tint (precision)
+  // Marksman - sniper class, purple tint (precision)
   marksman: {
-    player: '#3CB371', // Medium sea green (teal tint)
-    enemy: '#DC143C', // Crimson (pink-red tint)
+    player: '#6090E0', // Steel blue
+    enemy: '#E04060', // Crimson
   },
-  // Void Eye - scout, cyan tint (mysterious/ethereal)
+  // Void Eye - recon class, cyan tint (sensors)
   void_eye: {
-    player: '#20B2AA', // Light sea green (cyan tint)
-    enemy: '#FF4500', // Orange red (fiery tint)
+    player: '#00E8D0', // Bright cyan
+    enemy: '#FF8844', // Amber-orange
   },
 } as const;
 
@@ -256,18 +252,18 @@ export const UNIT_TYPE_COLORS: Record<UnitType, UnitTypeColors> = {
 // =============================================================================
 
 export const PROJECTILE_COLORS = {
-  player: FACTION_COLORS.turks.primary, // Light green
-  enemy: FACTION_COLORS.hungary.primary, // Light red/pink
+  player: '#00FFFF', // Cyan energy
+  enemy: '#FF6600', // Orange tracer
 } as const;
 
 // =============================================================================
-// CASTLE COLORS
+// STRUCTURE COLORS (Castles/Bases)
 // =============================================================================
 
 export const CASTLE_COLORS = {
-  player: '#808080', // Grey for both teams
-  enemy: '#808080',
-  door: '#4A3520', // Dark brown for castle door/gate
+  player: '#3A4452', // Dark steel
+  enemy: '#3A4452', // Dark steel
+  door: '#2A323E', // Darker metal gate
 } as const;
 
 // =============================================================================
@@ -275,44 +271,44 @@ export const CASTLE_COLORS = {
 // =============================================================================
 
 export const DEBUFF_COLORS = {
-  /** Color for castle death shockwave debuff indicator */
-  shockwave: '#4A90D9', // Light blue
+  /** Color for structure death shockwave/EMP effect */
+  shockwave: '#00A8E8', // Tech blue
   /** Color for the expanding shockwave ring */
-  shockwaveRing: 'rgba(74, 144, 217, 0.6)',
+  shockwaveRing: 'rgba(0, 168, 232, 0.6)',
   /** Inner glow color for shockwave */
-  shockwaveGlow: 'rgba(135, 206, 250, 0.4)',
+  shockwaveGlow: 'rgba(0, 255, 255, 0.4)',
 } as const;
 
 // =============================================================================
-// WAX SEAL COLORS - Victory/Defeat Screen
+// BATTLE RESULT COLORS - Industrial Victory/Defeat
 // =============================================================================
 
 export const WAX_SEAL_COLORS = {
   victory: {
-    primary: '#2E7D32', // Forest green
-    secondary: '#1B5E20', // Dark green
-    highlight: '#4CAF50', // Light green highlight
+    primary: '#00CC66', // Success green
+    secondary: '#008844', // Dark green
+    highlight: '#00FF88', // Bright highlight
     text: '#FFFFFF',
   },
   defeat: {
-    primary: '#8B0000', // Dark red
-    secondary: '#5C0000', // Darker red
-    highlight: '#C62828', // Light red highlight
+    primary: '#CC0000', // Critical red
+    secondary: '#880000', // Dark red
+    highlight: '#FF4444', // Warning highlight
     text: '#FFFFFF',
   },
   draw: {
-    primary: '#616161', // Gray
-    secondary: '#424242', // Dark gray
-    highlight: '#9E9E9E', // Light gray highlight
+    primary: '#4A5668', // Metal gray
+    secondary: '#2A323E', // Dark metal
+    highlight: '#6A7888', // Light metal
     text: '#FFFFFF',
   },
 } as const;
 
 /**
- * Get castle color based on team
+ * Get structure color based on team
  */
 export function getCastleColor(_team: Team): string {
-  return '#808080'; // Grey for all castles
+  return '#3A4452'; // Uniform steel for all structures
 }
 
 // =============================================================================
@@ -321,36 +317,36 @@ export function getCastleColor(_team: Team): string {
 
 export const DARK_THEME = {
   // Backgrounds (darkest to lightest)
-  bgPrimary: '#0F0F1A', // Darkest - main app bg
-  bgSecondary: '#1A1A2E', // Cards, panels
-  bgTertiary: '#252540', // Buttons, inputs
-  bgHover: '#2F2F50', // Hover states
-  bgActive: '#3A3A60', // Active/pressed states
+  bgPrimary: '#0A0E14', // Deepest - main app bg
+  bgSecondary: '#12171E', // Cards, panels
+  bgTertiary: '#1A2028', // Buttons, inputs
+  bgHover: '#242C38', // Hover states
+  bgActive: '#2E3848', // Active/pressed states
 
   // Borders
-  borderPrimary: '#2A2A4E',
-  borderSecondary: '#3A3A6E',
-  borderAccent: '#4A4A8E',
+  borderPrimary: '#1E252E',
+  borderSecondary: '#2A3542',
+  borderAccent: '#3A4552',
 
   // Text (lightest to darkest)
-  textPrimary: '#F5F5F5', // Main text
-  textSecondary: '#B8B8C8', // Labels, descriptions
-  textTertiary: '#808090', // Muted, placeholders
-  textDisabled: '#505060', // Disabled state
+  textPrimary: '#E8ECF0', // Main text
+  textSecondary: '#9AA4B0', // Labels, descriptions
+  textTertiary: '#6A7480', // Muted, placeholders
+  textDisabled: '#4A5460', // Disabled state
 
-  // Accent colors (using faction colors)
-  accentGold: UI_COLORS.goldPrimary,
-  accentGoldDark: UI_COLORS.goldDark,
-  accentRed: FACTION_COLORS.england.primary,
-  accentBlue: FACTION_COLORS.france.primary,
-  accentGreen: FACTION_COLORS.milan.primary,
-  accentPurple: FACTION_COLORS.byzantium.primary,
+  // Accent colors
+  accentGold: '#F5A623', // Primary accent (amber)
+  accentGoldDark: '#CC8800', // Darker amber
+  accentRed: '#FF4444', // Warning/hostile
+  accentBlue: '#00A8E8', // Info/friendly
+  accentGreen: '#00CC66', // Success
+  accentPurple: '#9370DB', // Special/elite
 
   // Semantic colors
-  success: UI_COLORS.successGreen,
-  warning: UI_COLORS.warningYellow,
-  danger: UI_COLORS.dangerRed,
-  info: UI_COLORS.infoBlue,
+  success: '#00CC66',
+  warning: '#FF8C00',
+  danger: '#FF4444',
+  info: '#00A8E8',
 } as const;
 
 // =============================================================================

@@ -15,9 +15,9 @@ import { ControlsPanel } from './ControlsPanel';
 import { getUniformSelectionUnit } from '../../core/battle/SelectionManager';
 import { UI_COLORS } from '../../core/theme/colors';
 
-// Parchment theme styles
+// Industrial theme styles
 const styles = {
-  panelBg: { backgroundColor: UI_COLORS.parchmentShadow },
+  panelBg: { backgroundColor: UI_COLORS.panelLight },
 };
 
 export function BattleView() {

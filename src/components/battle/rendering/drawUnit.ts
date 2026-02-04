@@ -234,6 +234,7 @@ export function drawUnitBody(
 
 /**
  * Draw unit health bar with ghost health effect.
+ * Health bar width and height scale with unit's visual size (based on individual unit grid size).
  */
 export function drawHealthBar(
   ctx: CanvasRenderingContext2D,
@@ -249,9 +250,14 @@ export function drawHealthBar(
   ctx.save();
   ctx.translate(renderX, renderY);
 
-  const barWidth = size * 2.5;
-  const barHeight = 6;
-  const barY = -size - 20;
+  // Health bar width matches unit's visual diameter (size is radius)
+  const barWidth = size * 2;
+
+  // Health bar height: 3px baseline, thin and proportional to unit size
+  const barHeight = Math.max(2, size * 0.3);
+
+  // Position above unit with small gap
+  const barY = -size - 8;
 
   // Background
   ctx.fillStyle = ARENA_COLORS.healthBarBg;

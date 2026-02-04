@@ -40,6 +40,8 @@ export interface InkSplatter {
   maxLifetime: number;
   landed: boolean;
   targetY: number;
+  /** Team that spawned this debris (for team-colored rendering) */
+  team: 'player' | 'enemy';
 }
 
 /**
@@ -51,6 +53,8 @@ export interface InkSpawnUnit {
   health: number;
   deathFadeTimer: number;
   visualOffset?: { x: number; y: number };
+  /** Team for team-colored debris */
+  team: 'player' | 'enemy';
 }
 
 /**
@@ -129,6 +133,7 @@ export function spawnHitSplatters(unit: InkSpawnUnit): InkSplatter[] {
       maxLifetime: INK_SPLATTER_LIFETIME,
       landed: false,
       targetY: unit.position.y + Math.sin(angle) * targetDistance + 10,
+      team: unit.team,
     });
   }
 
@@ -156,6 +161,7 @@ export function spawnDeathSplatters(unit: InkSpawnUnit): InkSplatter[] {
       maxLifetime: INK_SPLATTER_LIFETIME,
       landed: true,
       targetY: unit.position.y,
+      team: unit.team,
     });
   }
 

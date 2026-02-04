@@ -77,13 +77,13 @@ export const INK_SPLATTER_SPREAD = 15;
 export const INK_SPLATTER_LIFETIME = 3.0;
 
 /**
- * Ink splatter base opacity. Set to 0.5 so overlapping splatters
- * naturally stack and become darker (source-over blending).
- * - 1 splatter: 0.5 opacity
- * - 2 overlapping: ~0.75 opacity
- * - 3 overlapping: ~0.875 opacity
+ * Ink splatter base opacity. Reduced for AC6 aesthetic
+ * to create subtle team-colored debris marks.
+ * - 1 splatter: 0.25 opacity
+ * - 2 overlapping: ~0.44 opacity
+ * - 3 overlapping: ~0.58 opacity
  */
-export const INK_SPLATTER_OPACITY = 0.5;
+export const INK_SPLATTER_OPACITY = 0.25;
 
 /**
  * Ink splatter gravity (pixels per second squared).

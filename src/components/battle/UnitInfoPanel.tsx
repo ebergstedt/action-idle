@@ -10,12 +10,12 @@ import { UI_COLORS, ARENA_COLORS } from '../../core/theme/colors';
 import { calculateDPS } from '../../core/battle/BattleConfig';
 import { ModifierDisplay } from './ModifierDisplay';
 
-// Parchment theme styles
+// Industrial theme styles
 const styles = {
-  text: { color: UI_COLORS.black },
-  textFaded: { color: UI_COLORS.black },
-  textDark: { color: UI_COLORS.black },
-  healthBarBg: { backgroundColor: UI_COLORS.black },
+  text: { color: UI_COLORS.textPrimary },
+  textFaded: { color: UI_COLORS.textSecondary },
+  textDark: { color: UI_COLORS.textPrimary },
+  healthBarBg: { backgroundColor: UI_COLORS.panelDark },
 };
 
 /**
@@ -42,7 +42,7 @@ function StatRow({
   return (
     <div className="flex justify-between">
       <span style={styles.textFaded}>{label}</span>
-      <span style={bold ? { color: UI_COLORS.black, fontWeight: 'bold' } : styles.textDark}>
+      <span style={bold ? { color: UI_COLORS.textPrimary, fontWeight: 'bold' } : styles.textDark}>
         {value}
       </span>
     </div>
@@ -63,7 +63,7 @@ function AttackStatsSection({
 }) {
   const dps = calculateDPS(damage, attackSpeed);
   return (
-    <div className="pb-2 mb-2" style={{ borderBottom: `1px solid ${UI_COLORS.parchmentDark}` }}>
+    <div className="pb-2 mb-2" style={{ borderBottom: `1px solid ${UI_COLORS.metalDark}` }}>
       <div className="text-sm mb-1" style={styles.textFaded}>
         {title}
       </div>
@@ -109,14 +109,14 @@ export function UnitInfoPanel({ unit, squadCount = 1, onDeselect }: UnitInfoPane
             color: UI_COLORS.white,
           }}
         >
-          {unit.team === 'player' ? 'Allied' : 'Enemy'}
+          {unit.team === 'player' ? 'Allied' : 'Hostile'}
         </span>
       </div>
 
       {/* Health bar */}
       <div>
         <div className="flex justify-between text-sm mb-1" style={styles.textFaded}>
-          <span>Health</span>
+          <span>AP</span>
           <span>
             {Math.round(unit.health)} / {unit.stats.maxHealth}
           </span>
@@ -156,12 +156,12 @@ export function UnitInfoPanel({ unit, squadCount = 1, onDeselect }: UnitInfoPane
           />
         )}
 
-        <StatRow label="Move Speed" value={unit.stats.moveSpeed} />
+        <StatRow label="Boost Speed" value={unit.stats.moveSpeed} />
       </div>
 
       {/* Active Modifiers (Buffs/Debuffs) */}
       {unit.activeModifiers.length > 0 && (
-        <div className="pt-2" style={{ borderTop: `1px solid ${UI_COLORS.parchmentDark}` }}>
+        <div className="pt-2" style={{ borderTop: `1px solid ${UI_COLORS.metalDark}` }}>
           <div className="text-sm mb-2" style={styles.textFaded}>
             Active Effects
           </div>
@@ -180,7 +180,7 @@ export function UnitInfoPanel({ unit, squadCount = 1, onDeselect }: UnitInfoPane
       {/* Position */}
       <div
         className="text-sm pt-2"
-        style={{ ...styles.textFaded, borderTop: `1px solid ${UI_COLORS.parchmentDark}` }}
+        style={{ ...styles.textFaded, borderTop: `1px solid ${UI_COLORS.metalDark}` }}
       >
         Position: ({Math.round(unit.position.x)}, {Math.round(unit.position.y)})
       </div>

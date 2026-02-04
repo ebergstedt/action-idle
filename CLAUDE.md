@@ -425,7 +425,7 @@ destroy(): void {
 | `src/core/battle/modifiers/` | Stat modification system with stacking rules |
 | `src/core/battle/abilities/` | Trigger-based abilities (on_kill, on_hit, etc.) |
 | `src/core/battle/upgrades/` | Battle upgrades with cost scaling |
-| `src/core/theme/colors.ts` | Centralized color palette (Medieval II factions) |
+| `src/core/theme/colors.ts` | Centralized color palette (AC6-inspired industrial mech theme) |
 | `src/core/physics/Vector2.ts` | 2D math utilities for positioning |
 
 **React Layer (Thin wrappers - uses render data interface):**
@@ -550,7 +550,7 @@ describe('MyFunction', () => {
 5. **Interface-Based Persistence** - `SaveManager` depends on `IPersistenceAdapter`
 6. **Minimum Font Size** - Never use `text-xs` in Tailwind. Minimum is `text-sm` for readability
 7. **Use Theme Colors** - Never use hardcoded hex colors. Always reference `UI_COLORS` or other theme constants from `src/core/theme/colors.ts`
-8. **No Gold/Yellow Text** - Never use gold or yellow colors (`UI_COLORS.goldPrimary`, `UI_COLORS.goldDark`, etc.) for text. They are hard to read on parchment backgrounds. Use `UI_COLORS.black` for text instead
+8. **Use Proper Text Colors** - Use `UI_COLORS.textPrimary` for main text, `UI_COLORS.textSecondary` for labels, and `UI_COLORS.textMuted` for disabled/hint text. Accent colors like `UI_COLORS.accentPrimary` can be used for emphasis but not body text
 9. **No Magic Numbers** - All gameplay constants must be in `BattleConfig.ts`. Never use literal numbers like `0.3`, `100`, `2` for gameplay-affecting values
 10. **Single Event Emission** - Each event type (`killed`, `damaged`, etc.) must be emitted from exactly ONE place in the code. Never emit the same event from multiple methods
 11. **Always Call destroy()** - When removing entities, always call `destroy()` to emit the `destroyed` event and clear listeners. Never just filter entities out of arrays
@@ -571,7 +571,7 @@ Uses `break_infinity.js` for numbers up to 10^9e15. Key functions in `src/core/u
 
 ## Color System
 
-All colors are in `src/core/theme/colors.ts` - never use hardcoded hex values. Based on Medieval II faction colors. Includes utility functions (`hexToRgba`, `getUnitColor`). For Godot, convert hex to `Color.html()` or `Color8()`.
+All colors are in `src/core/theme/colors.ts` - never use hardcoded hex values. Inspired by Armored Core 6 industrial mech aesthetic with dark panels, metallic surfaces, and high-contrast accent colors. Includes utility functions (`hexToRgba`, `getUnitColor`). For Godot, convert hex to `Color.html()` or `Color8()`.
 
 ## Godot Migration Path
 

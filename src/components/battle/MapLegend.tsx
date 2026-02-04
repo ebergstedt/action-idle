@@ -1,8 +1,8 @@
 /**
  * Map Legend Component
  *
- * A decorative legend box explaining unit types,
- * styled like a medieval map legend.
+ * A legend box explaining unit types,
+ * styled with industrial mech aesthetic.
  */
 
 import { UI_COLORS, UNIT_TYPE_COLORS } from '../../core/theme/colors';
@@ -16,36 +16,35 @@ export function MapLegend({ className = '' }: MapLegendProps) {
     <div
       className={`relative ${className}`}
       style={{
-        backgroundColor: UI_COLORS.parchmentBase,
-        border: `2px solid ${UI_COLORS.inkBrown}`,
+        backgroundColor: UI_COLORS.panelBase,
+        border: `2px solid ${UI_COLORS.metalDark}`,
         borderRadius: '4px',
         padding: '12px',
-        boxShadow: `inset 0 0 10px ${UI_COLORS.parchmentDark}`,
+        boxShadow: `inset 0 0 10px ${UI_COLORS.panelDark}`,
       }}
     >
-      {/* Decorative corner flourishes */}
-      <CornerFlourish position="top-left" />
-      <CornerFlourish position="top-right" />
-      <CornerFlourish position="bottom-left" />
-      <CornerFlourish position="bottom-right" />
+      {/* Decorative corner accents */}
+      <CornerAccent position="top-left" />
+      <CornerAccent position="top-right" />
+      <CornerAccent position="bottom-left" />
+      <CornerAccent position="bottom-right" />
 
       {/* Title with decorative underline */}
       <div className="text-center mb-3">
         <h4
           className="text-sm font-bold tracking-wider uppercase"
           style={{
-            color: UI_COLORS.inkBlack,
-            fontFamily: 'serif',
+            color: UI_COLORS.textPrimary,
           }}
         >
-          Unit Types
+          Unit Classes
         </h4>
         <div
           className="mx-auto mt-1"
           style={{
             width: '60px',
             height: '2px',
-            background: `linear-gradient(90deg, transparent, ${UI_COLORS.inkBrown}, transparent)`,
+            background: `linear-gradient(90deg, transparent, ${UI_COLORS.metalLight}, transparent)`,
           }}
         />
       </div>
@@ -56,7 +55,7 @@ export function MapLegend({ className = '' }: MapLegendProps) {
           shape="square"
           color={UNIT_TYPE_COLORS.hound.player}
           name="Hound"
-          description="Melee tank"
+          description="Assault"
         />
         <LegendEntry
           shape="triangle"
@@ -68,7 +67,7 @@ export function MapLegend({ className = '' }: MapLegendProps) {
           shape="circle"
           color={UNIT_TYPE_COLORS.crawler.player}
           name="Crawler"
-          description="Fast melee"
+          description="Swarm"
         />
       </div>
 
@@ -78,7 +77,7 @@ export function MapLegend({ className = '' }: MapLegendProps) {
         style={{
           width: '40px',
           height: '1px',
-          background: `linear-gradient(90deg, transparent, ${UI_COLORS.inkFaded}, transparent)`,
+          background: `linear-gradient(90deg, transparent, ${UI_COLORS.textMuted}, transparent)`,
         }}
       />
     </div>
@@ -99,18 +98,13 @@ function LegendEntry({ shape, color, name, description }: LegendEntryProps) {
         <UnitShape shape={shape} color={color} size={12} />
       </div>
       <div className="flex-1 flex items-baseline gap-1">
-        <span
-          className="text-sm font-semibold"
-          style={{ color: UI_COLORS.inkBlack, fontFamily: 'serif' }}
-        >
+        <span className="text-sm font-semibold" style={{ color: UI_COLORS.textPrimary }}>
           {name}
         </span>
         <span
           className="text-sm"
           style={{
-            color: UI_COLORS.inkBrown,
-            fontFamily: 'serif',
-            fontStyle: 'italic',
+            color: UI_COLORS.textSecondary,
           }}
         >
           - {description}
@@ -134,7 +128,7 @@ function UnitShape({ shape, color, size }: UnitShapeProps) {
           width: size,
           height: size,
           backgroundColor: color,
-          border: `1px solid ${UI_COLORS.inkBlack}`,
+          border: `1px solid ${UI_COLORS.textPrimary}`,
         }}
       />
     );
@@ -162,17 +156,17 @@ function UnitShape({ shape, color, size }: UnitShapeProps) {
         height: size,
         backgroundColor: color,
         borderRadius: '50%',
-        border: `1px solid ${UI_COLORS.inkBlack}`,
+        border: `1px solid ${UI_COLORS.textPrimary}`,
       }}
     />
   );
 }
 
-interface CornerFlourishProps {
+interface CornerAccentProps {
   position: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
 }
 
-function CornerFlourish({ position }: CornerFlourishProps) {
+function CornerAccent({ position }: CornerAccentProps) {
   const isTop = position.includes('top');
   const isLeft = position.includes('left');
 
@@ -180,7 +174,7 @@ function CornerFlourish({ position }: CornerFlourishProps) {
     position: 'absolute',
     width: '8px',
     height: '8px',
-    borderColor: UI_COLORS.inkBrown,
+    borderColor: UI_COLORS.metalLight,
     borderStyle: 'solid',
     borderWidth: 0,
   };

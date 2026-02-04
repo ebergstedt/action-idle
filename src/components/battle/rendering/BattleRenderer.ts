@@ -7,7 +7,6 @@
 
 import type { BattleState } from '../../../core/battle';
 import { ZONE_HEIGHT_PERCENT } from '../../../core/battle';
-import { DUST_PARTICLE_SIZE } from '../../../core/battle/BattleConfig';
 import { ARENA_COLORS } from '../../../core/theme/colors';
 import {
   getSelectionBox,
@@ -25,7 +24,7 @@ import { drawInkSplatters } from './drawInkSplatter';
 import { drawAimingLaser } from './drawLaser';
 import { drawBackgroundGrid, drawFlankZones } from './drawGrid';
 import { calculateCellSize } from '../../../core/battle/grid/GridManager';
-import type { DustParticle, InkSplatter } from '../../../core/battle/particles';
+import type { InkSplatter } from '../../../core/battle/particles';
 
 /**
  * Render context passed to the main render function.
@@ -40,7 +39,6 @@ export interface RenderContext {
   isDragging: boolean;
   boxSelectSession: BoxSelectSession | null;
   ghostHealthMap: Map<string, number>;
-  dustParticles: DustParticle[];
   inkSplatters: InkSplatter[];
 }
 
@@ -60,20 +58,7 @@ function drawSpawnZones(ctx: CanvasRenderingContext2D, width: number, height: nu
   ctx.fillRect(0, height - zoneHeight, width, zoneHeight);
 }
 
-/**
- * Draw dust particles.
- */
-function drawDustParticles(ctx: CanvasRenderingContext2D, particles: DustParticle[]): void {
-  for (const particle of particles) {
-    const alpha = particle.lifetime / particle.maxLifetime;
-    ctx.fillStyle = ARENA_COLORS.dustParticle;
-    ctx.globalAlpha = alpha * 0.8;
-    ctx.beginPath();
-    ctx.arc(particle.x, particle.y, DUST_PARTICLE_SIZE, 0, Math.PI * 2);
-    ctx.fill();
-  }
-  ctx.globalAlpha = 1;
-}
+// Dust particles disabled for AC6 aesthetic
 
 /**
  * Main render function - draws entire battle scene.
@@ -89,7 +74,6 @@ export function renderBattle(context: RenderContext): void {
     isDragging,
     boxSelectSession,
     ghostHealthMap,
-    dustParticles,
     inkSplatters,
   } = context;
 
@@ -148,8 +132,8 @@ export function renderBattle(context: RenderContext): void {
   // 8.5. Squad selection outlines (after unit bodies, before dust)
   drawSquadSelections(ctx, state.units, selectedUnitIds, isDragging, cellSize);
 
-  // 9. Dust particles (after units so they're visible)
-  drawDustParticles(ctx, dustParticles);
+  // 9. Dust particles disabled (removed for AC6 aesthetic)
+  // drawDustParticles(ctx, dustParticles);
 
   // 10. Health bars for units (only show if damaged, skip dying units)
   for (const unit of state.units) {

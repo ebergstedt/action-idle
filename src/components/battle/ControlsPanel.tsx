@@ -10,13 +10,13 @@ import { UI_COLORS, ARENA_COLORS, hexToRgba } from '../../core/theme/colors';
 import { formatNumber } from '../../core/utils/BigNumber';
 import { Decimal } from '../../core/utils/BigNumber';
 
-// Parchment theme styles
+// Industrial theme styles
 const styles = {
-  text: { color: UI_COLORS.black },
-  textFaded: { color: UI_COLORS.black },
+  text: { color: UI_COLORS.textPrimary },
+  textFaded: { color: UI_COLORS.textSecondary },
   buttonSecondary: {
-    backgroundColor: UI_COLORS.parchmentDark,
-    color: UI_COLORS.black,
+    backgroundColor: UI_COLORS.metalDark,
+    color: UI_COLORS.textPrimary,
   },
 };
 
@@ -61,13 +61,13 @@ export function ControlsPanel({
       {/* Gold Display */}
       <div
         className="p-3 rounded-lg"
-        style={{ backgroundColor: hexToRgba(UI_COLORS.goldPrimary, 0.2) }}
+        style={{ backgroundColor: hexToRgba(UI_COLORS.accentPrimary, 0.2) }}
       >
         <div className="flex items-center justify-between">
           <span className="text-sm font-semibold" style={styles.textFaded}>
             Gold
           </span>
-          <span className="text-xl font-bold" style={{ color: UI_COLORS.black }}>
+          <span className="text-xl font-bold" style={{ color: UI_COLORS.accentPrimary }}>
             {formattedGold}
           </span>
         </div>
@@ -76,13 +76,13 @@ export function ControlsPanel({
       {/* Wave Display & Selector */}
       <div
         className="p-3 rounded-lg"
-        style={{ backgroundColor: hexToRgba(UI_COLORS.parchmentDark, 0.3) }}
+        style={{ backgroundColor: hexToRgba(UI_COLORS.metalDark, 0.5) }}
       >
         <div className="flex items-center justify-between mb-2">
           <span className="text-sm font-semibold" style={styles.textFaded}>
             Wave
           </span>
-          <span className="text-lg font-bold" style={{ color: UI_COLORS.black }}>
+          <span className="text-lg font-bold" style={{ color: UI_COLORS.textPrimary }}>
             {waveNumber}
           </span>
         </div>
@@ -129,7 +129,7 @@ export function ControlsPanel({
               className="flex-1 px-4 py-2 rounded font-semibold hover:opacity-90"
               style={{
                 backgroundColor: ARENA_COLORS.healthMedium,
-                color: UI_COLORS.inkBlack,
+                color: UI_COLORS.black,
               }}
             >
               Pause
@@ -142,8 +142,8 @@ export function ControlsPanel({
             className="px-3 py-2 rounded font-semibold hover:opacity-90"
             title={autoBattle ? 'Disable Auto-Battle' : 'Enable Auto-Battle'}
             style={{
-              backgroundColor: autoBattle ? ARENA_COLORS.healthHigh : UI_COLORS.parchmentDark,
-              color: autoBattle ? UI_COLORS.white : UI_COLORS.black,
+              backgroundColor: autoBattle ? ARENA_COLORS.healthHigh : UI_COLORS.metalDark,
+              color: autoBattle ? UI_COLORS.white : UI_COLORS.textPrimary,
               border: autoBattle ? `2px solid ${UI_COLORS.white}` : '2px solid transparent',
             }}
           >
@@ -161,7 +161,7 @@ export function ControlsPanel({
       </div>
 
       {/* Battle Speed Control */}
-      <div className="pt-4" style={{ borderTop: `1px solid ${UI_COLORS.parchmentDark}` }}>
+      <div className="pt-4" style={{ borderTop: `1px solid ${UI_COLORS.metalDark}` }}>
         <h4 className="text-sm font-semibold mb-2" style={styles.textFaded}>
           Battle Speed
         </h4>
@@ -173,11 +173,11 @@ export function ControlsPanel({
               className="flex-1 px-3 py-1.5 rounded font-semibold text-sm transition-all"
               style={{
                 backgroundColor:
-                  battleSpeed === speed ? UI_COLORS.goldPrimary : UI_COLORS.parchmentDark,
-                color: UI_COLORS.black,
+                  battleSpeed === speed ? UI_COLORS.accentPrimary : UI_COLORS.metalDark,
+                color: battleSpeed === speed ? UI_COLORS.black : UI_COLORS.textPrimary,
                 border:
                   battleSpeed === speed
-                    ? `2px solid ${UI_COLORS.goldDark}`
+                    ? `2px solid ${UI_COLORS.accentPrimary}`
                     : '2px solid transparent',
               }}
             >

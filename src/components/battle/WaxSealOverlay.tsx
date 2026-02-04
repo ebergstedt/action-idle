@@ -1,8 +1,8 @@
 /**
- * Wax Seal Victory/Defeat Overlay
+ * Battle Result Overlay
  *
- * Displays a stamped wax seal when the battle ends.
- * Victory shows a green seal, defeat shows a red seal.
+ * Displays mission complete/failed status when battle ends.
+ * Industrial mech aesthetic with clean result presentation.
  *
  * Uses extracted hooks for SRP:
  * - useAutoBattleCountdown: Timer logic
@@ -90,7 +90,7 @@ export function WaxSealOverlay({
     <div
       className="absolute inset-0 flex items-center justify-center z-50"
       style={{
-        backgroundColor: hexToRgba(UI_COLORS.black, 0.6),
+        backgroundColor: hexToRgba(UI_COLORS.black, 0.8),
         opacity: isVisible ? 1 : 0,
         transition: 'opacity 0.5s ease-out',
       }}
@@ -99,8 +99,8 @@ export function WaxSealOverlay({
       <div
         className="flex flex-col items-center gap-6 p-8 rounded-lg"
         style={{
-          backgroundColor: UI_COLORS.parchmentBase,
-          border: `4px solid ${UI_COLORS.inkBrown}`,
+          backgroundColor: UI_COLORS.panelBase,
+          border: `2px solid ${UI_COLORS.metalDark}`,
           boxShadow: `0 10px 40px ${hexToRgba(UI_COLORS.black, 0.5)}`,
           transform: isStamped ? 'scale(1)' : `scale(${WAX_SEAL_PANEL_PRESTAMP_SCALE})`,
           opacity: isStamped ? 1 : 0,
@@ -108,7 +108,7 @@ export function WaxSealOverlay({
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Wax Seal */}
+        {/* Status Seal */}
         <div
           className="relative"
           style={{
@@ -125,8 +125,7 @@ export function WaxSealOverlay({
         <h2
           className="text-3xl font-bold tracking-wide"
           style={{
-            color: UI_COLORS.inkBlack,
-            fontFamily: 'serif',
+            color: UI_COLORS.textPrimary,
             textTransform: 'uppercase',
             letterSpacing: '0.15em',
           }}
@@ -138,8 +137,7 @@ export function WaxSealOverlay({
         <p
           className="text-lg text-center max-w-xs"
           style={{
-            color: UI_COLORS.inkBrown,
-            fontFamily: 'serif',
+            color: UI_COLORS.textSecondary,
             fontStyle: 'italic',
           }}
         >
@@ -151,10 +149,10 @@ export function WaxSealOverlay({
           <div
             className="flex items-center gap-2 px-4 py-2 rounded"
             style={{
-              backgroundColor: hexToRgba(UI_COLORS.goldPrimary, 0.2),
+              backgroundColor: hexToRgba(UI_COLORS.accentPrimary, 0.2),
             }}
           >
-            <span className="text-xl font-bold" style={{ color: UI_COLORS.inkBlack }}>
+            <span className="text-xl font-bold" style={{ color: UI_COLORS.accentPrimary }}>
               +{goldEarned.toLocaleString()} Gold
             </span>
           </div>
@@ -165,7 +163,7 @@ export function WaxSealOverlay({
           <p
             className="text-sm"
             style={{
-              color: UI_COLORS.inkBrown,
+              color: UI_COLORS.textSecondary,
               fontWeight: 'bold',
             }}
           >
@@ -177,10 +175,10 @@ export function WaxSealOverlay({
         <p
           className="text-sm mt-4"
           style={{
-            color: UI_COLORS.inkFaded,
+            color: UI_COLORS.textMuted,
           }}
         >
-          {autoBattle ? `Next battle in ${countdown}s...` : 'Click anywhere to continue'}
+          {autoBattle ? `Next sortie in ${countdown}s...` : 'Click anywhere to continue'}
         </p>
       </div>
     </div>

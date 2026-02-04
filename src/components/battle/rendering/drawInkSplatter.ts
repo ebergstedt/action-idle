@@ -1,35 +1,36 @@
 /**
- * Ink Splatter Drawing Functions
+ * Debris Drawing Functions
  *
- * Renders ink splatter particles for unit deaths.
- * Creates irregular blob shapes like spilled ink on parchment.
+ * Renders debris particles for unit destruction.
+ * Creates metallic debris with team-colored tints.
  */
 
 import { INK_SPLATTER_OPACITY } from '../../../core/battle/BattleConfig';
-import { UI_COLORS } from '../../../core/theme/colors';
+import { hexToRgba, getTeamColor } from '../../../core/theme/colors';
 import type { InkSplatter } from '../../../core/battle/particles';
 
 /**
- * Draw a single ink splatter blob.
- * Uses an irregular shape to look like spilled ink.
+ * Draw a single debris chunk.
+ * Uses an irregular shape with team-colored tint.
  */
-function drawInkBlob(
+function drawDebrisChunk(
   ctx: CanvasRenderingContext2D,
   x: number,
   y: number,
   size: number,
   rotation: number,
-  alpha: number
+  alpha: number,
+  team: 'player' | 'enemy'
 ): void {
   ctx.save();
   ctx.translate(x, y);
   ctx.rotate(rotation);
 
-  // Dark ink color for better visibility
-  ctx.fillStyle = UI_COLORS.inkBlack;
-  ctx.globalAlpha = alpha * INK_SPLATTER_OPACITY;
+  // Team-colored debris with transparency
+  const teamColor = getTeamColor(team);
+  ctx.fillStyle = hexToRgba(teamColor, alpha * INK_SPLATTER_OPACITY);
 
-  // Draw irregular blob shape using bezier curves
+  // Draw irregular debris shape using bezier curves
   ctx.beginPath();
   const points = 6;
   for (let i = 0; i < points; i++) {
@@ -63,14 +64,22 @@ function drawInkBlob(
 }
 
 /**
- * Draw a small ink droplet (in-flight splatter).
+ * Draw a small debris fragment (in-flight).
  */
-function drawInkDroplet(ctx: CanvasRenderingContext2D, x: number, y: number, size: number): void {
+function drawDebrisFragment(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  size: number,
+  team: 'player' | 'enemy'
+): void {
   ctx.save();
-  ctx.fillStyle = UI_COLORS.inkBlack;
-  ctx.globalAlpha = INK_SPLATTER_OPACITY;
 
-  // Simple circle for in-flight droplets
+  // Team-colored debris
+  const teamColor = getTeamColor(team);
+  ctx.fillStyle = hexToRgba(teamColor, INK_SPLATTER_OPACITY);
+
+  // Simple circle for in-flight fragments
   ctx.beginPath();
   ctx.arc(x, y, size * 0.5, 0, Math.PI * 2);
   ctx.fill();
@@ -79,17 +88,24 @@ function drawInkDroplet(ctx: CanvasRenderingContext2D, x: number, y: number, siz
 }
 
 /**
- * Draw all ink splatters.
- * In-flight splatters are drawn as small droplets.
- * Landed splatters are drawn as irregular blobs.
+ * Draw all debris particles.
+ * In-flight debris is drawn as small fragments.
+ * Landed debris is drawn as irregular chunks.
  */
 export function drawInkSplatters(ctx: CanvasRenderingContext2D, splatters: InkSplatter[]): void {
   for (const splatter of splatters) {
     if (splatter.landed) {
-      drawInkBlob(ctx, splatter.x, splatter.y, splatter.size, splatter.rotation, 1);
+      drawDebrisChunk(
+        ctx,
+        splatter.x,
+        splatter.y,
+        splatter.size,
+        splatter.rotation,
+        1,
+        splatter.team
+      );
     } else {
-      drawInkDroplet(ctx, splatter.x, splatter.y, splatter.size);
+      drawDebrisFragment(ctx, splatter.x, splatter.y, splatter.size, splatter.team);
     }
   }
-  ctx.globalAlpha = 1;
 }

@@ -6,8 +6,8 @@ function App() {
     <div
       className="h-screen w-screen flex flex-col overflow-hidden"
       style={{
-        backgroundColor: UI_COLORS.parchmentBase,
-        color: UI_COLORS.inkBrown,
+        backgroundColor: UI_COLORS.panelDark,
+        color: UI_COLORS.textPrimary,
       }}
     >
       <main className="flex-1 p-4 overflow-hidden">

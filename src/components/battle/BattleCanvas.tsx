@@ -147,8 +147,8 @@ export function BattleCanvas({
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // Update particle and ghost health state
-    const dustParticles = updateParticles(state.units, state.isRunning);
+    // Update visual effect state (dust particles disabled for AC6 aesthetic)
+    updateParticles(state.units, state.isRunning); // Still call to keep internal state clean
     const ghostHealthMap = updateGhostHealth(state.units);
     const inkSplatters = updateSplatters(state.units, state.hasStarted, 0.016);
 
@@ -168,7 +168,6 @@ export function BattleCanvas({
       isDragging,
       boxSelectSession,
       ghostHealthMap,
-      dustParticles,
       inkSplatters,
     });
 

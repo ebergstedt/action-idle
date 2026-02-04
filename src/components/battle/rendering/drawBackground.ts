@@ -1,8 +1,8 @@
 /**
  * Background Drawing Functions
  *
- * Renders parchment background with noise texture and vignette effect.
- * Creates an aged, hand-drawn map aesthetic.
+ * Renders industrial combat arena floor with subtle texture.
+ * Creates a clean mech battle aesthetic.
  */
 
 import {
@@ -33,7 +33,7 @@ function seededRandom(seed: number): () => number {
 }
 
 /**
- * Generate parchment noise pattern as offscreen canvas.
+ * Generate floor texture pattern as offscreen canvas.
  * Uses seeded random for consistent pattern across frames.
  */
 function generateNoiseCanvas(width: number, height: number): HTMLCanvasElement {
@@ -52,8 +52,8 @@ function generateNoiseCanvas(width: number, height: number): HTMLCanvasElement {
   // Use seeded random for consistent pattern
   const random = seededRandom(42);
 
-  // Draw noise dots in darker parchment color
-  ctx.fillStyle = UI_COLORS.inkFaded;
+  // Draw noise dots in metallic tones for industrial floor texture
+  ctx.fillStyle = UI_COLORS.textMuted;
   ctx.globalAlpha = PARCHMENT_NOISE_OPACITY;
 
   for (let i = 0; i < dotCount; i++) {
@@ -67,8 +67,8 @@ function generateNoiseCanvas(width: number, height: number): HTMLCanvasElement {
     ctx.fill();
   }
 
-  // Add some lighter spots too for variation
-  ctx.fillStyle = UI_COLORS.parchmentDark;
+  // Add some lighter metallic spots for variation
+  ctx.fillStyle = UI_COLORS.metalDark;
   ctx.globalAlpha = PARCHMENT_NOISE_OPACITY * 0.5;
 
   for (let i = 0; i < dotCount / 3; i++) {
@@ -107,7 +107,7 @@ function getNoiseCanvas(width: number, height: number): HTMLCanvasElement {
 }
 
 /**
- * Draw parchment noise texture overlay.
+ * Draw floor texture overlay.
  * Uses drawImage instead of putImageData to respect blend modes.
  */
 export function drawParchmentNoise(
@@ -150,7 +150,7 @@ export function drawVignette(ctx: CanvasRenderingContext2D, width: number, heigh
 }
 
 /**
- * Draw complete parchment background with base color and noise.
+ * Draw complete arena background with base color and texture.
  * Note: Vignette is drawn separately at the end of the render pass
  * so it affects all game elements.
  */
@@ -159,10 +159,10 @@ export function drawParchmentBackground(
   width: number,
   height: number
 ): void {
-  // 1. Base parchment color
+  // 1. Base arena floor color
   ctx.fillStyle = ARENA_COLORS.background;
   ctx.fillRect(0, 0, width, height);
 
-  // 2. Noise texture overlay (blends with alpha)
+  // 2. Texture overlay (blends with alpha)
   drawParchmentNoise(ctx, width, height);
 }
