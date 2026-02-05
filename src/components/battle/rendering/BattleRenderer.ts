@@ -86,9 +86,10 @@ export function renderBattle(context: RenderContext): void {
   // 2. Spawn zones
   drawSpawnZones(ctx, width, height);
 
-  // 2.5. Faint background grid (always visible) and flank zones during deployment
-  drawBackgroundGrid(ctx, width, cellSize);
-  if (!state.hasStarted) {
+  // 2.5. Faint background grid (only during deployment when units selected) and flank zones
+  const showGrid = !state.hasStarted && selectedUnitIds.length > 0;
+  if (showGrid) {
+    drawBackgroundGrid(ctx, width, cellSize);
     drawFlankZones(ctx, width, height, cellSize, 0.1);
   }
 

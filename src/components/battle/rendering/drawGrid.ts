@@ -253,10 +253,10 @@ export function drawBackgroundGrid(
     ctx.stroke();
   }
 
-  // Horizontal lines - skip no man's land rows entirely (including boundaries)
+  // Horizontal lines - skip no man's land rows but draw boundary lines
   for (let row = 0; row <= GRID_TOTAL_ROWS; row++) {
-    // Skip all lines in and around no man's land
-    if (row >= noMansLandStartRow && row <= noMansLandEndRow) continue;
+    // Skip lines inside no man's land, but draw the boundary lines
+    if (row > noMansLandStartRow && row < noMansLandEndRow) continue;
 
     const y = row * cellSize;
     ctx.beginPath();

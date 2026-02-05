@@ -15,6 +15,24 @@ import {
   PARCHMENT_NOISE_SIZE_MAX,
 } from '../../../core/battle/BattleConfig';
 import { ARENA_COLORS, UI_COLORS } from '../../../core/theme/colors';
+import battleground2Url from '../../../assets/battleground2.png';
+
+/**
+ * Cached background image.
+ */
+let backgroundImage: HTMLImageElement | null = null;
+let backgroundLoaded = false;
+
+// Preload the background image
+const img = new Image();
+img.src = battleground2Url;
+img.onload = () => {
+  backgroundImage = img;
+  backgroundLoaded = true;
+};
+img.onerror = () => {
+  console.warn('Failed to load battleground2.png');
+};
 
 /**
  * Cached noise pattern as offscreen canvas for proper blending.
@@ -159,10 +177,15 @@ export function drawParchmentBackground(
   width: number,
   height: number
 ): void {
-  // 1. Base arena floor color
+  // 1. Base arena floor color (fallback while image loads)
   ctx.fillStyle = ARENA_COLORS.background;
   ctx.fillRect(0, 0, width, height);
 
-  // 2. Texture overlay (blends with alpha)
-  drawParchmentNoise(ctx, width, height);
+  // 2. Draw background image if loaded (covers entire arena)
+  if (backgroundLoaded && backgroundImage) {
+    ctx.drawImage(backgroundImage, 0, 0, width, height);
+  } else {
+    // Texture overlay as fallback (blends with alpha)
+    drawParchmentNoise(ctx, width, height);
+  }
 }
