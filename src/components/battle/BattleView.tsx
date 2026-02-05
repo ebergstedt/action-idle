@@ -15,6 +15,7 @@ import { UnitInfoPanel } from './UnitInfoPanel';
 import { ControlsPanel } from './ControlsPanel';
 import { Panel3D } from '../ui/Panel3D';
 import { getUniformSelectionUnit } from '../../core/battle/SelectionManager';
+import { UI_COLORS, hexToRgba } from '../../core/theme/colors';
 import battlegroundBg from '../../assets/battleground1.png';
 
 export interface BattleViewProps {
@@ -124,7 +125,10 @@ export function BattleView({ vest = 0, onReturnToAssembly }: BattleViewProps) {
       }}
     >
       {/* Dark overlay */}
-      <div className="absolute inset-0" style={{ backgroundColor: 'rgba(0, 0, 0, 0.3)' }} />
+      <div
+        className="absolute inset-0"
+        style={{ backgroundColor: hexToRgba(UI_COLORS.black, 0.3) }}
+      />
 
       {/* Content layer */}
       <div className="relative z-10 flex gap-4 h-full w-full p-4">

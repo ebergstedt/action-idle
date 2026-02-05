@@ -59,8 +59,13 @@ export const UI_COLORS = {
   // Text colors
   textPrimary: '#E8ECF0', // Primary text - off-white
   textSecondary: '#9AA4B0', // Secondary text - steel gray
+  textMuted: '#6A7480', // Muted text - disabled/hint
   black: '#000000',
   white: '#FFFFFF',
+
+  // Disabled state
+  disabledBg: '#666666', // Disabled button background
+  disabledBorder: '#555555', // Disabled button border
 
   // Accent colors
   accentPrimary: '#F5A623', // Warning amber - primary accent

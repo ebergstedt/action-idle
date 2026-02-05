@@ -12,7 +12,7 @@
 
 // Core entity types and interfaces
 export { EventEmitter, WorldEventEmitter } from './EventEmitter';
-export { BaseEntity, type IEntityWorld } from './BaseEntity';
+export { BaseEntity } from './BaseEntity';
 
 // Battle world interface
 export type { IBattleWorld } from './IBattleWorld';

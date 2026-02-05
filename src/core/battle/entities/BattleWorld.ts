@@ -25,7 +25,6 @@ import { isPlayerTeam } from '../TeamUtils';
 import { UnitTeam } from '../units/types';
 import {
   IDamageable,
-  IEntity,
   IWorldEventEmitter,
   WorldEventType,
   WorldEventMap,
@@ -33,7 +32,6 @@ import {
   KilledEvent,
   EntityEventMap,
 } from '../IEntity';
-import { IEntityWorld } from './BaseEntity';
 import { IBattleWorld } from './IBattleWorld';
 import { UnitEntity } from './UnitEntity';
 import { ProjectileEntity, createProjectile } from './ProjectileEntity';
@@ -45,7 +43,7 @@ import { WorldEventEmitter } from './EventEmitter';
  * Battle world - manages all battle entities.
  * Implements IWorldEventEmitter to notify listeners when entities are added/removed.
  */
-export class BattleWorld implements IEntityWorld, IBattleWorld, IWorldEventEmitter {
+export class BattleWorld implements IBattleWorld, IWorldEventEmitter {
   private units: UnitEntity[] = [];
   private projectiles: ProjectileEntity[] = [];
   private shockwaves: ShockwaveEntity[] = [];
@@ -362,13 +360,6 @@ export class BattleWorld implements IEntityWorld, IBattleWorld, IWorldEventEmitt
     });
   }
 
-  // === IEntityWorld Implementation ===
-
-  getEntities(): readonly IEntity[] {
-    // Note: castles are now part of units array (stationary units)
-    return [...this.units, ...this.projectiles, ...this.shockwaves];
-  }
-
   // === IBattleWorld Implementation ===
 
   getUnits(): readonly UnitEntity[] {
@@ -578,10 +569,6 @@ export class BattleWorld implements IEntityWorld, IBattleWorld, IWorldEventEmitt
 
   /**
    * Check if battle is over.
-   * Win condition: A side loses when ALL their units are destroyed (castles don't prevent loss).
-   */
-  /**
-   * Check if battle is over.
    * Win condition: A side loses when ALL their mobile units are destroyed.
    * Stationary units (castles) don't count for victory - they're objectives, not win conditions.
    */
@@ -605,8 +592,6 @@ export class BattleWorld implements IEntityWorld, IBattleWorld, IWorldEventEmitt
 
     return { over: false, winner: null };
   }
-
-  // === IWorldEventEmitter Implementation ===
 
   // === ID Generation ===
 

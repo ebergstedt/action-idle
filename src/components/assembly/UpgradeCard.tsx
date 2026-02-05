@@ -5,7 +5,7 @@
  * AC6-inspired industrial styling.
  */
 
-import { UI_COLORS } from '../../core/theme/colors';
+import { UI_COLORS, hexToRgba } from '../../core/theme/colors';
 import { BattleUpgradeDefinition, UpgradeCostResult } from '../../core/battle/upgrades/types';
 import { Button3D } from '../ui/Button3D';
 
@@ -66,7 +66,7 @@ export function UpgradeCard({ upgrade, level, costResult, onPurchase }: UpgradeC
       style={{
         opacity: isLocked ? 0.5 : 1,
         borderLeft: `2px solid ${isLocked ? UI_COLORS.metalDark : canAfford ? UI_COLORS.accentPrimary : UI_COLORS.white}`,
-        backgroundColor: 'rgba(255, 255, 255, 0.02)',
+        backgroundColor: hexToRgba(UI_COLORS.white, 0.02),
       }}
     >
       {/* Header row */}

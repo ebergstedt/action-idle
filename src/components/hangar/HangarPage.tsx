@@ -6,12 +6,14 @@
  */
 
 import { ReactNode, useState } from 'react';
-import { UI_COLORS } from '../../core/theme/colors';
+import { UI_COLORS, hexToRgba } from '../../core/theme/colors';
 import { Panel3D } from '../ui/Panel3D';
 import { Button3D } from '../ui/Button3D';
 import { PanelTransition } from '../ui/PanelTransition';
 import { HangarEffects } from './HangarEffects';
-import { EffectsSettingsModal, EffectsSettings, DEFAULT_EFFECTS } from './EffectsSettingsModal';
+import { EffectsSettingsModal } from './EffectsSettingsModal';
+import { DEFAULT_EFFECTS } from './effectsSettings';
+import type { EffectsSettings } from './effectsSettings';
 import hangarBg from '../../assets/hangar.png';
 
 export type HangarSection = 'garage' | 'assembly' | 'arena' | 'virtuality';
@@ -54,6 +56,7 @@ export function HangarPage({
 }: HangarPageProps) {
   const [showEffectsModal, setShowEffectsModal] = useState(false);
   const [effectsSettings, setEffectsSettings] = useState<EffectsSettings>(DEFAULT_EFFECTS);
+  const [settingsHovered, setSettingsHovered] = useState(false);
 
   return (
     <div
@@ -65,7 +68,10 @@ export function HangarPage({
       }}
     >
       {/* Dark overlay for better text readability */}
-      <div className="absolute inset-0" style={{ backgroundColor: 'rgba(0, 0, 0, 0.4)' }} />
+      <div
+        className="absolute inset-0"
+        style={{ backgroundColor: hexToRgba(UI_COLORS.black, 0.4) }}
+      />
 
       {/* Visual effects */}
       <HangarEffects settings={effectsSettings} />
@@ -75,17 +81,13 @@ export function HangarPage({
         onClick={() => setShowEffectsModal(true)}
         className="absolute top-4 right-4 z-20 w-10 h-10 flex items-center justify-center rounded transition-colors"
         style={{
-          backgroundColor: 'rgba(0, 0, 0, 0.5)',
-          color: UI_COLORS.textSecondary,
+          backgroundColor: settingsHovered
+            ? hexToRgba(UI_COLORS.accentPrimary, 0.2)
+            : hexToRgba(UI_COLORS.black, 0.5),
+          color: settingsHovered ? UI_COLORS.accentPrimary : UI_COLORS.textSecondary,
         }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.backgroundColor = 'rgba(245, 166, 35, 0.2)';
-          e.currentTarget.style.color = UI_COLORS.accentPrimary;
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
-          e.currentTarget.style.color = UI_COLORS.textSecondary;
-        }}
+        onMouseEnter={() => setSettingsHovered(true)}
+        onMouseLeave={() => setSettingsHovered(false)}
         title="Visual Effects Settings"
       >
         <svg
@@ -130,7 +132,7 @@ export function HangarPage({
                   className="text-left py-2 px-3 text-sm font-medium tracking-wider transition-colors"
                   style={{
                     backgroundColor:
-                      currentSection === item.id ? 'rgba(255, 255, 255, 0.1)' : 'transparent',
+                      currentSection === item.id ? hexToRgba(UI_COLORS.white, 0.1) : 'transparent',
                     color: !item.available
                       ? UI_COLORS.textSecondary
                       : currentSection === item.id
@@ -145,7 +147,7 @@ export function HangarPage({
                 >
                   {item.label}
                   {!item.available && (
-                    <span className="ml-2 text-xs" style={{ color: UI_COLORS.textSecondary }}>
+                    <span className="ml-2 text-sm" style={{ color: UI_COLORS.textSecondary }}>
                       [LOCKED]
                     </span>
                   )}

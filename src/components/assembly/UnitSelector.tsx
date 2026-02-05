@@ -5,7 +5,7 @@
  * AC6-inspired styling with left border highlight on selection.
  */
 
-import { UI_COLORS } from '../../core/theme/colors';
+import { UI_COLORS, hexToRgba } from '../../core/theme/colors';
 import { unitRegistry } from '../../data/battle';
 
 interface UnitSelectorProps {
@@ -41,7 +41,9 @@ export function UnitSelector({ selectedUnitType, onSelectUnit }: UnitSelectorPro
               key={unit.id}
               className="w-full text-left px-3 py-2 transition-colors"
               style={{
-                backgroundColor: isSelected ? 'rgba(0, 212, 212, 0.1)' : 'transparent',
+                backgroundColor: isSelected
+                  ? hexToRgba(UI_COLORS.accentSecondary, 0.1)
+                  : 'transparent',
                 color: isSelected ? UI_COLORS.accentPrimary : UI_COLORS.textPrimary,
                 borderLeft: isSelected
                   ? `2px solid ${UI_COLORS.accentPrimary}`

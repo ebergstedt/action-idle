@@ -93,15 +93,23 @@ export function useBattle(options: UseBattleOptions = {}): UseBattleReturn {
   // Note: We pass a stable callback that reads from ref, avoiding effect re-runs
   const cancelAutoStartRef = useRef<() => void>(() => {});
   const onEngineCleanup = useCallback(() => cancelAutoStartRef.current(), []);
-  const engine = useBattleEngine(onEngineCleanup);
+  const {
+    engineRef,
+    statsRef,
+    state: engineState,
+    stats: engineStats,
+    syncState,
+    syncStats,
+    resetStats,
+  } = useBattleEngine(onEngineCleanup);
 
   // Auto-battle timer hook - uses engine refs directly
   const handleAutoStart = useCallback(() => {
-    if (engine.engineRef.current) {
-      engine.engineRef.current.start();
-      engine.syncState();
+    if (engineRef.current) {
+      engineRef.current.start();
+      syncState();
     }
-  }, [engine.engineRef, engine.syncState]);
+  }, [engineRef, syncState]);
 
   const { scheduleAutoStart, cancelAutoStart } = useAutoBattleTimer(autoBattle, handleAutoStart);
 
@@ -115,23 +123,23 @@ export function useBattle(options: UseBattleOptions = {}): UseBattleReturn {
 
   // Battle controls
   const controls = useBattleControls({
-    engineRef: engine.engineRef,
-    syncState: engine.syncState,
-    resetStats: engine.resetStats,
+    engineRef,
+    syncState,
+    resetStats,
   });
 
   // Deployment operations
   const deployment = useBattleDeployment({
-    engineRef: engine.engineRef,
-    statsRef: engine.statsRef,
-    syncState: engine.syncState,
-    syncStats: engine.syncStats,
+    engineRef,
+    statsRef,
+    syncState,
+    syncStats,
   });
 
   // Outcome handling
   const outcome = useBattleOutcome({
-    engineRef: engine.engineRef,
-    syncState: engine.syncState,
+    engineRef,
+    syncState,
     performReset: controls.reset,
     scheduleAutoStart,
     stayModeRef,
@@ -139,28 +147,29 @@ export function useBattle(options: UseBattleOptions = {}): UseBattleReturn {
 
   // Apply loaded settings to engine once both are ready
   useEffect(() => {
-    if (!settingsLoaded || !engine.engineRef.current) return;
+    if (!settingsLoaded || !engineRef.current) return;
 
     const settings = getLoadedSettings();
     if (settings) {
-      engine.engineRef.current.setWave(settings.waveNumber);
-      engine.engineRef.current.setHighestWave(settings.highestWave);
-      engine.engineRef.current.setGold(settings.gold);
-      engine.syncState();
+      engineRef.current.setWave(settings.waveNumber);
+      engineRef.current.setHighestWave(settings.highestWave);
+      engineRef.current.setGold(settings.gold);
+      syncState();
     }
-  }, [settingsLoaded, getLoadedSettings, engine.engineRef, engine.syncState]);
+  }, [settingsLoaded, getLoadedSettings, engineRef, syncState]);
 
   // Save settings when relevant values change
   useEffect(() => {
-    if (settingsLoaded && engine.engineRef.current) {
-      saveSettingsWithState(engine.state.waveNumber, engine.state.highestWave, engine.state.gold);
+    if (settingsLoaded && engineRef.current) {
+      saveSettingsWithState(engineState.waveNumber, engineState.highestWave, engineState.gold);
     }
   }, [
     autoBattle,
     battleSpeed,
-    engine.state.waveNumber,
-    engine.state.highestWave,
-    engine.state.gold,
+    engineRef,
+    engineState.waveNumber,
+    engineState.highestWave,
+    engineState.gold,
     settingsLoaded,
     saveSettingsWithState,
   ]);
@@ -168,29 +177,29 @@ export function useBattle(options: UseBattleOptions = {}): UseBattleReturn {
   // Game loop tick handler
   const handleTick = useCallback(
     (scaledDelta: number) => {
-      if (engine.engineRef.current) {
-        engine.engineRef.current.tick(scaledDelta);
-        engine.syncState();
+      if (engineRef.current) {
+        engineRef.current.tick(scaledDelta);
+        syncState();
 
-        if (engine.statsRef.current) {
-          engine.statsRef.current.updateDuration(scaledDelta);
-          engine.syncStats();
+        if (statsRef.current) {
+          statsRef.current.updateDuration(scaledDelta);
+          syncStats();
         }
       }
     },
-    [engine.engineRef, engine.statsRef, engine.syncState, engine.syncStats]
+    [engineRef, statsRef, syncState, syncStats]
   );
 
   // Sync battle speed to engine
   useEffect(() => {
-    if (engine.engineRef.current) {
-      engine.engineRef.current.setBattleSpeed(battleSpeed);
+    if (engineRef.current) {
+      engineRef.current.setBattleSpeed(battleSpeed);
     }
-  }, [battleSpeed, engine.engineRef]);
+  }, [battleSpeed, engineRef]);
 
   // Game loop
   useBattleLoop({
-    isRunning: engine.state.isRunning,
+    isRunning: engineState.isRunning,
     onTick: handleTick,
   });
 
@@ -198,11 +207,11 @@ export function useBattle(options: UseBattleOptions = {}): UseBattleReturn {
   const toggleAutoBattle = useCallback(() => {
     const newValue = !autoBattle;
     setAutoBattle(newValue);
-    if (newValue && engine.engineRef.current && !engine.engineRef.current.getState().isRunning) {
-      engine.engineRef.current.start();
-      engine.syncState();
+    if (newValue && engineRef.current && !engineRef.current.getState().isRunning) {
+      engineRef.current.start();
+      syncState();
     }
-  }, [autoBattle, setAutoBattle, engine.engineRef, engine.syncState]);
+  }, [autoBattle, setAutoBattle, engineRef, syncState]);
 
   // Stay mode toggle - repeat same wave without progressing
   const toggleStayMode = useCallback(() => {
@@ -210,8 +219,8 @@ export function useBattle(options: UseBattleOptions = {}): UseBattleReturn {
   }, []);
 
   return {
-    state: engine.state,
-    stats: engine.stats,
+    state: engineState,
+    stats: engineStats,
     selectedUnitIds: selection.selectedUnitIds,
     battleSpeed,
     autoBattle,

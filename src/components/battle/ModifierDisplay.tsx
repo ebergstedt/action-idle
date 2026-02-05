@@ -56,7 +56,7 @@ const DEFAULT_MODIFIER_INFO: ModifierInfo = {
   name: 'Unknown',
   icon: '?',
   effects: ['Unknown effect'],
-  bgColor: 'rgba(128, 128, 128, 0.2)',
+  bgColor: hexToRgba(UI_COLORS.metalBase, 0.2),
   iconBgColor: UI_COLORS.metalBase,
   textColor: UI_COLORS.textPrimary,
 };

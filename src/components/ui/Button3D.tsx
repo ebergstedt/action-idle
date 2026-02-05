@@ -87,13 +87,19 @@ export function Button3D({
   const pressedShadow = `inset 0 ${depth}px ${depth * 2}px rgba(0,0,0,0.4), inset 0 1px 0 0 ${darkerColor}, 0 1px 2px rgba(0, 0, 0, 0.2)`;
   const disabledShadow = `inset 0 -2px 0 0 rgba(0,0,0,0.2), inset 0 1px 0 0 rgba(255,255,255,0.1)`;
 
-  const bgColor = disabled ? '#666' : isPressed ? pressedColor : isHovered ? hoverColor : color;
+  const bgColor = disabled
+    ? UI_COLORS.disabledBg
+    : isPressed
+      ? pressedColor
+      : isHovered
+        ? hoverColor
+        : color;
 
   const style: CSSProperties = {
     backgroundColor: bgColor,
-    color: disabled ? '#999' : textColor,
+    color: disabled ? UI_COLORS.textSecondary : textColor,
     boxShadow: disabled ? disabledShadow : isPressed ? pressedShadow : normalShadow,
-    border: `1px solid ${disabled ? '#555' : darkerColor}`,
+    border: `1px solid ${disabled ? UI_COLORS.disabledBorder : darkerColor}`,
     cursor: disabled ? 'not-allowed' : 'pointer',
     transition: 'box-shadow 0.15s ease, background-color 0.15s ease, transform 0.1s ease',
     padding: config.padding,

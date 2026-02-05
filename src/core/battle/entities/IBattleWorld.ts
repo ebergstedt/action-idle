@@ -11,14 +11,13 @@ import { Vector2 } from '../../physics/Vector2';
 import { EntityBounds } from '../BoundsEnforcer';
 import { IDamageable } from '../IEntity';
 import { UnitTeam } from '../units/types';
-import { IEntityWorld } from './BaseEntity';
 import { UnitEntity } from './UnitEntity';
 
 /**
  * Query interface for battle entities.
- * Extends IEntityWorld with battle-specific queries.
+ * Provides queries, spawning, and combat helpers for the battle world.
  */
-export interface IBattleWorld extends IEntityWorld {
+export interface IBattleWorld {
   // === Unit Queries ===
 
   /** Get all units (including castles) */

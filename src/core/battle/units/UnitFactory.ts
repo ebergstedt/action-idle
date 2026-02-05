@@ -181,10 +181,3 @@ export class UnitFactory {
     };
   }
 }
-
-/**
- * Creates a UnitFactory with the provided registry.
- */
-export function createUnitFactory(registry: IUnitRegistry): UnitFactory {
-  return new UnitFactory(registry);
-}

@@ -18,15 +18,7 @@ import {
   EntityKind,
 } from '../IEntity';
 import { EventEmitter } from './EventEmitter';
-
-/**
- * Reference to the world for entity queries.
- * Godot equivalent: get_tree() / get_parent()
- */
-export interface IEntityWorld {
-  /** Get all entities */
-  getEntities(): readonly IEntity[];
-}
+import type { IBattleWorld } from './IBattleWorld';
 
 /**
  * Abstract base entity with common functionality.
@@ -37,7 +29,7 @@ export abstract class BaseEntity implements IEntity, IEventEmitter {
   public position: Vector2;
 
   protected _destroyed = false;
-  protected world: IEntityWorld | null = null;
+  protected world: IBattleWorld | null = null;
   private eventEmitter = new EventEmitter();
 
   constructor(id: string, position: Vector2) {
@@ -49,7 +41,7 @@ export abstract class BaseEntity implements IEntity, IEventEmitter {
    * Set the world reference for entity queries.
    * Called by BattleWorld when entity is added.
    */
-  setWorld(world: IEntityWorld | null): void {
+  setWorld(world: IBattleWorld | null): void {
     this.world = world;
   }
 

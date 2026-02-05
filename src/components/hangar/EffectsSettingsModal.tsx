@@ -4,37 +4,11 @@
  * AC6-style modal for toggling visual effects.
  */
 
-import { UI_COLORS } from '../../core/theme/colors';
+import { UI_COLORS, hexToRgba } from '../../core/theme/colors';
 import { Panel3D } from '../ui/Panel3D';
 import { Button3D } from '../ui/Button3D';
-
-export interface EffectsSettings {
-  glow: boolean;
-  scanLines: boolean;
-  noise: boolean;
-  scanBeam: boolean;
-  vignette: boolean;
-  cornerBrackets: boolean;
-  particles: boolean;
-  hexGrid: boolean;
-  chromatic: boolean;
-  flicker: boolean;
-  heatDistortion: boolean;
-}
-
-export const DEFAULT_EFFECTS: EffectsSettings = {
-  glow: true,
-  scanLines: false,
-  noise: false,
-  scanBeam: false,
-  vignette: true,
-  cornerBrackets: true,
-  particles: true,
-  hexGrid: false,
-  chromatic: true,
-  flicker: false,
-  heatDistortion: false,
-};
+import { DEFAULT_EFFECTS } from './effectsSettings';
+import type { EffectsSettings } from './effectsSettings';
 
 interface EffectToggleProps {
   label: string;
@@ -49,7 +23,7 @@ function EffectToggle({ label, description, enabled, onChange }: EffectTogglePro
       onClick={() => onChange(!enabled)}
       className="w-full text-left p-3 transition-colors"
       style={{
-        backgroundColor: enabled ? 'rgba(245, 166, 35, 0.1)' : 'transparent',
+        backgroundColor: enabled ? hexToRgba(UI_COLORS.accentPrimary, 0.1) : 'transparent',
         borderLeft: enabled ? `2px solid ${UI_COLORS.accentPrimary}` : '2px solid transparent',
       }}
     >
@@ -118,7 +92,7 @@ export function EffectsSettingsModal({
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center"
-      style={{ backgroundColor: 'rgba(0, 0, 0, 0.8)' }}
+      style={{ backgroundColor: hexToRgba(UI_COLORS.black, 0.8) }}
       onClick={onClose}
     >
       <div onClick={(e) => e.stopPropagation()}>

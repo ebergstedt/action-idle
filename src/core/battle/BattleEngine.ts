@@ -232,7 +232,14 @@ export class BattleEngine {
       this.unsubscribeFromUnit(unit);
     }
 
+    // Unsubscribe from world events before clearing (prevents memory leak)
+    this.world.offWorld('entity_added', this.onEntityAddedListener);
+
     this.world.clear();
+
+    // Re-subscribe for the next battle
+    this.world.onWorld('entity_added', this.onEntityAddedListener);
+
     this.hasStarted = false;
     this.nextUnitId = 1;
     this.nextSquadId = 1;

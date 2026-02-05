@@ -111,26 +111,12 @@ const PREREQUISITE_HANDLERS: Record<UpgradePrerequisite['type'], PrerequisiteHan
  */
 export class BattleUpgradeRegistry implements IBattleUpgradeRegistry {
   private definitions: Map<string, BattleUpgradeDefinition> = new Map();
-  private byScope: Map<UpgradeScope, BattleUpgradeDefinition[]> = new Map();
-  private byTarget: Map<string, BattleUpgradeDefinition[]> = new Map();
 
   /**
    * Registers an upgrade definition.
    */
   register(definition: BattleUpgradeDefinition): void {
     this.definitions.set(definition.id, definition);
-
-    // Index by scope
-    const scopeList = this.byScope.get(definition.scope) ?? [];
-    scopeList.push(definition);
-    this.byScope.set(definition.scope, scopeList);
-
-    // Index by target (for non-global)
-    if (definition.targetId) {
-      const targetList = this.byTarget.get(definition.targetId) ?? [];
-      targetList.push(definition);
-      this.byTarget.set(definition.targetId, targetList);
-    }
   }
 
   /**
@@ -179,14 +165,14 @@ export class BattleUpgradeRegistry implements IBattleUpgradeRegistry {
    * Gets upgrade definitions by scope.
    */
   getByScope(scope: UpgradeScope): BattleUpgradeDefinition[] {
-    return this.byScope.get(scope) ?? [];
+    return this.getAll().filter((def) => def.scope === scope);
   }
 
   /**
    * Gets upgrade definitions that target a specific unit type or category.
    */
   getByTarget(targetId: string): BattleUpgradeDefinition[] {
-    return this.byTarget.get(targetId) ?? [];
+    return this.getAll().filter((def) => def.targetId === targetId);
   }
 
   /**
@@ -194,18 +180,9 @@ export class BattleUpgradeRegistry implements IBattleUpgradeRegistry {
    * Includes global, unit_type (exact match), and unit_category (category match).
    */
   getUpgradesForUnit(unitType: string, unitCategory: string): BattleUpgradeDefinition[] {
-    const result: BattleUpgradeDefinition[] = [];
-
-    // Global upgrades affect all units
-    result.push(...this.getByScope('global'));
-
-    // Unit type specific
-    result.push(...(this.byTarget.get(unitType) ?? []));
-
-    // Category specific
-    result.push(...(this.byTarget.get(unitCategory) ?? []));
-
-    return result;
+    return this.getAll().filter(
+      (def) => def.scope === 'global' || def.targetId === unitType || def.targetId === unitCategory
+    );
   }
 
   /**

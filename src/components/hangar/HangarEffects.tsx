@@ -5,7 +5,7 @@
  */
 
 import { useEffect, useState, useMemo } from 'react';
-import { EffectsSettings } from './EffectsSettingsModal';
+import type { EffectsSettings } from './effectsSettings';
 
 interface HangarEffectsProps {
   settings: EffectsSettings;

@@ -308,13 +308,6 @@ export const CASTLE_EDGE_DISTANCE_COLS = 20;
 export const CASTLE_BACK_DISTANCE_ROWS = 10;
 
 /**
- * Base horizontal offset from arena edge for castle placement.
- * Scaled by arena size at runtime.
- * @deprecated Use CASTLE_EDGE_DISTANCE_COLS for grid-based positioning
- */
-export const BASE_CASTLE_HORIZONTAL_MARGIN = 200;
-
-/**
  * Padding around obstacles for formation placement (pixels).
  * Units will not be placed within this distance of an obstacle.
  * Scaled by arena size at runtime.

@@ -5,7 +5,7 @@
  * AC6-inspired industrial mech aesthetic with hangar background.
  */
 
-import { UI_COLORS } from '../../core/theme/colors';
+import { UI_COLORS, hexToRgba } from '../../core/theme/colors';
 import { BattleUpgradeStates } from '../../core/battle/upgrades/types';
 import { UnitSelector } from './UnitSelector';
 import { UnitStatsPanel } from './UnitStatsPanel';
@@ -54,7 +54,10 @@ export function AssemblyPage({
       }}
     >
       {/* Dark overlay for better text readability */}
-      <div className="absolute inset-0" style={{ backgroundColor: 'rgba(0, 0, 0, 0.4)' }} />
+      <div
+        className="absolute inset-0"
+        style={{ backgroundColor: hexToRgba(UI_COLORS.black, 0.4) }}
+      />
 
       {/* Content layer */}
       <div className="relative z-10 flex flex-col h-full p-4 gap-4">
