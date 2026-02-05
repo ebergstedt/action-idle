@@ -226,6 +226,7 @@ import {
   GRID_DEPLOYMENT_COLS,
   GRID_TOTAL_ROWS,
   GRID_TOTAL_COLS,
+  DEFAULT_GRID_FOOTPRINT,
 } from './BattleConfig';
 
 // =============================================================================
@@ -327,17 +328,13 @@ export function getUnitGridFootprint(definition: UnitDefinition): GridFootprint 
   const squadSize = definition.baseStats.squadSize ?? 1;
 
   if (squadSize <= 1) {
-    return { cols: 2, rows: 2 };
+    return DEFAULT_GRID_FOOTPRINT;
   }
-
-  // Calculate based on squad layout (cols used for size categorization)
-  const cols = Math.min(squadSize, SQUAD_MAX_COLUMNS);
-  void cols; // Used for size categorization logic below
 
   // Map to grid cells (roughly 10 pixels per cell at reference size)
   // Small squads: 2x2, medium: 3x2, large: 5x2
   if (squadSize <= 3) {
-    return { cols: 2, rows: 2 };
+    return DEFAULT_GRID_FOOTPRINT;
   } else if (squadSize <= 6) {
     return { cols: 3, rows: 2 };
   } else {

@@ -8,6 +8,7 @@
  */
 
 import { Vector2 } from '../../physics/Vector2';
+import { DEFAULT_GRID_FOOTPRINT } from '../BattleConfig';
 import { UnitEntity } from '../entities';
 import { pixelToGrid, snapFootprintToGrid } from '../grid/GridManager';
 import { IUnitRegistry } from '../units';
@@ -214,7 +215,7 @@ export function applyLayoutToComposition(
 
     // Snap to grid based on unit's footprint for proper alignment
     const def = registry.tryGet(placement.type);
-    const footprint = def?.gridFootprint || { cols: 2, rows: 2 };
+    const footprint = def?.gridFootprint || DEFAULT_GRID_FOOTPRINT;
     const snappedPos = snapFootprintToGrid(pixelPos, footprint, cellSize);
 
     return {

@@ -8,7 +8,12 @@
  */
 
 import { BattleEngine } from '../BattleEngine';
-import { ZONE_HEIGHT_PERCENT } from '../BattleConfig';
+import {
+  ZONE_HEIGHT_PERCENT,
+  WAVES_PER_BONUS_LEVEL,
+  ENEMY_LEVEL_DISTRIBUTION_BIAS,
+  DEFAULT_GRID_FOOTPRINT,
+} from '../BattleConfig';
 import {
   calculateDeterministicAlliedPositions,
   calculateDeterministicEnemyPositions,
@@ -23,9 +28,6 @@ import { applyLayoutToComposition } from './LayoutManager';
 // =============================================================================
 // LEVEL SCALING
 // =============================================================================
-
-/** Waves between each bonus level for enemies */
-const WAVES_PER_BONUS_LEVEL = 5;
 
 /**
  * Calculates total bonus levels available for enemies at a given wave.
@@ -64,9 +66,8 @@ export function distributeEnemyLevels(
 
   // Distribute bonus levels
   for (let i = 0; i < bonusLevels; i++) {
-    // 70% chance to pick the squad with lowest level (equal distribution bias)
-    // 30% chance to pick a random squad (allows stacking)
-    const useLowest = random() < 0.7;
+    // Biased toward equal distribution (allows stacking with remaining chance)
+    const useLowest = random() < ENEMY_LEVEL_DISTRIBUTION_BIAS;
 
     let targetIndex: number;
     if (useLowest) {
@@ -155,7 +156,7 @@ export function spawnWaveUnits(engine: BattleEngine, config: WaveSpawnConfig): v
   for (const spawn of alliedPositions) {
     // Snap position to grid based on unit's footprint
     const def = registry.tryGet(spawn.type);
-    const footprint = def?.gridFootprint || { cols: 2, rows: 2 };
+    const footprint = def?.gridFootprint || DEFAULT_GRID_FOOTPRINT;
     const snappedPos = snapFootprintToGrid(spawn.position, footprint, cellSize);
     engine.spawnSquad(spawn.type, 'player', snappedPos, arenaHeight);
   }
@@ -179,7 +180,7 @@ export function spawnWaveUnits(engine: BattleEngine, config: WaveSpawnConfig): v
 
     // Snap position to grid based on unit's footprint
     const def = registry.tryGet(spawn.type);
-    const footprint = def?.gridFootprint || { cols: 2, rows: 2 };
+    const footprint = def?.gridFootprint || DEFAULT_GRID_FOOTPRINT;
     const snappedPos = snapFootprintToGrid(spawn.position, footprint, cellSize);
     engine.spawnSquad(spawn.type, 'enemy', snappedPos, arenaHeight, level);
   }

@@ -27,7 +27,7 @@ Current focus: **Battle System** - unit spawning, formations, combat mechanics.
 │   ├── battle/             # 🟢 BattleEngine, combat AI, unit types
 │   ├── engine/             # 🟡 GameEngine, Formulas (idle economy)
 │   ├── persistence/        # 🟡 IPersistenceAdapter, SaveManager
-│   ├── physics/            # 🟡 IPhysicsEngine, Vector2 (future use)
+│   ├── physics/            # 🟡 Vector2, Zoom (math utilities)
 │   ├── theme/              # 🟢 Centralized colors (faction, UI, arena)
 │   ├── types/              # GameState, Upgrade interfaces
 │   └── utils/              # BigNumber (break_infinity.js wrapper)
@@ -155,8 +155,6 @@ For platform-specific features (persistence, physics, rendering), define interfa
 ├── persistence/
 │   ├── IPersistenceAdapter.ts    # Interface - what Godot must implement
 │   └── SaveManager.ts            # Uses interface, not concrete class
-├── physics/
-│   └── IPhysicsEngine.ts         # Interface for physics operations
 ```
 
 ```typescript
@@ -446,7 +444,6 @@ destroy(): void {
 |------|---------|
 | `src/core/engine/IGameEngine.ts` | Interface - what Godot must implement |
 | `src/core/engine/GameEngine.ts` | Idle engine - `tick(delta)`, `purchaseUpgrade(id)` |
-| `src/core/engine/UpgradeRegistry.ts` | Registry pattern for loading upgrade definitions |
 | `src/core/engine/Formulas.ts` | Pure math: `calculateCost()`, `calculateProduction()` |
 | `src/core/persistence/IPersistenceAdapter.ts` | Interface for save/load (swap for Godot) |
 | `src/core/types/GameState.ts` | State interfaces (GameState, UpgradeState) |
@@ -674,4 +671,4 @@ When positioning units:
 | Document | Description |
 |----------|-------------|
 | `docs/GAME_DESIGN.md` | Game design document - mechanics, balance, progression |
-| `docs/PHYSICS.md` | Physics engine architecture and Godot migration guide |
+| `docs/PHYSICS.md` | Physics engine architecture and Godot migration guide (outdated - IPhysicsEngine removed) |

@@ -7,6 +7,8 @@
  * Godot equivalent: Resource file or Autoload with exported variables
  */
 
+import type { GridFootprint } from './grid/GridTypes';
+
 // Re-export all visual constants for backward compatibility
 // Existing imports from BattleConfig will continue to work
 export * from './VisualConfig';
@@ -61,6 +63,12 @@ export const GRID_NO_MANS_LAND_ROWS = 2;
  * Rows for each deployment zone (Mechabellum: 30).
  */
 export const GRID_DEPLOYMENT_ROWS = 30;
+
+/**
+ * Default grid footprint for units without an explicit footprint.
+ * 2x2 cells is the standard single-unit or small-squad size.
+ */
+export const DEFAULT_GRID_FOOTPRINT: GridFootprint = { cols: 2, rows: 2 };
 
 // =============================================================================
 // ARENA CONFIGURATION
@@ -383,6 +391,11 @@ export const ALLY_AVOIDANCE_DISTANCE_MULTIPLIER = 1.2;
  */
 export const MIN_NORMALIZE_THRESHOLD = 0.1;
 
+/**
+ * Number of grid cells to look ahead for obstacle avoidance.
+ */
+export const OBSTACLE_AVOIDANCE_LOOKAHEAD_CELLS = 4;
+
 // =============================================================================
 // SCALING SYSTEM
 // =============================================================================
@@ -670,6 +683,35 @@ export const BASE_ABILITY_RANGE = 100;
 export const MIN_DAMAGE_AFTER_ARMOR = 1;
 
 // =============================================================================
+// MELEE ENGAGEMENT DEBUFF
+// =============================================================================
+
+/**
+ * Movement speed modifier when engaged in melee (-0.5 = 50% slower).
+ */
+export const MELEE_ENGAGEMENT_SPEED_MOD = -0.5;
+
+/**
+ * Damage modifier when engaged in melee (0 = no change).
+ */
+export const MELEE_ENGAGEMENT_DAMAGE_MOD = 0;
+
+/**
+ * Collision size modifier when engaged in melee (1 = 100% larger collision box).
+ */
+export const MELEE_ENGAGEMENT_COLLISION_SIZE_MOD = 1;
+
+/**
+ * Duration of melee engagement debuff in seconds.
+ */
+export const MELEE_ENGAGEMENT_DURATION = 1.0;
+
+/**
+ * Delay before defender receives the melee engagement debuff (seconds).
+ */
+export const MELEE_ENGAGEMENT_DEFENDER_DELAY = 0.2;
+
+// =============================================================================
 // MELEE COMBAT
 // =============================================================================
 
@@ -749,6 +791,18 @@ export const WAVE_GOLD_SCALING = 0.1;
 export function calculateWaveGold(waveNumber: number): number {
   return Math.floor(BASE_GOLD_PER_WAVE * (1 + waveNumber * WAVE_GOLD_SCALING));
 }
+
+/**
+ * Waves between each bonus level for enemies.
+ * Enemies get 1 extra level to distribute every N waves.
+ */
+export const WAVES_PER_BONUS_LEVEL = 5;
+
+/**
+ * Bias for distributing enemy levels toward equal distribution.
+ * 0.7 = 70% chance to pick the squad with lowest level (equal distribution bias).
+ */
+export const ENEMY_LEVEL_DISTRIBUTION_BIAS = 0.7;
 
 /**
  * Base number of enemy squads at wave 1.

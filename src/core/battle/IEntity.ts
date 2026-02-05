@@ -139,11 +139,6 @@ export type EntityEventType = 'spawned' | 'destroyed' | 'damaged' | 'attacked' |
  */
 export type WorldEventType = 'entity_added' | 'entity_removed';
 
-/**
- * All event types combined.
- */
-export type AllEventTypes = EntityEventType | WorldEventType;
-
 // --- Typed Event Payloads ---
 
 /**
@@ -264,12 +259,6 @@ export interface WorldEventMap {
  * Generic event listener callback.
  */
 export type EventListener<T> = (event: T) => void;
-
-/**
- * Untyped listener (for backward compatibility).
- * @deprecated Use typed listeners instead
- */
-export type EntityEventListener = (event: EntityEvent) => void;
 
 /**
  * Interface for entities that can emit events.

@@ -7,6 +7,7 @@
  * Godot equivalent: Component that can be attached to any Node2D.
  */
 
+import { MIN_COLLISION_SIZE_MULTIPLIER } from '../BattleConfig';
 import { UnitTeam } from '../units/types';
 import { ModifierRenderData } from '../types';
 import { TemporaryModifier, PendingModifier } from './TemporaryModifier';
@@ -129,7 +130,7 @@ export class ModifierManager {
     for (const mod of this.activeModifiers) {
       mult *= 1 + mod.collisionSizeMod;
     }
-    return Math.max(0.1, mult); // Minimum 10% size
+    return Math.max(MIN_COLLISION_SIZE_MULTIPLIER, mult);
   }
 
   /**

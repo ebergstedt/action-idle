@@ -98,20 +98,11 @@ export function cloneBaseStats(stats: BaseStats): BaseStats {
     maxHealth: stats.maxHealth,
     moveSpeed: stats.moveSpeed,
     armor: stats.armor,
-    melee: stats.melee
-      ? {
-          damage: stats.melee.damage,
-          attackSpeed: stats.melee.attackSpeed,
-          range: stats.melee.range,
-        }
-      : null,
-    ranged: stats.ranged
-      ? {
-          damage: stats.ranged.damage,
-          attackSpeed: stats.ranged.attackSpeed,
-          range: stats.ranged.range,
-        }
-      : null,
+    attackInterval: stats.attackInterval,
+    squadSize: stats.squadSize,
+    resetAttackOnTargetSwitch: stats.resetAttackOnTargetSwitch,
+    melee: stats.melee ? { ...stats.melee } : null,
+    ranged: stats.ranged ? { ...stats.ranged } : null,
   };
 }
 

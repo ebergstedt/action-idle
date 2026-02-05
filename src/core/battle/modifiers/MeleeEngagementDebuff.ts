@@ -8,6 +8,13 @@
  * Godot-portable: No React/browser dependencies.
  */
 
+import {
+  MELEE_ENGAGEMENT_SPEED_MOD,
+  MELEE_ENGAGEMENT_DAMAGE_MOD,
+  MELEE_ENGAGEMENT_COLLISION_SIZE_MOD,
+  MELEE_ENGAGEMENT_DURATION,
+  MELEE_ENGAGEMENT_DEFENDER_DELAY,
+} from '../BattleConfig';
 import { UnitTeam } from '../units/types';
 import { TemporaryModifier } from './TemporaryModifier';
 
@@ -19,19 +26,19 @@ export const MELEE_ENGAGEMENT_DEBUFF = {
   sourceId: 'melee_engagement',
 
   /** Movement speed modifier (-0.5 = 50% slower) */
-  moveSpeedMod: -0.5,
+  moveSpeedMod: MELEE_ENGAGEMENT_SPEED_MOD,
 
   /** Damage modifier (0 = no change) */
-  damageMod: 0,
+  damageMod: MELEE_ENGAGEMENT_DAMAGE_MOD,
 
   /** Collision size modifier (1 = 100% larger collision box when engaged in melee) */
-  collisionSizeMod: 1,
+  collisionSizeMod: MELEE_ENGAGEMENT_COLLISION_SIZE_MOD,
 
   /** Duration in seconds */
-  duration: 1.0,
+  duration: MELEE_ENGAGEMENT_DURATION,
 
   /** Delay before defender receives the debuff (seconds) */
-  defenderDelay: 0.2,
+  defenderDelay: MELEE_ENGAGEMENT_DEFENDER_DELAY,
 } as const;
 
 /**

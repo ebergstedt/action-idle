@@ -22,37 +22,6 @@ export interface BattleInputEvent {
 }
 
 /**
- * Interface for platform-specific input handling.
- * React and Godot each implement this differently.
- */
-export interface IBattleInputAdapter {
-  /**
-   * Called when user clicks/taps.
-   */
-  onClick(position: Vector2): void;
-
-  /**
-   * Called when user double-clicks/double-taps.
-   */
-  onDoubleClick(position: Vector2): void;
-
-  /**
-   * Called when drag starts.
-   */
-  onDragStart(position: Vector2): void;
-
-  /**
-   * Called during drag movement.
-   */
-  onDragMove(position: Vector2): void;
-
-  /**
-   * Called when drag ends.
-   */
-  onDragEnd(position: Vector2): void;
-}
-
-/**
  * Finds a unit at the given position.
  * Shared utility for input hit-testing.
  * Selection radius is unit.size * SELECTION_RADIUS_MULTIPLIER (default 1.5x).

@@ -57,16 +57,19 @@ export function BattleOutcomeOverlay({
   // Animate in when outcome changes to non-pending
   useEffect(() => {
     if (outcome !== 'pending') {
+      let stampTimer: ReturnType<typeof setTimeout>;
       // Small delay before showing overlay
       const showTimer = setTimeout(() => {
         setIsVisible(true);
         // Animation after overlay fades in
-        const stampTimer = setTimeout(() => {
+        stampTimer = setTimeout(() => {
           setIsStamped(true);
         }, OVERLAY_STAMP_DELAY_MS);
-        return () => clearTimeout(stampTimer);
       }, OVERLAY_SHOW_DELAY_MS);
-      return () => clearTimeout(showTimer);
+      return () => {
+        clearTimeout(showTimer);
+        clearTimeout(stampTimer);
+      };
     } else {
       setIsVisible(false);
       setIsStamped(false);

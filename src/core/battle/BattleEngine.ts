@@ -35,6 +35,7 @@ import {
   MIN_WAVE,
   MAX_WAVE,
   calculateWaveGold,
+  DEFAULT_GRID_FOOTPRINT,
 } from './BattleConfig';
 import type { GridConfig } from './grid/GridTypes';
 import { calculateCellSize } from './grid/GridManager';
@@ -499,7 +500,7 @@ export class BattleEngine {
       walkAnimationTime: 0, // Walk animation starts at time 0
       walkAnimation: visuals.walkAnimation ?? DEFAULT_WALK_ANIMATION,
       hasAimingLaser: visuals.aimingLaser ?? false,
-      gridFootprint: definition.gridFootprint ?? { cols: 2, rows: 2 },
+      gridFootprint: definition.gridFootprint ?? DEFAULT_GRID_FOOTPRINT,
     };
 
     const entity = new UnitEntity(id, position.clone(), data);

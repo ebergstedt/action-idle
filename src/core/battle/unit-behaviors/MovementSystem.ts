@@ -16,6 +16,7 @@ import {
   PATH_DOT_THRESHOLD,
   DIRECTION_CHECK_MULTIPLIER,
   GRID_TOTAL_ROWS,
+  OBSTACLE_AVOIDANCE_LOOKAHEAD_CELLS,
   scaleValue,
 } from '../BattleConfig';
 import { IDamageable } from '../IEntity';
@@ -220,7 +221,7 @@ function calculateAllObstacleAvoidance(
   if (obstacles.length === 0) return Vector2.zero();
 
   const cellSize = context.arenaHeight / GRID_TOTAL_ROWS;
-  const avoidanceRadius = cellSize * 4; // Look ahead 4 cells for obstacles
+  const avoidanceRadius = cellSize * OBSTACLE_AVOIDANCE_LOOKAHEAD_CELLS;
 
   let totalAvoidance = Vector2.zero();
   for (const obstacle of obstacles) {

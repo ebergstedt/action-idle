@@ -63,11 +63,12 @@ function App() {
   }, []);
 
   // Auto-select first unit type if none selected
+  const { loaded, selectedUnitType, selectUnit } = assembly;
   useEffect(() => {
-    if (assembly.loaded && !assembly.selectedUnitType) {
-      assembly.selectUnit('hound');
+    if (loaded && !selectedUnitType) {
+      selectUnit('hound');
     }
-  }, [assembly]);
+  }, [loaded, selectedUnitType, selectUnit]);
 
   // Render content based on current hangar section
   const renderHangarContent = () => {
