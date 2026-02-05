@@ -8,15 +8,11 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { ZoomState } from './useCanvasInput';
 import { clampPan } from '../../../core/physics/Zoom';
-
-/** Pixels per second for keyboard panning */
-const KEYBOARD_PAN_SPEED = 600;
-
-/** Pixels per second for edge panning */
-const EDGE_PAN_SPEED = 450;
-
-/** Edge zone size in pixels (how close to edge to trigger panning) */
-const EDGE_ZONE_SIZE = 60;
+import {
+  KEYBOARD_PAN_SPEED,
+  EDGE_PAN_SPEED,
+  EDGE_ZONE_SIZE,
+} from '../../../core/battle/BattleConfig';
 
 interface UseCanvasPanningProps {
   /** Callback to update zoom state */

@@ -407,3 +407,16 @@ export const WAX_SEAL_STAMP_DURATION = 0.4;
  * Panel animation duration (seconds).
  */
 export const WAX_SEAL_PANEL_DURATION = 0.3;
+
+// =============================================================================
+// CAMERA PANNING
+// =============================================================================
+
+/** Pixels per second for keyboard (WASD/arrow) panning. */
+export const KEYBOARD_PAN_SPEED = 600;
+
+/** Pixels per second for edge-of-screen mouse panning. */
+export const EDGE_PAN_SPEED = 450;
+
+/** Edge zone size in pixels (how close to edge to trigger panning). */
+export const EDGE_ZONE_SIZE = 60;
