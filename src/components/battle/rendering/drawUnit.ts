@@ -319,9 +319,9 @@ export function drawSquadLevels(ctx: CanvasRenderingContext2D, units: UnitRender
       maxY = Math.max(maxY, y + unit.size);
     }
 
-    // Position in top-right corner of squad bounding box
-    const labelX = maxX;
-    const labelY = minY;
+    // Position in top-right corner of squad bounding box (offset outside)
+    const labelX = maxX + size * 0.6;
+    const labelY = minY - size * 0.3;
 
     // Draw level number with black outline (no background)
     const fontSize = Math.max(10, size * 1.2);
