@@ -17,6 +17,75 @@ import {
 } from '../FormationManager';
 import { calculateCellSize, snapFootprintToGrid } from '../grid/GridManager';
 import { resolveSquadOverlaps } from '../DragController';
+import { createSeededRandom } from '../../utils/Random';
+
+// =============================================================================
+// LEVEL SCALING
+// =============================================================================
+
+/** Waves between each bonus level for enemies */
+const WAVES_PER_BONUS_LEVEL = 5;
+
+/**
+ * Calculates total bonus levels available for enemies at a given wave.
+ * Enemies get 1 extra level to distribute every 5 waves.
+ *
+ * @param waveNumber - Current wave number
+ * @returns Total bonus levels to distribute (0 for waves 1-4, 1 for waves 5-9, etc.)
+ */
+export function calculateEnemyBonusLevels(waveNumber: number): number {
+  return Math.floor((waveNumber - 1) / WAVES_PER_BONUS_LEVEL);
+}
+
+/**
+ * Distributes bonus levels across enemy squads deterministically.
+ * Biased towards equal distribution but can sometimes stack levels.
+ *
+ * @param squadCount - Number of enemy squads
+ * @param bonusLevels - Total bonus levels to distribute
+ * @param waveNumber - Wave number for deterministic seeding
+ * @returns Array of levels for each squad (base level 1 + bonus)
+ */
+export function distributeEnemyLevels(
+  squadCount: number,
+  bonusLevels: number,
+  waveNumber: number
+): number[] {
+  // All squads start at level 1
+  const levels = new Array(squadCount).fill(1);
+
+  if (bonusLevels <= 0 || squadCount <= 0) {
+    return levels;
+  }
+
+  // Use seeded random for deterministic distribution
+  const random = createSeededRandom(waveNumber * 7919 + 1337);
+
+  // Distribute bonus levels
+  for (let i = 0; i < bonusLevels; i++) {
+    // 70% chance to pick the squad with lowest level (equal distribution bias)
+    // 30% chance to pick a random squad (allows stacking)
+    const useLowest = random() < 0.7;
+
+    let targetIndex: number;
+    if (useLowest) {
+      // Find squad(s) with minimum level
+      const minLevel = Math.min(...levels);
+      const minIndices = levels
+        .map((level, idx) => (level === minLevel ? idx : -1))
+        .filter((idx) => idx >= 0);
+      // Pick randomly among the lowest
+      targetIndex = minIndices[Math.floor(random() * minIndices.length)];
+    } else {
+      // Pick any random squad
+      targetIndex = Math.floor(random() * squadCount);
+    }
+
+    levels[targetIndex]++;
+  }
+
+  return levels;
+}
 
 // =============================================================================
 // TYPES
@@ -96,12 +165,20 @@ export function spawnWaveUnits(engine: BattleEngine, config: WaveSpawnConfig): v
     bounds,
     waveNumber
   );
-  for (const spawn of enemyPositions) {
+
+  // Calculate level distribution for enemy squads
+  const bonusLevels = calculateEnemyBonusLevels(waveNumber);
+  const enemyLevels = distributeEnemyLevels(enemyPositions.length, bonusLevels, waveNumber);
+
+  for (let i = 0; i < enemyPositions.length; i++) {
+    const spawn = enemyPositions[i];
+    const level = enemyLevels[i];
+
     // Snap position to grid based on unit's footprint
     const def = registry.tryGet(spawn.type);
     const footprint = def?.gridFootprint || { cols: 2, rows: 2 };
     const snappedPos = snapFootprintToGrid(spawn.position, footprint, cellSize);
-    engine.spawnSquad(spawn.type, 'enemy', snappedPos, arenaHeight);
+    engine.spawnSquad(spawn.type, 'enemy', snappedPos, arenaHeight, level);
   }
 }
 

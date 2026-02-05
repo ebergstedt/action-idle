@@ -124,7 +124,7 @@ export function ControlsPanel({
           color={UI_COLORS.metalDark}
           textColor={UI_COLORS.textPrimary}
           onClick={() => onWaveChange(waveNumber + 1)}
-          disabled={hasStarted}
+          disabled={hasStarted || waveNumber >= highestWave}
         >
           +
         </Button3D>

@@ -388,37 +388,55 @@ export class BattleEngine {
    * @param team - Which team the unit belongs to
    * @param position - Spawn position
    * @param arenaHeight - Arena height for size scaling
+   * @param level - Unit level (1-9). HP and damage scale linearly with level.
    * @returns The spawned unit entity
    */
   spawnUnit(
     definitionId: string,
     team: UnitTeam,
     position: Vector2,
-    arenaHeight: number = REFERENCE_ARENA_HEIGHT
+    arenaHeight: number = REFERENCE_ARENA_HEIGHT,
+    level: number = 1
   ): UnitRenderData {
     const definition = this.registry.get(definitionId);
-    return this.spawnUnitFromDefinition(definition, team, position, arenaHeight);
+    return this.spawnUnitFromDefinition(definition, team, position, arenaHeight, undefined, level);
   }
 
   /**
    * Spawn a unit directly from a definition object.
+   * @param level - Unit level (1-9). HP and damage scale linearly with level.
    */
   spawnUnitFromDefinition(
     definition: UnitDefinition,
     team: UnitTeam,
     position: Vector2,
     arenaHeight: number = REFERENCE_ARENA_HEIGHT,
-    squadId?: string
+    squadId?: string,
+    level: number = 1
   ): UnitRenderData {
     const { baseStats, visuals } = definition;
 
+    // Apply level scaling: HP and damage multiply by level (no upper limit)
+    const levelMultiplier = Math.max(1, level);
+
+    // Scale melee attack damage by level
+    const scaledMelee = baseStats.melee
+      ? { ...baseStats.melee, damage: baseStats.melee.damage * levelMultiplier }
+      : null;
+
+    // Scale ranged attack damage by level
+    const scaledRanged = baseStats.ranged
+      ? { ...baseStats.ranged, damage: baseStats.ranged.damage * levelMultiplier }
+      : null;
+
     // Convert BaseStats to render data UnitStats format (without armor)
+    // HP and damage are scaled by level
     const stats = {
-      maxHealth: baseStats.maxHealth,
+      maxHealth: baseStats.maxHealth * levelMultiplier,
       moveSpeed: baseStats.moveSpeed,
       attackInterval: baseStats.attackInterval,
-      melee: baseStats.melee,
-      ranged: baseStats.ranged,
+      melee: scaledMelee,
+      ranged: scaledRanged,
       resetAttackOnTargetSwitch: baseStats.resetAttackOnTargetSwitch,
     };
 
@@ -440,6 +458,7 @@ export class BattleEngine {
       shape: visuals.shape,
       size,
       squadId: finalSquadId,
+      level: levelMultiplier,
       target: null,
       attackCooldown: 0,
       shuffleDirection: null,
@@ -471,13 +490,15 @@ export class BattleEngine {
    * @param team - Which team the squad belongs to
    * @param centerPosition - Center position for the squad formation
    * @param arenaHeight - Arena height for size scaling
+   * @param level - Unit level (1-9). HP and damage scale linearly with level.
    * @returns Array of spawned unit render data
    */
   spawnSquad(
     definitionId: string,
     team: UnitTeam,
     centerPosition: Vector2,
-    arenaHeight: number = REFERENCE_ARENA_HEIGHT
+    arenaHeight: number = REFERENCE_ARENA_HEIGHT,
+    level: number = 1
   ): UnitRenderData[] {
     const definition = this.registry.get(definitionId);
     const squadSize = definition.baseStats.squadSize ?? 1;
@@ -487,7 +508,9 @@ export class BattleEngine {
 
     if (squadSize <= 1) {
       // Single unit, no squad formation needed
-      return [this.spawnUnitFromDefinition(definition, team, centerPosition, arenaHeight, squadId)];
+      return [
+        this.spawnUnitFromDefinition(definition, team, centerPosition, arenaHeight, squadId, level),
+      ];
     }
 
     // Use cell size for spacing so each unit is centered in its grid cell
@@ -516,7 +539,14 @@ export class BattleEngine {
         const y = startY + row * cellSize;
         const position = new Vector2(x, y);
 
-        const unit = this.spawnUnitFromDefinition(definition, team, position, arenaHeight, squadId);
+        const unit = this.spawnUnitFromDefinition(
+          definition,
+          team,
+          position,
+          arenaHeight,
+          squadId,
+          level
+        );
         units.push(unit);
         unitIndex++;
       }

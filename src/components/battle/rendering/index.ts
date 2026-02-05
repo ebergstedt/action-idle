@@ -10,7 +10,13 @@ export type { RenderContext } from './BattleRenderer';
 export type { DustParticle } from '../../../core/battle/particles';
 
 export { drawParchmentBackground, drawVignette, drawParchmentNoise } from './drawBackground';
-export { drawUnitShadow, drawUnitBody, drawHealthBar, drawDebuffIndicator } from './drawUnit';
+export {
+  drawUnitShadow,
+  drawUnitBody,
+  drawHealthBar,
+  drawDebuffIndicator,
+  drawSquadLevels,
+} from './drawUnit';
 export { drawProjectile } from './drawProjectile';
 export { drawCastle, drawCastleHealthBar } from './drawCastle';
 export { drawShockwave, drawDamageNumber } from './drawEffects';

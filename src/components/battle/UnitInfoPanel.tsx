@@ -120,7 +120,7 @@ export function UnitInfoPanel({ unit, squadCount = 1, onDeselect }: UnitInfoPane
         )}
       </div>
 
-      <div className="text-sm">
+      <div className="flex items-center gap-2">
         <span
           className="px-2 py-0.5 rounded text-sm"
           style={{
@@ -130,6 +130,15 @@ export function UnitInfoPanel({ unit, squadCount = 1, onDeselect }: UnitInfoPane
           }}
         >
           {unit.team === 'player' ? 'Allied' : 'Hostile'}
+        </span>
+        <span
+          className="px-2 py-0.5 rounded text-sm font-mono"
+          style={{
+            backgroundColor: UI_COLORS.metalDark,
+            color: UI_COLORS.accentPrimary,
+          }}
+        >
+          LV {unit.level}
         </span>
       </div>
 

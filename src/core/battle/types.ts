@@ -103,6 +103,8 @@ export interface UnitRenderData {
   team: UnitTeam;
   /** Squad identifier - units spawned together share the same squadId */
   squadId: string;
+  /** Unit level (1-9). Stats scale linearly with level */
+  level: number;
   position: Vector2;
   health: number;
   stats: UnitStats;

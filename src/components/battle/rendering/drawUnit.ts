@@ -283,6 +283,65 @@ export function drawHealthBar(
 }
 
 /**
+ * Draw level indicators for all squads.
+ * Shows one level number in the top-right corner of each squad's bounding box.
+ * Only shown during planning phase (before battle starts).
+ */
+export function drawSquadLevels(ctx: CanvasRenderingContext2D, units: UnitRenderData[]): void {
+  // Group units by squadId
+  const squads = new Map<string, UnitRenderData[]>();
+  for (const unit of units) {
+    const squadUnits = squads.get(unit.squadId) || [];
+    squadUnits.push(unit);
+    squads.set(unit.squadId, squadUnits);
+  }
+
+  // Draw level for each squad
+  for (const [, squadUnits] of squads) {
+    if (squadUnits.length === 0) continue;
+
+    // Get level from first unit (all units in squad have same level)
+    const level = squadUnits[0].level;
+    const size = squadUnits[0].size;
+
+    // Find bounding box of squad
+    let minX = Infinity,
+      minY = Infinity,
+      maxX = -Infinity,
+      maxY = -Infinity;
+
+    for (const unit of squadUnits) {
+      const x = unit.position.x + (unit.visualOffset?.x ?? 0);
+      const y = unit.position.y + (unit.visualOffset?.y ?? 0);
+      minX = Math.min(minX, x - unit.size);
+      minY = Math.min(minY, y - unit.size);
+      maxX = Math.max(maxX, x + unit.size);
+      maxY = Math.max(maxY, y + unit.size);
+    }
+
+    // Position in top-right corner of squad bounding box
+    const labelX = maxX;
+    const labelY = minY;
+
+    // Draw level number with black outline (no background)
+    const fontSize = Math.max(10, size * 1.2);
+    ctx.font = `bold ${fontSize}px sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+
+    // Black outline
+    ctx.strokeStyle = UI_COLORS.black;
+    ctx.lineWidth = 3;
+    ctx.lineJoin = 'round';
+    ctx.strokeText(level.toString(), labelX, labelY);
+
+    // White fill
+    ctx.fillStyle = UI_COLORS.white;
+    ctx.fillText(level.toString(), labelX, labelY);
+  }
+}
+
+/**
  * Draw debuff indicator above unit (e.g., shockwave debuff).
  * Debuff color is the ENEMY team's color (the team that caused the debuff).
  */

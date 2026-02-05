@@ -14,7 +14,13 @@ import {
   BoxSelectSession,
 } from '../../../core/battle/BoxSelectController';
 
-import { drawUnitShadow, drawUnitBody, drawHealthBar, drawDebuffIndicator } from './drawUnit';
+import {
+  drawUnitShadow,
+  drawUnitBody,
+  drawHealthBar,
+  drawDebuffIndicator,
+  drawSquadLevels,
+} from './drawUnit';
 import { drawProjectile } from './drawProjectile';
 import { drawCastle, drawCastleHealthBar } from './drawCastle';
 import { drawShockwave } from './drawEffects';
@@ -130,6 +136,11 @@ export function renderBattle(context: RenderContext): void {
   for (const unit of mobileUnits) {
     const isBeingDragged = isDragging && draggedUnitIds.includes(unit.id);
     drawUnitBody(ctx, unit, isBeingDragged);
+  }
+
+  // 8.25. Squad level indicators (planning phase only)
+  if (!state.hasStarted) {
+    drawSquadLevels(ctx, mobileUnits);
   }
 
   // 8.5. Squad selection outlines (after unit bodies, before dust)

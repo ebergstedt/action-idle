@@ -91,6 +91,8 @@ export interface UnitData {
   size: number;
   /** Squad identifier - units spawned together share the same squadId */
   squadId: string;
+  /** Unit level (1-9). Stats scale linearly: level * base stats for HP and damage */
+  level: number;
   // Combat state - unified target (can be unit or castle)
   target: IDamageable | null;
   attackCooldown: number;
@@ -164,6 +166,9 @@ export class UnitEntity extends BaseEntity implements IObstacle {
   }
   get gridFootprint(): GridFootprint {
     return this.data.gridFootprint;
+  }
+  get level(): number {
+    return this.data.level;
   }
 
   // === Stationary Unit Support ===
@@ -714,6 +719,7 @@ export class UnitEntity extends BaseEntity implements IObstacle {
       type: this.type,
       team: this.team,
       squadId: this.squadId,
+      level: this.level,
       position: this.position,
       health: this.health,
       stats: this.stats,
