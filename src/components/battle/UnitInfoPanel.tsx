@@ -9,6 +9,7 @@ import { UnitRenderData, calculateHealthPercent } from '../../core/battle';
 import { UI_COLORS, ARENA_COLORS } from '../../core/theme/colors';
 import { calculateDPS } from '../../core/battle/BattleConfig';
 import { ModifierDisplay } from './ModifierDisplay';
+import { unitRegistry } from '../../data/battle';
 
 // Industrial theme styles
 const styles = {
@@ -22,7 +23,7 @@ const styles = {
 // Extracted Components (reduce nesting and DRY violations)
 // ─────────────────────────────────────────────────────────────────────────────
 
-/** Single stat row with label and value */
+/** Single stat row with label and value - matches garage styling */
 function StatRow({
   label,
   value,
@@ -33,11 +34,28 @@ function StatRow({
   bold?: boolean;
 }) {
   return (
-    <div className="flex justify-between">
-      <span style={styles.textFaded}>{label}</span>
-      <span style={bold ? { color: UI_COLORS.textPrimary, fontWeight: 'bold' } : styles.textDark}>
+    <div className="flex justify-between items-center py-0.5">
+      <span className="uppercase tracking-wide text-sm" style={styles.text}>
+        {label}
+      </span>
+      <span
+        className="font-mono"
+        style={bold ? { color: UI_COLORS.textPrimary, fontWeight: 'bold' } : styles.text}
+      >
         {value}
       </span>
+    </div>
+  );
+}
+
+/** Section header - matches garage styling */
+function SectionHeader({ children }: { children: React.ReactNode }) {
+  return (
+    <div
+      className="text-sm font-medium tracking-widest mb-2 mt-4 first:mt-0"
+      style={{ color: UI_COLORS.accentSecondary }}
+    >
+      {children}
     </div>
   );
 }
@@ -57,12 +75,10 @@ function AttackStatsSection({
   const dps = calculateDPS(damage, attackSpeed);
   return (
     <div className="pb-2 mb-2" style={{ borderBottom: `1px solid ${UI_COLORS.metalDark}` }}>
-      <div className="text-sm mb-1" style={styles.textFaded}>
-        {title}
-      </div>
-      <StatRow label="Damage" value={damage} />
-      <StatRow label="Speed" value={`${attackSpeed}/s`} />
-      {range !== undefined && <StatRow label="Range" value={`${range}px`} />}
+      <SectionHeader>{title.toUpperCase()}</SectionHeader>
+      <StatRow label="DAMAGE" value={damage} />
+      <StatRow label="RATE" value={`${attackSpeed}/s`} />
+      {range !== undefined && <StatRow label="RANGE" value={range} />}
       <StatRow label="DPS" value={dps.toFixed(1)} bold />
     </div>
   );
@@ -76,21 +92,32 @@ interface UnitInfoPanelProps {
 
 export function UnitInfoPanel({ unit, squadCount = 1, onDeselect }: UnitInfoPanelProps) {
   const healthPercent = calculateHealthPercent(unit.health, unit.stats.maxHealth);
+  const unitDefinition = unitRegistry.tryGet(unit.type);
 
   return (
     <div className="flex flex-col gap-4" style={styles.text}>
-      <div className="flex justify-between items-center">
-        <h3 className="text-lg font-bold capitalize" style={{ color: unit.color }}>
-          {unit.type}
-          {squadCount > 1 && (
-            <span className="text-sm font-normal ml-2" style={styles.textFaded}>
-              ({squadCount} units)
-            </span>
-          )}
-        </h3>
-        <button onClick={onDeselect} className="text-sm hover:underline" style={styles.textFaded}>
-          Close
-        </button>
+      <div>
+        <div className="flex justify-between items-center">
+          <h3 className="text-lg font-bold capitalize" style={{ color: unit.color }}>
+            {unit.type}
+            {squadCount > 1 && (
+              <span className="text-sm font-normal ml-2" style={styles.textFaded}>
+                ({squadCount} units)
+              </span>
+            )}
+          </h3>
+          <button onClick={onDeselect} className="text-sm hover:underline" style={styles.textFaded}>
+            Close
+          </button>
+        </div>
+        {unitDefinition?.description && (
+          <p
+            className="mt-2 mb-2 pb-2"
+            style={{ ...styles.textFaded, borderBottom: `1px solid ${UI_COLORS.metalDark}` }}
+          >
+            {unitDefinition.description}
+          </p>
+        )}
       </div>
 
       <div className="text-sm">
@@ -108,10 +135,12 @@ export function UnitInfoPanel({ unit, squadCount = 1, onDeselect }: UnitInfoPane
 
       {/* Health bar */}
       <div>
-        <div className="flex justify-between text-sm mb-1" style={styles.textFaded}>
-          <span>AP</span>
-          <span>
-            {Math.round(unit.health)} / {unit.stats.maxHealth}
+        <div className="flex justify-between items-center mb-1">
+          <span className="uppercase tracking-wide text-sm" style={styles.text}>
+            HP
+          </span>
+          <span className="font-mono" style={styles.text}>
+            {Math.round(unit.health).toLocaleString()} / {unit.stats.maxHealth.toLocaleString()}
           </span>
         </div>
         <div className="h-3 rounded overflow-hidden" style={styles.healthBarBg}>
@@ -131,10 +160,10 @@ export function UnitInfoPanel({ unit, squadCount = 1, onDeselect }: UnitInfoPane
       </div>
 
       {/* Stats */}
-      <div className="space-y-2 text-sm">
+      <div className="space-y-2">
         {unit.stats.melee && (
           <AttackStatsSection
-            title="Melee Attack"
+            title="Melee"
             damage={unit.stats.melee.damage}
             attackSpeed={unit.stats.melee.attackSpeed}
           />
@@ -142,22 +171,21 @@ export function UnitInfoPanel({ unit, squadCount = 1, onDeselect }: UnitInfoPane
 
         {unit.stats.ranged && (
           <AttackStatsSection
-            title="Ranged Attack"
+            title="Ranged"
             damage={unit.stats.ranged.damage}
             attackSpeed={unit.stats.ranged.attackSpeed}
             range={unit.stats.ranged.range}
           />
         )}
 
-        <StatRow label="Boost Speed" value={unit.stats.moveSpeed} />
+        <SectionHeader>MOBILITY</SectionHeader>
+        <StatRow label="SPEED" value={unit.stats.moveSpeed} />
       </div>
 
       {/* Active Modifiers (Buffs/Debuffs) */}
       {unit.activeModifiers.length > 0 && (
         <div className="pt-2" style={{ borderTop: `1px solid ${UI_COLORS.metalDark}` }}>
-          <div className="text-sm mb-2" style={styles.textFaded}>
-            Active Effects
-          </div>
+          <SectionHeader>EFFECTS</SectionHeader>
           <div className="space-y-2">
             {unit.activeModifiers.map((mod) => (
               <ModifierDisplay
@@ -171,11 +199,11 @@ export function UnitInfoPanel({ unit, squadCount = 1, onDeselect }: UnitInfoPane
       )}
 
       {/* Position */}
-      <div
-        className="text-sm pt-2"
-        style={{ ...styles.textFaded, borderTop: `1px solid ${UI_COLORS.metalDark}` }}
-      >
-        Position: ({Math.round(unit.position.x)}, {Math.round(unit.position.y)})
+      <div className="pt-2" style={{ borderTop: `1px solid ${UI_COLORS.metalDark}` }}>
+        <StatRow
+          label="POSITION"
+          value={`${Math.round(unit.position.x)}, ${Math.round(unit.position.y)}`}
+        />
       </div>
     </div>
   );

@@ -76,7 +76,7 @@ export function UnitStatsPanel({ selectedUnitType }: UnitStatsPanelProps) {
 
       {/* Description */}
       <div
-        className="text-sm mb-4 pb-4"
+        className="mb-4 pb-4"
         style={{
           color: UI_COLORS.textSecondary,
           borderBottom: `1px solid ${UI_COLORS.metalDark}`,
