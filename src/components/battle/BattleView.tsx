@@ -30,6 +30,7 @@ export function BattleView({ vest = 0, onReturnToAssembly }: BattleViewProps) {
     selectedUnitIds,
     battleSpeed,
     autoBattle,
+    stayMode,
     settingsLoaded,
     start,
     stop,
@@ -41,6 +42,7 @@ export function BattleView({ vest = 0, onReturnToAssembly }: BattleViewProps) {
     selectUnits,
     setBattleSpeed,
     toggleAutoBattle,
+    toggleStayMode,
     setWave,
     getWaveGoldReward,
     handleOutcomeAndContinue,
@@ -169,6 +171,7 @@ export function BattleView({ vest = 0, onReturnToAssembly }: BattleViewProps) {
               highestWave={state.highestWave}
               vest={vest}
               autoBattle={autoBattle}
+              stayMode={stayMode}
               sessionVestEarned={sessionVestEarned}
               onStart={handleStartBattle}
               onStop={stop}
@@ -176,6 +179,7 @@ export function BattleView({ vest = 0, onReturnToAssembly }: BattleViewProps) {
               onSpeedChange={setBattleSpeed}
               onWaveChange={handleWaveChange}
               onAutoBattleToggle={toggleAutoBattle}
+              onStayModeToggle={toggleStayMode}
               onReturnToAssembly={onReturnToAssembly ? handleReturnToAssembly : undefined}
             />
           )}

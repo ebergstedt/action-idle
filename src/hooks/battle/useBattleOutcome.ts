@@ -17,6 +17,8 @@ export interface UseBattleOutcomeOptions {
   performReset: () => void;
   /** Callback to schedule auto-start (from useAutoBattleTimer) */
   scheduleAutoStart: (onReset?: () => void) => void;
+  /** Reference to stay mode flag (repeat same wave without progressing) */
+  stayModeRef: React.RefObject<boolean>;
 }
 
 export interface UseBattleOutcomeReturn {
@@ -40,13 +42,14 @@ export function useBattleOutcome({
   syncState,
   performReset,
   scheduleAutoStart,
+  stayModeRef,
 }: UseBattleOutcomeOptions): UseBattleOutcomeReturn {
   const handleBattleOutcome = useCallback((): BattleOutcomeResult | null => {
     if (!engineRef.current) return null;
-    const result = engineRef.current.handleBattleOutcome();
+    const result = engineRef.current.handleBattleOutcome(stayModeRef.current ?? false);
     syncState();
     return result;
-  }, [engineRef, syncState]);
+  }, [engineRef, syncState, stayModeRef]);
 
   const getWaveGoldReward = useCallback((): number => {
     if (!engineRef.current) return 0;
@@ -55,9 +58,9 @@ export function useBattleOutcome({
 
   const handleOutcomeAndContinue = useCallback(
     (onReset?: () => void) => {
-      // Process outcome (awards gold, transitions wave)
+      // Process outcome (awards gold, transitions wave - unless stay mode)
       if (engineRef.current) {
-        engineRef.current.handleBattleOutcome();
+        engineRef.current.handleBattleOutcome(stayModeRef.current ?? false);
         syncState();
       }
 
@@ -67,7 +70,7 @@ export function useBattleOutcome({
       // Schedule auto-start (calls onReset immediately, then auto-starts if enabled)
       scheduleAutoStart(onReset);
     },
-    [engineRef, syncState, performReset, scheduleAutoStart]
+    [engineRef, syncState, performReset, scheduleAutoStart, stayModeRef]
   );
 
   return {

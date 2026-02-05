@@ -7,7 +7,7 @@
  * SRP: Orchestrates battle components, delegates to focused hooks.
  */
 
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { IPersistenceAdapter } from '../core/persistence/IPersistenceAdapter';
 import { LocalStorageAdapter } from '../adapters/LocalStorageAdapter';
 import { BattleState, BattleStatistics, BattleOutcomeResult } from '../core/battle';
@@ -48,6 +48,7 @@ export interface UseBattleReturn {
   selectedUnitIds: string[];
   battleSpeed: BattleSpeed;
   autoBattle: boolean;
+  stayMode: boolean;
   settingsLoaded: boolean;
   start: () => void;
   stop: () => void;
@@ -60,6 +61,7 @@ export interface UseBattleReturn {
   setBattleSpeed: (speed: BattleSpeed) => void;
   setAutoBattle: (enabled: boolean) => void;
   toggleAutoBattle: () => void;
+  toggleStayMode: () => void;
   setWave: (wave: number) => void;
   handleBattleOutcome: () => BattleOutcomeResult | null;
   getWaveGoldReward: () => number;
@@ -79,6 +81,13 @@ export function useBattle(options: UseBattleOptions = {}): UseBattleReturn {
     saveSettingsWithState,
     getLoadedSettings,
   } = useBattleSettings(persistenceAdapter);
+
+  // Stay mode - repeats same wave without progressing
+  const [stayMode, setStayMode] = useState(false);
+  const stayModeRef = useRef(stayMode);
+  useEffect(() => {
+    stayModeRef.current = stayMode;
+  }, [stayMode]);
 
   // Core engine management - define first so other hooks can reference it
   // Note: We pass a stable callback that reads from ref, avoiding effect re-runs
@@ -125,6 +134,7 @@ export function useBattle(options: UseBattleOptions = {}): UseBattleReturn {
     syncState: engine.syncState,
     performReset: controls.reset,
     scheduleAutoStart,
+    stayModeRef,
   });
 
   // Apply loaded settings to engine once both are ready
@@ -194,12 +204,18 @@ export function useBattle(options: UseBattleOptions = {}): UseBattleReturn {
     }
   }, [autoBattle, setAutoBattle, engine.engineRef, engine.syncState]);
 
+  // Stay mode toggle - repeat same wave without progressing
+  const toggleStayMode = useCallback(() => {
+    setStayMode((prev) => !prev);
+  }, []);
+
   return {
     state: engine.state,
     stats: engine.stats,
     selectedUnitIds: selection.selectedUnitIds,
     battleSpeed,
     autoBattle,
+    stayMode,
     settingsLoaded,
     start: controls.start,
     stop: controls.stop,
@@ -212,6 +228,7 @@ export function useBattle(options: UseBattleOptions = {}): UseBattleReturn {
     setBattleSpeed,
     setAutoBattle,
     toggleAutoBattle,
+    toggleStayMode,
     setWave: controls.setWave,
     handleBattleOutcome: outcome.handleBattleOutcome,
     getWaveGoldReward: outcome.getWaveGoldReward,

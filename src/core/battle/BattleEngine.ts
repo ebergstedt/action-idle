@@ -308,7 +308,7 @@ export class BattleEngine {
    * This is the single source of truth for outcome logic.
    * React layer should only call this and display the result.
    */
-  handleBattleOutcome(): BattleOutcomeResult {
+  handleBattleOutcome(stayOnWave: boolean = false): BattleOutcomeResult {
     const outcome = this.battleOutcome;
     const previousWave = this.waveNumber;
     let goldEarned = 0;
@@ -317,14 +317,18 @@ export class BattleEngine {
     if (outcome === 'player_victory') {
       // Award gold for clearing this wave
       goldEarned = this.awardWaveGold();
-      // Advance to next wave
-      this.nextWave();
-      newWave = this.waveNumber;
+      // Advance to next wave (unless stay mode is on)
+      if (!stayOnWave) {
+        this.nextWave();
+        newWave = this.waveNumber;
+      }
     } else if (outcome === 'enemy_victory') {
       // No gold on defeat
-      // Go back one wave (minimum 1)
-      this.previousWave();
-      newWave = this.waveNumber;
+      // Go back one wave (minimum 1) - unless stay mode is on
+      if (!stayOnWave) {
+        this.previousWave();
+        newWave = this.waveNumber;
+      }
     }
     // Draw: no gold, stay on same wave
 

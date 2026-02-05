@@ -20,6 +20,7 @@ interface ControlsPanelProps {
   highestWave: number;
   vest: number;
   autoBattle: boolean;
+  stayMode: boolean;
   sessionVestEarned?: number;
   onStart: () => void;
   onStop: () => void;
@@ -27,6 +28,7 @@ interface ControlsPanelProps {
   onSpeedChange: (speed: BattleSpeed) => void;
   onWaveChange: (wave: number) => void;
   onAutoBattleToggle: () => void;
+  onStayModeToggle: () => void;
   onReturnToAssembly?: () => void;
 }
 
@@ -38,6 +40,7 @@ export function ControlsPanel({
   highestWave,
   vest,
   autoBattle,
+  stayMode,
   sessionVestEarned = 0,
   onStart,
   onStop,
@@ -45,6 +48,7 @@ export function ControlsPanel({
   onSpeedChange,
   onWaveChange,
   onAutoBattleToggle,
+  onStayModeToggle,
   onReturnToAssembly,
 }: ControlsPanelProps) {
   const speeds: BattleSpeed[] = [0.5, 1, 2];
@@ -160,6 +164,15 @@ export function ControlsPanel({
             className="flex-1"
           >
             AUTO
+          </Button3D>
+          <Button3D
+            size="sm"
+            color={stayMode ? UI_COLORS.accentSecondary : UI_COLORS.metalDark}
+            textColor={stayMode ? UI_COLORS.white : UI_COLORS.textPrimary}
+            onClick={onStayModeToggle}
+            className="flex-1"
+          >
+            STAY
           </Button3D>
         </div>
       </div>
