@@ -10,7 +10,7 @@ import { useEffect, useRef, useCallback, useState } from 'react';
 import { useBattle } from '../../hooks/useBattle';
 import { useArenaSizing } from '../../hooks/useArenaSizing';
 import { BattleCanvas } from './BattleCanvas';
-import { WaxSealOverlay } from './WaxSealOverlay';
+import { BattleOutcomeOverlay } from './BattleOutcomeOverlay';
 import { UnitInfoPanel } from './UnitInfoPanel';
 import { ControlsPanel } from './ControlsPanel';
 import { Panel3D } from '../ui/Panel3D';
@@ -145,11 +145,12 @@ export function BattleView({ vest = 0, onReturnToAssembly }: BattleViewProps) {
             resetKey={zoomResetKey}
           />
           {/* Victory/Defeat Overlay */}
-          <WaxSealOverlay
+          <BattleOutcomeOverlay
             outcome={state.outcome}
             vestEarned={state.outcome === 'player_victory' ? getWaveGoldReward() : 0}
             waveNumber={state.waveNumber}
             autoBattle={autoBattle}
+            stayMode={stayMode}
             onDismiss={handleOutcomeDismiss}
           />
         </div>

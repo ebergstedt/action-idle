@@ -52,6 +52,7 @@ import {
 } from './types';
 import { UnitDefinition, UnitTeam } from './units/types';
 import { IUnitRegistry } from './units';
+import { captureAllyLayout, SavedAllyLayout } from './deployment/LayoutManager';
 
 /**
  * Configuration options for BattleEngine.
@@ -78,6 +79,7 @@ export class BattleEngine {
   private arenaBounds: EntityBounds | null = null;
   private battleOutcome: BattleOutcome = 'pending';
   private cellSize: number = 0;
+  private savedAllyLayout: SavedAllyLayout | null = null;
 
   // Speed control
   private userBattleSpeed = 1;
@@ -203,6 +205,11 @@ export class BattleEngine {
   }
 
   start(): void {
+    // Capture ally positions before battle starts (reflects player's intentional arrangement)
+    if (this.cellSize > 0) {
+      this.savedAllyLayout = captureAllyLayout(this.world.getMobilePlayerUnits(), this.cellSize);
+    }
+
     this.isRunning = true;
     this.hasStarted = true;
   }
@@ -371,6 +378,14 @@ export class BattleEngine {
    */
   getCellSize(): number {
     return this.cellSize;
+  }
+
+  /**
+   * Get the saved ally layout (persists across waves).
+   * Returns null if no layout has been captured yet.
+   */
+  getSavedAllyLayout(): SavedAllyLayout | null {
+    return this.savedAllyLayout;
   }
 
   /**

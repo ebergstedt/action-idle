@@ -44,9 +44,13 @@ const OUTCOME_TEXT_MAP: Record<Exclude<BattleOutcome, 'pending'>, Omit<OutcomeTe
  * Get wave transition info text based on outcome.
  * @param outcome - Battle outcome
  * @param waveNumber - Current wave number
+ * @param stayMode - Whether stay mode is active (repeat same wave)
  * @returns Wave info string
  */
-function getWaveInfo(outcome: BattleOutcome, waveNumber: number): string {
+function getWaveInfo(outcome: BattleOutcome, waveNumber: number, stayMode: boolean): string {
+  if (stayMode) {
+    return `Staying on Wave ${waveNumber}`;
+  }
   if (outcome === 'player_victory') {
     return `Advancing to Wave ${waveNumber + 1}`;
   }
@@ -61,9 +65,14 @@ function getWaveInfo(outcome: BattleOutcome, waveNumber: number): string {
  *
  * @param outcome - Battle outcome (must not be 'pending')
  * @param waveNumber - Current wave number
+ * @param stayMode - Whether stay mode is active (repeat same wave)
  * @returns Complete outcome text data
  */
-export function getOutcomeText(outcome: BattleOutcome, waveNumber: number): OutcomeText | null {
+export function getOutcomeText(
+  outcome: BattleOutcome,
+  waveNumber: number,
+  stayMode: boolean = false
+): OutcomeText | null {
   if (outcome === 'pending') {
     return null;
   }
@@ -71,7 +80,7 @@ export function getOutcomeText(outcome: BattleOutcome, waveNumber: number): Outc
   const baseText = OUTCOME_TEXT_MAP[outcome];
   return {
     ...baseText,
-    waveInfo: getWaveInfo(outcome, waveNumber),
+    waveInfo: getWaveInfo(outcome, waveNumber, stayMode),
   };
 }
 

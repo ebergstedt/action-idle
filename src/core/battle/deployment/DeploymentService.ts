@@ -18,6 +18,7 @@ import {
 import { calculateCellSize, snapFootprintToGrid } from '../grid/GridManager';
 import { resolveSquadOverlaps } from '../DragController';
 import { createSeededRandom } from '../../utils/Random';
+import { applyLayoutToComposition } from './LayoutManager';
 
 // =============================================================================
 // LEVEL SCALING
@@ -141,14 +142,16 @@ export function spawnWaveUnits(engine: BattleEngine, config: WaveSpawnConfig): v
   const registry = engine.getRegistry();
   const cellSize = calculateCellSize(arenaWidth, arenaHeight);
 
-  // Spawn allied army using deterministic formation with collision detection
+  // Spawn allied army - use saved layout if available, otherwise deterministic formation
   const alliedComposition = getDefaultAlliedComposition();
-  const alliedPositions = calculateDeterministicAlliedPositions(
-    alliedComposition,
-    registry,
-    bounds,
-    waveNumber
-  );
+  const savedLayout = engine.getSavedAllyLayout();
+  const savedPositions = savedLayout
+    ? applyLayoutToComposition(savedLayout, alliedComposition, registry, cellSize)
+    : null;
+  const alliedPositions =
+    savedPositions ??
+    calculateDeterministicAlliedPositions(alliedComposition, registry, bounds, waveNumber);
+
   for (const spawn of alliedPositions) {
     // Snap position to grid based on unit's footprint
     const def = registry.tryGet(spawn.type);

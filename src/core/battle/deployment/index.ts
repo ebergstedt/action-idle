@@ -7,3 +7,10 @@
 
 export type { WaveSpawnConfig, SpawnBounds } from './DeploymentService';
 export { spawnWaveUnits, resolveAllOverlaps, resolvePlayerOverlaps } from './DeploymentService';
+
+export type { SavedSquadPlacement, SavedAllyLayout } from './LayoutManager';
+export {
+  captureAllyLayout,
+  mapCompositionToLayout,
+  applyLayoutToComposition,
+} from './LayoutManager';

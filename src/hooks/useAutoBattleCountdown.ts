@@ -2,7 +2,7 @@
  * Auto-Battle Countdown Hook
  *
  * Manages the countdown timer for auto-battle mode.
- * Extracted from WaxSealOverlay for SRP compliance.
+ * Extracted from BattleOutcomeOverlay for SRP compliance.
  *
  * SRP: Only handles countdown timing logic.
  */

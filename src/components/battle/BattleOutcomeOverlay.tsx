@@ -21,21 +21,23 @@ import {
 import { UI_COLORS, hexToRgba } from '../../core/theme/colors';
 import { useAutoBattleCountdown } from '../../hooks/useAutoBattleCountdown';
 
-interface WaxSealOverlayProps {
+interface BattleOutcomeOverlayProps {
   outcome: BattleOutcome;
   vestEarned?: number;
   waveNumber?: number;
   autoBattle?: boolean;
+  stayMode?: boolean;
   onDismiss?: () => void;
 }
 
-export function WaxSealOverlay({
+export function BattleOutcomeOverlay({
   outcome,
   vestEarned,
   waveNumber,
   autoBattle,
+  stayMode,
   onDismiss,
-}: WaxSealOverlayProps) {
+}: BattleOutcomeOverlayProps) {
   const [isVisible, setIsVisible] = useState(false);
   const [isStamped, setIsStamped] = useState(false);
 
@@ -76,7 +78,7 @@ export function WaxSealOverlay({
   }
 
   // Get outcome text from core (Godot-portable)
-  const outcomeText = getOutcomeText(outcome, waveNumber ?? 0);
+  const outcomeText = getOutcomeText(outcome, waveNumber ?? 0, stayMode ?? false);
 
   return (
     <div
