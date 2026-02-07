@@ -7,6 +7,7 @@
 
 import { ReactNode, useState } from 'react';
 import { UI_COLORS, hexToRgba } from '../../core/theme/colors';
+import { formatVestPerSecond } from '../../core/dossier';
 import { Panel3D } from '../ui/Panel3D';
 import { Button3D } from '../ui/Button3D';
 import { PanelTransition } from '../ui/PanelTransition';
@@ -16,7 +17,7 @@ import { DEFAULT_EFFECTS } from './effectsSettings';
 import type { EffectsSettings } from './effectsSettings';
 import hangarBg from '../../assets/hangar.png';
 
-export type HangarSection = 'garage' | 'assembly' | 'arena' | 'virtuality';
+export type HangarSection = 'garage' | 'assembly' | 'arena' | 'dossier' | 'virtuality';
 
 interface HangarPageProps {
   /** Currently selected section */
@@ -27,6 +28,8 @@ interface HangarPageProps {
   children: ReactNode;
   /** Current VEST amount */
   vest: number;
+  /** Total VEST earned per second from dossier records */
+  vestPerSecond: number;
   /** Highest wave reached */
   highestWave: number;
   /** Called when Sortie button is clicked */
@@ -43,6 +46,7 @@ const NAV_ITEMS: NavItem[] = [
   { id: 'garage', label: 'GARAGE', available: true },
   { id: 'assembly', label: 'ASSEMBLY', available: false },
   { id: 'arena', label: 'ARENA', available: false },
+  { id: 'dossier', label: 'DOSSIER', available: true },
   { id: 'virtuality', label: 'VIRTUALITY', available: false },
 ];
 
@@ -51,6 +55,7 @@ export function HangarPage({
   onSelectSection,
   children,
   vest,
+  vestPerSecond,
   highestWave,
   onSortie,
 }: HangarPageProps) {
@@ -167,9 +172,19 @@ export function HangarPage({
                 <span className="text-sm tracking-wide" style={{ color: UI_COLORS.textSecondary }}>
                   VEST
                 </span>
-                <span className="font-mono font-bold" style={{ color: UI_COLORS.accentPrimary }}>
-                  {vest.toLocaleString()}
-                </span>
+                <div className="text-right">
+                  <span className="font-mono font-bold" style={{ color: UI_COLORS.accentPrimary }}>
+                    {vest.toLocaleString()}
+                  </span>
+                  {vestPerSecond > 0 && (
+                    <span
+                      className="font-mono text-sm ml-1"
+                      style={{ color: UI_COLORS.textSecondary }}
+                    >
+                      (+{formatVestPerSecond(vestPerSecond)}/s)
+                    </span>
+                  )}
+                </div>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-sm tracking-wide" style={{ color: UI_COLORS.textSecondary }}>

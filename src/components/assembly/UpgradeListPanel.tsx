@@ -58,7 +58,7 @@ export function UpgradeListPanel({
       </div>
 
       {/* Scrollable content */}
-      <div className="flex-1 overflow-y-auto space-y-4 pr-1">
+      <div className="flex-1 scrollable space-y-4">
         {/* Unit-specific upgrades (only when unit is selected) */}
         {selectedUnitType && (
           <UpgradeSection

@@ -82,6 +82,9 @@ export class BattleEngine {
   private cellSize: number = 0;
   private savedAllyLayout: SavedAllyLayout | null = null;
 
+  // Simulation time (delta * timeScale) - independent of wall-clock speed
+  private simulationTime = 0;
+
   // Speed control
   private userBattleSpeed = 1;
 
@@ -154,6 +157,14 @@ export class BattleEngine {
   }
 
   /**
+   * Get the simulation time in seconds (delta * timeScale).
+   * This is independent of wall-clock speed settings.
+   */
+  getSimulationTime(): number {
+    return this.simulationTime;
+  }
+
+  /**
    * Get the unit registry.
    */
   getRegistry(): IUnitRegistry {
@@ -194,6 +205,7 @@ export class BattleEngine {
       gold: this.gold,
       outcome: this.battleOutcome,
       timeScale: this.getTimeScale(),
+      simulationTime: this.simulationTime,
     };
   }
 
@@ -246,7 +258,8 @@ export class BattleEngine {
     this.nextSquadId = 1;
     this.battleOutcome = 'pending';
 
-    // Reset auto speed-up state
+    // Reset simulation and auto speed-up state
+    this.simulationTime = 0;
     this.battleTime = 0;
     this.idleTimer = 0;
     this.speedBonus = 0;
@@ -739,6 +752,7 @@ export class BattleEngine {
     this.updateAutoSpeedUp(delta);
 
     const timeScale = this.userBattleSpeed + this.speedBonus;
+    this.simulationTime += delta * timeScale;
     this.world.update(delta * timeScale);
 
     // Check for battle end

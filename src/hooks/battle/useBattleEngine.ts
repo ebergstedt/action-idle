@@ -55,6 +55,7 @@ const INITIAL_STATE: BattleState = {
   gold: 0,
   outcome: 'pending',
   timeScale: 1,
+  simulationTime: 0,
 };
 
 /**

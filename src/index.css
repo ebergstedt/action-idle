@@ -6,3 +6,32 @@ body {
   @apply bg-gray-900 text-gray-100 min-h-screen;
   font-family: "Exo 2", sans-serif;
 }
+
+/* Reusable scrollable container - adds overflow + gutter for scrollbar */
+.scrollable {
+  @apply overflow-y-auto pr-1;
+}
+
+/* Styled scrollbars - AC6 industrial theme */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #F5A623 #0A0E14;
+}
+
+*::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+*::-webkit-scrollbar-track {
+  background: #0A0E14;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: #F5A623;
+  border-radius: 3px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: #CC8800;
+}

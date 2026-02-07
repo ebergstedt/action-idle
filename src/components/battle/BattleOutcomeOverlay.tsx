@@ -20,6 +20,7 @@ import {
 } from '../../core/battle/BattleConfig';
 import { UI_COLORS, hexToRgba } from '../../core/theme/colors';
 import { useAutoBattleCountdown } from '../../hooks/useAutoBattleCountdown';
+import { formatBattleTime } from '../../core/dossier';
 
 interface BattleOutcomeOverlayProps {
   outcome: BattleOutcome;
@@ -27,6 +28,10 @@ interface BattleOutcomeOverlayProps {
   waveNumber?: number;
   autoBattle?: boolean;
   stayMode?: boolean;
+  /** Battle duration in simulation seconds */
+  battleDuration?: number;
+  /** Whether the battle duration is a new record for this wave */
+  isNewRecord?: boolean;
   onDismiss?: () => void;
 }
 
@@ -36,6 +41,8 @@ export function BattleOutcomeOverlay({
   waveNumber,
   autoBattle,
   stayMode,
+  battleDuration,
+  isNewRecord,
   onDismiss,
 }: BattleOutcomeOverlayProps) {
   const [isVisible, setIsVisible] = useState(false);
@@ -139,6 +146,26 @@ export function BattleOutcomeOverlay({
             <span className="text-xl font-bold" style={{ color: UI_COLORS.accentPrimary }}>
               +{vestEarned.toLocaleString()} VEST
             </span>
+          </div>
+        )}
+
+        {/* Battle duration (victory only) */}
+        {outcome === 'player_victory' && battleDuration !== undefined && (
+          <div className="flex items-center gap-3">
+            <span className="font-mono text-lg" style={{ color: UI_COLORS.textPrimary }}>
+              {formatBattleTime(battleDuration)}
+            </span>
+            {isNewRecord && (
+              <span
+                className="text-sm font-bold tracking-wider px-2 py-0.5 rounded"
+                style={{
+                  color: UI_COLORS.accentPrimary,
+                  backgroundColor: hexToRgba(UI_COLORS.accentPrimary, 0.15),
+                }}
+              >
+                NEW RECORD
+              </span>
+            )}
           </div>
         )}
 

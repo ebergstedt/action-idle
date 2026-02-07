@@ -11,9 +11,11 @@ import { GarageContent } from './assembly';
 import { HangarPage, HangarSection } from './hangar';
 import { UI_COLORS } from '../core/theme/colors';
 import { useAssembly } from '../hooks/useAssembly';
+import { useDossier } from '../hooks/useDossier';
 import { LocalStorageAdapter } from '../adapters/LocalStorageAdapter';
 import { initializeBattleData, battleUpgradeRegistry } from '../data/battle';
 import { Panel3D } from './ui/Panel3D';
+import { DossierContent } from './hangar/DossierContent';
 
 /** Current page/scene in the app */
 type AppPage = 'hangar' | 'battle';
@@ -33,6 +35,9 @@ function App() {
     persistenceAdapter,
     upgradeRegistry: battleUpgradeRegistry,
   });
+
+  // Dossier state management (fastest clear times)
+  const dossier = useDossier({ persistenceAdapter });
 
   // Navigation handlers
   const handleLaunchBattle = useCallback(async () => {
@@ -86,6 +91,14 @@ function App() {
             <div style={{ color: UI_COLORS.textSecondary }}>ASSEMBLY - Coming Soon</div>
           </Panel3D>
         );
+      case 'dossier':
+        return (
+          <DossierContent
+            dossierData={dossier.dossierData}
+            highestWave={assembly.highestWave}
+            totalVestPerSecond={dossier.totalVestPerSecond}
+          />
+        );
       case 'virtuality':
         return (
           <Panel3D className="h-full flex items-center justify-center">
@@ -111,13 +124,19 @@ function App() {
             currentSection={hangarSection}
             onSelectSection={handleSelectSection}
             vest={assembly.vest}
+            vestPerSecond={dossier.totalVestPerSecond}
             highestWave={assembly.highestWave}
             onSortie={handleLaunchBattle}
           >
             {renderHangarContent()}
           </HangarPage>
         ) : (
-          <BattleView vest={assembly.vest} onReturnToAssembly={handleReturnToAssembly} />
+          <BattleView
+            vest={assembly.vest}
+            onReturnToAssembly={handleReturnToAssembly}
+            onRecordTime={dossier.recordTime}
+            isNewRecord={dossier.isNewRecord}
+          />
         )}
       </main>
     </div>

@@ -86,7 +86,7 @@ export function UnitStatsPanel({ selectedUnitType }: UnitStatsPanelProps) {
       </div>
 
       {/* Stats sections */}
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 scrollable">
         {/* Base Stats */}
         <SectionHeader>SPEC</SectionHeader>
         <StatRow label="HP" value={formatStat(baseStats.maxHealth)} />

@@ -33,7 +33,7 @@ export function UnitSelector({ selectedUnitType, onSelectUnit }: UnitSelectorPro
       </div>
 
       {/* Unit list */}
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 scrollable">
         {units.map((unit) => {
           const isSelected = selectedUnitType === unit.id;
           return (

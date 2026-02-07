@@ -11,6 +11,7 @@ import { useBattle } from '../../hooks/useBattle';
 import { useArenaSizing } from '../../hooks/useArenaSizing';
 import { BattleCanvas } from './BattleCanvas';
 import { BattleOutcomeOverlay } from './BattleOutcomeOverlay';
+import { BattleTimer } from './BattleTimer';
 import { UnitInfoPanel } from './UnitInfoPanel';
 import { ControlsPanel } from './ControlsPanel';
 import { Panel3D } from '../ui/Panel3D';
@@ -23,9 +24,18 @@ export interface BattleViewProps {
   vest?: number;
   /** Callback when returning to assembly with VEST earned and new highest wave */
   onReturnToAssembly?: (vestEarned: number, highestWave: number) => void;
+  /** Record a clear time for a wave. Returns whether it was a new record. */
+  onRecordTime?: (wave: number, simTime: number) => boolean;
+  /** Check if a time would be a new record for a wave */
+  isNewRecord?: (wave: number, simTime: number) => boolean;
 }
 
-export function BattleView({ vest = 0, onReturnToAssembly }: BattleViewProps) {
+export function BattleView({
+  vest = 0,
+  onReturnToAssembly,
+  onRecordTime,
+  isNewRecord,
+}: BattleViewProps) {
   const {
     state,
     selectedUnitIds,
@@ -58,6 +68,10 @@ export function BattleView({ vest = 0, onReturnToAssembly }: BattleViewProps) {
 
   // Track VEST earned during this battle session
   const [sessionVestEarned, setSessionVestEarned] = useState(0);
+
+  // Track battle duration and record status for outcome overlay
+  const [outcomeDuration, setOutcomeDuration] = useState<number | undefined>(undefined);
+  const [outcomeIsRecord, setOutcomeIsRecord] = useState(false);
 
   // Auto-spawn units once arena size is stable and settings are loaded
   useEffect(() => {
@@ -92,12 +106,33 @@ export function BattleView({ vest = 0, onReturnToAssembly }: BattleViewProps) {
     [setWave, reset]
   );
 
+  // Capture duration and record status when battle ends
+  const prevOutcomeRef = useRef(state.outcome);
+  useEffect(() => {
+    if (prevOutcomeRef.current === 'pending' && state.outcome !== 'pending') {
+      const simTime = state.simulationTime;
+      setOutcomeDuration(simTime);
+      if (state.outcome === 'player_victory' && isNewRecord) {
+        setOutcomeIsRecord(isNewRecord(state.waveNumber, simTime));
+      } else {
+        setOutcomeIsRecord(false);
+      }
+    } else if (state.outcome === 'pending') {
+      setOutcomeDuration(undefined);
+      setOutcomeIsRecord(false);
+    }
+    prevOutcomeRef.current = state.outcome;
+  }, [state.outcome, state.simulationTime, state.waveNumber, isNewRecord]);
+
   // Handle outcome dismiss - delegates to hook for outcome processing and auto-battle flow
   const handleOutcomeDismiss = useCallback(() => {
-    // Track VEST earned before continuing
+    // Track VEST earned and record time before continuing
     if (state.outcome === 'player_victory') {
       const vestReward = getWaveGoldReward();
       setSessionVestEarned((prev) => prev + vestReward);
+      if (onRecordTime && outcomeDuration !== undefined) {
+        onRecordTime(state.waveNumber, outcomeDuration);
+      }
     }
 
     handleOutcomeAndContinue(() => {
@@ -106,7 +141,14 @@ export function BattleView({ vest = 0, onReturnToAssembly }: BattleViewProps) {
       // Reset zoom for new battle
       setZoomResetKey((prev) => prev + 1);
     });
-  }, [handleOutcomeAndContinue, state.outcome, getWaveGoldReward]);
+  }, [
+    handleOutcomeAndContinue,
+    state.outcome,
+    state.waveNumber,
+    getWaveGoldReward,
+    onRecordTime,
+    outcomeDuration,
+  ]);
 
   // Handle return to assembly
   const handleReturnToAssembly = useCallback(() => {
@@ -137,6 +179,7 @@ export function BattleView({ vest = 0, onReturnToAssembly }: BattleViewProps) {
           ref={containerRef}
           className="flex-[2] flex flex-col items-center justify-center gap-2 min-w-0 relative"
         >
+          <BattleTimer simulationTime={state.simulationTime} hasStarted={state.hasStarted} />
           <BattleCanvas
             state={state}
             width={arenaSize.width}
@@ -155,6 +198,8 @@ export function BattleView({ vest = 0, onReturnToAssembly }: BattleViewProps) {
             waveNumber={state.waveNumber}
             autoBattle={autoBattle}
             stayMode={stayMode}
+            battleDuration={outcomeDuration}
+            isNewRecord={outcomeIsRecord}
             onDismiss={handleOutcomeDismiss}
           />
         </div>

@@ -233,6 +233,8 @@ export interface BattleState {
   outcome: BattleOutcome;
   /** Current time scale (1.0 = normal, 6.0 = max with idle speed-up) */
   timeScale: number;
+  /** Simulation time in seconds (delta * timeScale, independent of speed settings) */
+  simulationTime: number;
 }
 
 // =============================================================================
